@@ -1,20 +1,25 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
-import { AppRoutingModule } from './app-routing.module';
+import { AppRoutingModule, routingComponents } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { MailListComponent } from './mails/mail-list/mail-list.component';
-import { UserListComponent } from './users/user-list/user-list.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AngularMaterialModule } from './angular-material/angular-material.module';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MailCreateComponent } from './mails/mail-create/mail-create.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    MailListComponent,
-    UserListComponent
+    routingComponents,
+    MailCreateComponent,
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    BrowserAnimationsModule,
+    AngularMaterialModule,
+    ReactiveFormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
