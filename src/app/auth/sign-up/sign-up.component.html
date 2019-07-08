@@ -1,0 +1,26 @@
+<mat-card>
+  <form [formGroup]="form" (submit)="onSignUp()">
+    <!-- email form control -->
+    <mat-form-field appearance="outline">
+      <mat-label>E-mail</mat-label>
+      <input matInput formControlName="email" placeholder="name@mydomain.com" />
+      <mat-error *ngIf="email.invalid && email.touched">
+        Please enter a valid email
+      </mat-error>
+    </mat-form-field>
+
+    <!-- password form control -->
+    <mat-form-field appearance="outline">
+      <mat-label>Password</mat-label>
+      <input matInput formControlName="password" />
+      <mat-error *ngIf="password.invalid && password.touched">
+        Please enter a valid password
+      </mat-error>
+    </mat-form-field>
+
+    <!-- button to submit -->
+    <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">
+      Sign Up
+    </button>
+  </form>
+</mat-card>

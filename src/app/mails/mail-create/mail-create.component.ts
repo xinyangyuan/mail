@@ -9,27 +9,18 @@ import { MailService } from '../mail.service';
   styleUrls: ['./mail-create.component.css']
 })
 export class MailCreateComponent implements OnInit {
+  // Attributes
   form: FormGroup;
 
-  constructor(
-    public mailService: MailService,
-    private fb: FormBuilder,
-  ) {}
+  // Constructor Method
+  constructor(public mailService: MailService, private fb: FormBuilder) {}
 
   // Init Method
   ngOnInit() {
     this.form = this.fb.group({
-      title: ['', [
-        Validators.required,
-        Validators.minLength(3)
-      ]],
-      description: ['', [
-        Validators.required,
-        Validators.maxLength(50)
-      ]],
-      content: ['', [
-        Validators.required
-      ]]
+      title: ['', [Validators.required, Validators.minLength(3)]],
+      description: ['', [Validators.required, Validators.maxLength(50)]],
+      content: ['', [Validators.required]]
     });
   }
 
@@ -38,7 +29,7 @@ export class MailCreateComponent implements OnInit {
     this.mailService.addMail(
       this.title.value as string,
       this.description.value as string,
-      this.content.value as string,
+      this.content.value as string
     );
   }
 

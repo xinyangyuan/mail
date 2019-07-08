@@ -1,30 +1,40 @@
 <mat-card>
   <form [formGroup]="form" (submit)="onAddMail()">
-
     <mat-form-field appearance="outline">
       <mat-label>Mail Title</mat-label>
-      <input matInput formControlName="title" placeholder="Mail:">
+      <input matInput formControlName="title" placeholder="Mail:" />
       <mat-error *ngIf="title.invalid && title.touched">
-          Your title does not look right
+        Your title does not look right
       </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Mail Description</mat-label>
-      <input matInput formControlName="description">
+      <input matInput formControlName="description" />
       <mat-error *ngIf="description.invalid && description.touched">
-          That content sucks...
+        That content sucks...
       </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Content</mat-label>
-      <input matInput formControlName="content" placeholder="e.g. BANK STATEMENT">
+      <input
+        matInput
+        formControlName="content"
+        placeholder="e.g. BANK STATEMENT"
+      />
       <mat-error *ngIf="content.invalid && content.touched">
-          That content sucks...
+        That content sucks...
       </mat-error>
     </mat-form-field>
 
-    <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">Send</button>
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="form.invalid"
+      type="submit"
+    >
+      Send
+    </button>
   </form>
 </mat-card>
