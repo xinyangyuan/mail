@@ -13,6 +13,9 @@ import { MailCreateComponent } from './mails/mail-create/mail-create.component';
 import { SignInComponent } from './auth/sign-in/sign-in.component';
 import { SignUpComponent } from './auth/sign-up/sign-up.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { HeaderComponent } from './header/header.component';
+import { SignUpUserComponent } from './auth/sign-up/sign-up-user/sign-up-user.component';
+import { SignUpSenderComponent } from './auth/sign-up/sign-up-sender/sign-up-sender.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +23,10 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     routingComponents,
     MailCreateComponent,
     SignInComponent,
-    SignUpComponent
+    SignUpComponent,
+    HeaderComponent,
+    SignUpUserComponent,
+    SignUpSenderComponent
   ],
   imports: [
     BrowserModule,

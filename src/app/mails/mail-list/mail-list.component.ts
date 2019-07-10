@@ -4,7 +4,6 @@ import { Subscription } from 'rxjs';
 import { MailService } from '../mail.service';
 import { Mail } from '../mail.model';
 
-
 @Component({
   selector: 'app-mail-list',
   templateUrl: './mail-list.component.html',
@@ -14,15 +13,14 @@ export class MailListComponent implements OnInit, OnDestroy {
   public mails: Mail[];
   private mailServiceSub: Subscription;
 
-  constructor(private mailService: MailService) { }
+  constructor(private mailService: MailService) {}
 
   // Init Method
   ngOnInit() {
-    this.mails = this.mailService.getMails();
-    this.mailServiceSub = this.mailService.getMailsUpdatedListner()
-      .subscribe((mails: Mail[]) => {
-        this.mails = mails;
-      });
+    // this.mails = this.mailService.getMails();
+    this.mailServiceSub = this.mailService.getMailsUpdatedListner().subscribe((mails: Mail[]) => {
+      this.mails = mails;
+    });
   }
 
   // Destroy Method

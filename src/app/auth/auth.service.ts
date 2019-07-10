@@ -21,12 +21,12 @@ export class AuthService {
     Method: sign-up function
   */
 
-  signUp(email: string, password: string) {
-    const authData: AuthData = { email, password };
+  signUp(email: string, password: string, isSender: boolean) {
+    const authData: AuthData = { email, password, isSender };
 
     this.http
       // send user sign-up request to backend server
-      .post<{ token: string; expiresDuration: number; userId: string }>(
+      .post<{ token: string; expiresDuration: number; userId: string; isSender: boolean }>(
         this.BACKEND_URL + 'signup',
         authData
       )
@@ -35,7 +35,7 @@ export class AuthService {
         res => {
           // localStorage.setItem('token', res.token);
           this.autoSignOut(res.expiresDuration);
-          this.saveAuthInCookie(res.token, res.expiresDuration);
+          this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
           this.authStatusListener.next(true);
           console.log('You have been logged in!');
         },
@@ -54,7 +54,7 @@ export class AuthService {
 
     this.http
       // send user log-in request to backend server
-      .post<{ token: string; expiresDuration: number; userId: string }>(
+      .post<{ token: string; expiresDuration: number; userId: string; isSender: boolean }>(
         this.BACKEND_URL + 'signin',
         authData
       )
@@ -62,7 +62,7 @@ export class AuthService {
       .subscribe(
         res => {
           this.autoSignOut(res.expiresDuration);
-          this.saveAuthInCookie(res.token, res.expiresDuration);
+          this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
           this.authStatusListener.next(true);
           console.log('You have been logged in!');
         },
@@ -123,12 +123,14 @@ export class AuthService {
     if (
       this.cookieService.check('token') &&
       this.cookieService.check('expiresIn') &&
-      this.cookieService.check('authStatus')
+      this.cookieService.check('authStatus') &&
+      this.cookieService.check('accountType')
     ) {
       return {
         authStatus: this.cookieService.get('authStatus'),
         expiresIn: this.cookieService.get('expiresIn'),
-        token: this.cookieService.get('token')
+        token: this.cookieService.get('token'),
+        isSender: this.cookieService.get('accountType') === 'sender'
       };
     } else {
       return null;
@@ -173,7 +175,7 @@ export class AuthService {
   /*
     Method: save authorization data in local cookies
   */
-  saveAuthInCookie(token: string, expiresDuration: number) {
+  saveAuthInCookie(token: string, expiresDuration: number, isSender: boolean) {
     this.cookieService.set('token', token, expiresDuration / (3600 * 24));
     this.cookieService.set('authStatus', 'true', expiresDuration / (3600 * 24));
 
@@ -181,5 +183,9 @@ export class AuthService {
     const now = new Date(); // browser compatibility WARN: IE 8 or earlier maybe not working
     const expiresIn = new Date(now.getTime() + expiresDuration * 1000).toISOString();
     this.cookieService.set('expiresIn', expiresIn, expiresDuration / (3600 * 24));
+
+    // convert isSender from boolean to string
+    const accountType: string = isSender ? 'sender' : 'user';
+    this.cookieService.set('accountType', accountType, expiresDuration / (3600 * 24));
   }
 }

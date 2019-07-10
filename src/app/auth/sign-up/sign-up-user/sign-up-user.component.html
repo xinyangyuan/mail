@@ -1,0 +1,51 @@
+<form *ngIf="addressList.length > 0" [formGroup]="form" (submit)="onSignUp()">
+  <!-- first name form control -->
+  <mat-form-field appearance="outline">
+    <mat-label>First Name</mat-label>
+    <input matInput formControlName="firstName" />
+    <mat-error *ngIf="firstName.invalid && firstName.touched">
+      Please enter valid text
+    </mat-error>
+  </mat-form-field>
+
+  <!-- last name form control -->
+  <mat-form-field appearance="outline">
+    <mat-label>Last Name</mat-label>
+    <input matInput formControlName="lastName" />
+    <mat-error *ngIf="lastName.invalid && lastName.touched">
+      Please enter valid text
+    </mat-error>
+  </mat-form-field>
+
+  <!-- email form control -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>E-mail</mat-label>
+    <input matInput formControlName="email" placeholder="name@mydomain.com" />
+    <mat-error *ngIf="email.invalid && email.touched">
+      Please enter a valid email
+    </mat-error>
+  </mat-form-field>
+
+  <!-- password form control -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Password</mat-label>
+    <input matInput formControlName="password" />
+    <mat-error *ngIf="password.invalid && password.touched">
+      Please enter a valid password
+    </mat-error>
+  </mat-form-field>
+
+  <!-- address option control -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-select formControlName="address" placeholder="Address">
+      <mat-option *ngFor="let address of addressList" [value]="address.city">{{
+        address.city
+      }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- button to submit -->
+  <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">
+    Sign Up
+  </button>
+</form>

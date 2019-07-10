@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from './auth/auth.service';
+import { AddressService } from './addresses/address.service';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +10,7 @@ import { AuthService } from './auth/auth.service';
 export class AppComponent implements OnInit {
   title = 'mail';
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private addressService: AddressService) {}
 
   ngOnInit() {
     // try to auto sign-in when app is initialized

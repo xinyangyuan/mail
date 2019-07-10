@@ -4,10 +4,11 @@ const uniqueValidator = require('mongoose-unique-validator');
 // schema
 const userSchema = mongoose.Schema({
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  isSender: { type: Boolean, required: true }
 });
 
-// user unique requirement
+// use unique validator
 userSchema.plugin(uniqueValidator);
 
 // export mongoose model

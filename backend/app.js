@@ -1,12 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+
 const userRoutes = require('./routes/user');
+const addressRoutes = require('./routes/address');
+const mailRoutes = require('./routes/mail');
 
 const app = express();
 
 /*
- connect to mongoDB Atlas databse
+ setup and connect to mongoDB Atlas databse
 */
 
 mongoose
@@ -17,6 +20,8 @@ mongoose
   .catch(() => {
     console.log('Connection to database failed!');
   });
+
+mongoose.set('useFindAndModify', false);
 
 /*
  parse data stream to data object
@@ -44,4 +49,6 @@ app.use((req, res, next) => {
 */
 
 app.use('/api/user', userRoutes);
+app.use('/api/address', addressRoutes);
+app.use('/api/mail', mailRoutes);
 module.exports = app;

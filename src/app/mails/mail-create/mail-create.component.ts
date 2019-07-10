@@ -26,11 +26,11 @@ export class MailCreateComponent implements OnInit {
 
   // Call mail-service to create new mail
   onAddMail() {
-    this.mailService.addMail(
-      this.title.value as string,
-      this.description.value as string,
-      this.content.value as string
-    );
+    // this.mailService.addMail(
+    //   this.title.value as string,
+    //   this.description.value as string,
+    //   this.content.value as string
+    // );
   }
 
   // Getters
