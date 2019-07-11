@@ -49,15 +49,20 @@ export class SignUpSenderComponent implements OnInit {
 
   // Method: call signUp serivce
   onSignUp() {
-    this.authService.signUp(this.email.value, this.password.value, true);
-    this.myAddressInfo = this.addressService.createAddress(
+    // callback actions
+    const addReceiver = this.addressService._createAddress(
       this.address.value,
       this.address2.value,
       this.city.value,
       this.zipCode.value,
       this.country.value
     );
-    this.routerService.navigate(['/mails']);
+    const redirect = () => this.routerService.navigate(['mails']);
+
+    // sign-up service
+    this.authService._signUp(this.email.value, this.password.value, true).subscribe(() => {
+      addReceiver.subscribe(redirect);
+    });
   }
 
   // Getters

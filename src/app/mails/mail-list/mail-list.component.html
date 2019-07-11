@@ -1,5 +1,5 @@
 <div>
-  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  <mat-progress-bar *ngIf="!mails" mode="indeterminate"></mat-progress-bar>
   <mat-accordion>
     <mat-expansion-panel
       hideToggle="true"

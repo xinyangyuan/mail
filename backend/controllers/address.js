@@ -1,4 +1,5 @@
 const Address = require('../models/address');
+const mongoose = require('mongoose');
 
 /*
   Go-lang style async helper function
@@ -62,7 +63,9 @@ exports.getAddressInfo = async (req, res) => {
       address2: fetchedAddress.address2,
       city: fetchedAddress.city,
       zipCode: fetchedAddress.zipCode,
-      country: fetchedAddress.country
+      country: fetchedAddress.country,
+      senderId: fetchedAddress.senderId,
+      receiverIds: fetchedAddress.receiverIds
     }
   });
 };
@@ -131,7 +134,7 @@ exports.addReceiver = async (req, res) => {
   console.log('addReceiver is called');
   // prepare the update; $addToSet ensure all array ids are uniques
   const update = {
-    $addToSet: { receiverIds: req.userData.userId }
+    $addToSet: { receiverIds: mongoose.Types.ObjectId(req.userData.userId) }
   };
 
   // async funtion: push a new user into address doc's receiverId field
@@ -140,6 +143,7 @@ exports.addReceiver = async (req, res) => {
   );
 
   if (error || !fetchedAddress) {
+    console.log(req.userData.userId);
     return res.status(401).json({
       message: 'Failed to add new reciever to the address!'
     });

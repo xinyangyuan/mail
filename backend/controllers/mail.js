@@ -49,7 +49,7 @@ exports.getMailList = async (req, res, next) => {
   // send fetched mails to frontend
   res.status(200).json({
     message: 'Mails fetched successfully.',
-    mails: fetchedMails
+    mailList: fetchedMails
   });
 };
 

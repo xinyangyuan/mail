@@ -1,66 +1,99 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 import { Mail } from './mail.model';
 import { HttpClient } from '@angular/common/http';
-
-const BACKEND_URL = 'http://localhost:3000/api/mail/';
+// import { readFile } from 'fs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MailService {
   // Attributes
-  private mails: Mail[] = [];
+  private BACKEND_URL = 'http://localhost:3000/api/mail/';
+
+  private mailList: Mail[] = [];
   private mailsUpdatedListener = new Subject<Mail[]>();
 
   // Constructor
   constructor(private http: HttpClient) {}
 
   /*
-    Method: get mails from backend
+    Method: get a list of all addresses [GET]
   */
-  // getMails() {
-  //   this.http
-  //     .get(BACKEND_URL)
-  //     .pipe(map())
-  //     .subscribe(transformedPostData => {
-  //       this.posts = transformedPostData.posts;
-  //       this.postsUpdated.next({ posts: [...this.posts] })
-  //     }
-  // }
 
-  // Method: subscribtion to the subject
-  getMailsUpdatedListner() {
-    return this.mailsUpdatedListener.asObservable();
+  getMailList() {
+    // try to fetch mail list from local attribute
+    if (this.mailList.length !== 0) {
+      console.log('getMailList is called');
+      return [...this.mailList] as Mail[];
+    }
+
+    // fetch address list from the RESTapi
+    this.http
+      // send get request
+      .get<{ message: string; mailList: Mail[] }>(this.BACKEND_URL)
+      .subscribe(
+        res => {
+          this.mailList = res.mailList;
+          // this.mailsUpdatedListener.next({ mailList: [...this.mailList] });
+          return [...this.mailList] as Mail[];
+        },
+        err => {
+          console.log('Failed to fetch address list!');
+        }
+      );
   }
 
-  // Method: addding mail
-  // addMail(title: string, description: string, content: string) {
-  //   const mail: Mail = { title, description, content, read_flag: false, star_flag: false };
-  //   this.mails.push(mail);
-  //   // tell subscribers new mail added
-  //   this.mailsUpdated.next(this.getMails());
-  //   this.router.navigate(['/']);
+  /*
+    Async Method: get a list of all addresses [GET]
+  */
+
+  async _getMailList() {
+    // try to fetch mail list from local attribute
+    if (this.mailList.length !== 0) {
+      return [...this.mailList] as Mail[];
+    }
+
+    // fetch address list from the RESTapi
+    try {
+      // async http request to fetch mail list
+      const data = await this.http
+        .get<{ message: string; mailList: Mail[] }>(this.BACKEND_URL)
+        .toPromise();
+      this.mailList = data.mailList;
+
+      return [...this.mailList];
+    } catch {
+      console.log('Failed to fetch address list!');
+    }
+  }
+
+  /*
+    Method: update the mail's flag [PATCH]
+  */
+
+  /*
+    Method: delete a mail  [PATCH]
+  */
+
+  /*
+    Method: create new mail [PATCH]
+  */
+
+  // updatePost(id: string, star_flag?: boolean, read_flag?: boolean) {
+  //   // To do: this is awfully verbose..
+  //   const update = { star_flag, read_flag };
+
+  //   this.http.patch(this.BACKEND_URL + id, update).subscribe();
+
   // }
 
   /*
-    Helper: get mails from backend
+    Method: subscribtion to the subject
   */
-  // const mailToMail = (postData){
-  //   return {
-  //     posts: postData.posts.map(
-  //       post => {
-  //         return {
-  //           title: post.title,
-  //             content: post.content,
-  //             id: post._id,
-  //             imagePath: post.imagePath,
-  //             creator: post.creator
-  //         }
-  //       }
-  //     )
-  //   }
-  // }
+
+  getMailsUpdatedListner() {
+    return this.mailsUpdatedListener.asObservable();
+  }
 }

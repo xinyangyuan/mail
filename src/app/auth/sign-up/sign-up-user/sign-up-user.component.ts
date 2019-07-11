@@ -5,6 +5,7 @@ import { AuthService } from '../../auth.service';
 import { Address } from 'src/app/addresses/address.model';
 import { AddressService } from 'src/app/addresses/address.service';
 import { Subscription } from 'rxjs';
+import { flatMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sign-up-user',
@@ -28,19 +29,9 @@ export class SignUpUserComponent implements OnInit {
   ) {}
 
   // Init Method
-  async ngOnInit() {
+  ngOnInit() {
     // get the list of addresses
-    this.addressList = await this.addressService._getAddressList();
-    this.authServiceStatusSub = this.authService.getAuthStatusListener().subscribe(() => {
-      this.routerService.navigate(['/mails']);
-      this.myAddress = this.addressService.getMyAddress();
-    });
-
-    // this.addressServiceSub = this.addressService
-    //   .getAddressUpdateListener()
-    //   .subscribe((addressList: { addressList: Address[] }) => {
-    //     this.addressList = addressList.addressList;
-    //   });
+    this.addressService._getAddressList().subscribe(res => (this.addressList = res.addressList));
 
     // initialize the reactive form
     this.form = this.fb.group({
@@ -61,7 +52,14 @@ export class SignUpUserComponent implements OnInit {
 
   // Method: call signUp serivce
   onSignUp() {
-    this.authService.signUp(this.email.value, this.password.value, false);
+    // callback actions
+    const addReceiver = this.addressService._addReceiver(this.address.value);
+    const redirect = () => this.routerService.navigate(['mails']);
+
+    // sign-up service
+    this.authService._signUp(this.email.value, this.password.value, false).subscribe(() => {
+      addReceiver.subscribe(redirect);
+    });
   }
 
   // Getters
@@ -81,7 +79,7 @@ export class SignUpUserComponent implements OnInit {
     return this.form.get('password');
   }
 
-  get country() {
-    return this.form.get('country');
+  get address() {
+    return this.form.get('address');
   }
 }

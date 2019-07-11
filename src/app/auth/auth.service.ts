@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Subject } from 'rxjs';
+import { Subject, Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 
 import { AuthData } from './auth-data.model';
 import { CookieService } from 'ngx-cookie-service';
@@ -11,6 +12,9 @@ import { CookieService } from 'ngx-cookie-service';
 export class AuthService {
   // Attributes:
   private BACKEND_URL = 'http://localhost:3000/api/user/';
+
+  private isAuthenticated = false;
+  private isSender = false;
   private authStatusListener = new Subject<boolean>();
   private tokenExpireTimer: any;
 
@@ -18,7 +22,7 @@ export class AuthService {
   constructor(private http: HttpClient, private cookieService: CookieService) {}
 
   /*
-    Method: sign-up function
+     Method: sign-up function
   */
 
   signUp(email: string, password: string, isSender: boolean) {
@@ -33,9 +37,13 @@ export class AuthService {
       // handling the response from backend server
       .subscribe(
         res => {
-          // localStorage.setItem('token', res.token);
+          // update auth and sender flags
+          this.isAuthenticated = true;
+          this.isSender = res.isSender;
+          // trigger additional callback funcs
           this.autoSignOut(res.expiresDuration);
           this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
+          // push auth listener
           this.authStatusListener.next(true);
           console.log('You have been logged in!');
         },
@@ -43,6 +51,48 @@ export class AuthService {
           console.log('unable to sign-up new user');
         }
       );
+  }
+
+  /*
+     $ Method: sign-up function
+  */
+
+  _signUp(
+    email: string,
+    password: string,
+    isSender: boolean
+  ): Observable<{ token: string; expiresDuration: number; userId: string; isSender: boolean }> {
+    // pack all required post data
+    const authData: AuthData = { email, password, isSender };
+
+    return (
+      this.http
+        // send user sign-up request to backend server
+        .post<{ token: string; expiresDuration: number; userId: string; isSender: boolean }>(
+          this.BACKEND_URL + 'signup',
+          authData
+        )
+        // handling the response from backend server
+        .pipe(
+          tap(
+            res => {
+              // update auth and sender flags
+              this.isAuthenticated = true;
+              this.isSender = res.isSender;
+              // trigger additional callback funcs
+              this.autoSignOut(res.expiresDuration);
+              this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
+              // push auth listener
+              this.authStatusListener.next(true);
+              console.log('You have been logged in!');
+            },
+            err => {
+              console.log('unable to sign-up new user');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
   }
 
   /*
@@ -61,8 +111,13 @@ export class AuthService {
       // handling the response from backend server
       .subscribe(
         res => {
+          // update auth and sender flags
+          this.isAuthenticated = true;
+          this.isSender = res.isSender;
+          // trigger additional callback funcs
           this.autoSignOut(res.expiresDuration);
           this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
+          // push auth listener
           this.authStatusListener.next(true);
           console.log('You have been logged in!');
         },
@@ -70,6 +125,47 @@ export class AuthService {
           console.log('unable to sign in the user');
         }
       );
+  }
+
+  /*
+    $ Method: sign-in function
+  */
+
+  _signIn(
+    email: string,
+    password: string
+  ): Observable<{ token: string; expiresDuration: number; userId: string; isSender: boolean }> {
+    // pack all required post data
+    const authData: AuthData = { email, password };
+
+    return (
+      this.http
+        // send user log-in request to backend server
+        .post<{ token: string; expiresDuration: number; userId: string; isSender: boolean }>(
+          this.BACKEND_URL + 'signin',
+          authData
+        )
+        // handling the response from backend server
+        .pipe(
+          tap(
+            res => {
+              // update auth and sender flags
+              this.isAuthenticated = true;
+              this.isSender = res.isSender;
+              // trigger additional callback funcs
+              this.autoSignOut(res.expiresDuration);
+              this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
+              // push auth listener
+              this.authStatusListener.next(true);
+              console.log('You have been logged in!');
+            },
+            err => {
+              console.log('unable to sign in the user');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
   }
 
   /*
@@ -88,6 +184,8 @@ export class AuthService {
 
     if (expiresDuration > 0) {
       // it does not call backend to verify the token
+      this.isAuthenticated = true;
+      this.isSender = authInfo.isSender;
       this.autoSignOut(expiresDuration / 1000);
       this.authStatusListener.next(true);
       console.log('You have been logged in!');
@@ -187,5 +285,16 @@ export class AuthService {
     // convert isSender from boolean to string
     const accountType: string = isSender ? 'sender' : 'user';
     this.cookieService.set('accountType', accountType, expiresDuration / (3600 * 24));
+  }
+
+  /*
+    Getters
+  */
+  getIsAuthenticated() {
+    return this.isAuthenticated;
+  }
+
+  getIsSender() {
+    return this.isSender;
   }
 }

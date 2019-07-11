@@ -1,4 +1,4 @@
-<form *ngIf="addressList.length > 0" [formGroup]="form" (submit)="onSignUp()">
+<form [formGroup]="form" (submit)="onSignUp()">
   <!-- first name form control -->
   <mat-form-field appearance="outline">
     <mat-label>First Name</mat-label>
@@ -38,9 +38,9 @@
   <!-- address option control -->
   <mat-form-field appearance="outline" class="full-width">
     <mat-select formControlName="address" placeholder="Address">
-      <mat-option *ngFor="let address of addressList" [value]="address.city">{{
-        address.city
-      }}</mat-option>
+      <mat-option *ngFor="let address of addressList" [value]="address._id">
+        {{ address.city }}
+      </mat-option>
     </mat-select>
   </mat-form-field>
 

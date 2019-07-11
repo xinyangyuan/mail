@@ -16,16 +16,13 @@ export class MailListComponent implements OnInit, OnDestroy {
   constructor(private mailService: MailService) {}
 
   // Init Method
-  ngOnInit() {
-    // this.mails = this.mailService.getMails();
-    this.mailServiceSub = this.mailService.getMailsUpdatedListner().subscribe((mails: Mail[]) => {
-      this.mails = mails;
-    });
+  async ngOnInit() {
+    this.mails = await this.mailService._getMailList();
   }
 
   // Destroy Method
   ngOnDestroy() {
     // cancel service subscriptions on destory
-    this.mailServiceSub.unsubscribe();
+    // this.mailServiceSub.unsubscribe();
   }
 }
