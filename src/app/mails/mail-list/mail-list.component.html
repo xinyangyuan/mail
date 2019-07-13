@@ -1,9 +1,9 @@
 <div>
-  <mat-progress-bar *ngIf="!mails" mode="indeterminate"></mat-progress-bar>
+  <mat-progress-bar *ngIf="!mailList" mode="indeterminate"></mat-progress-bar>
   <mat-accordion>
     <mat-expansion-panel
       hideToggle="true"
-      *ngFor="let mail of mails"
+      *ngFor="let mail of mailList"
       [ngStyle]="mail.read_flag && { 'background-color': '#F4F4F7' }"
     >
       <mat-expansion-panel-header class="aligned-headers">
@@ -31,7 +31,7 @@
 <div>
   <mat-accordion>
     <mat-expansion-panel
-      *ngFor="let mail of mails"
+      *ngFor="let mail of mailList"
       [ngStyle]="mail.read_flag && { 'background-color': '#F4F4F7' }"
     >
       <mat-expansion-panel-header class="aligned-headers">

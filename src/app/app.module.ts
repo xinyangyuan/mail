@@ -16,6 +16,7 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { HeaderComponent } from './header/header.component';
 import { SignUpUserComponent } from './auth/sign-up/sign-up-user/sign-up-user.component';
 import { SignUpSenderComponent } from './auth/sign-up/sign-up-sender/sign-up-sender.component';
+import { NavigationListComponent } from './navigation-list/navigation-list.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { SignUpSenderComponent } from './auth/sign-up/sign-up-sender/sign-up-sen
     SignUpComponent,
     HeaderComponent,
     SignUpUserComponent,
-    SignUpSenderComponent
+    SignUpSenderComponent,
+    NavigationListComponent
   ],
   imports: [
     BrowserModule,

@@ -13,8 +13,6 @@ export class AuthService {
   // Attributes:
   private BACKEND_URL = 'http://localhost:3000/api/user/';
 
-  private isAuthenticated = false;
-  private isSender = false;
   private authStatusListener = new Subject<boolean>();
   private tokenExpireTimer: any;
 
@@ -37,9 +35,6 @@ export class AuthService {
       // handling the response from backend server
       .subscribe(
         res => {
-          // update auth and sender flags
-          this.isAuthenticated = true;
-          this.isSender = res.isSender;
           // trigger additional callback funcs
           this.autoSignOut(res.expiresDuration);
           this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
@@ -76,9 +71,6 @@ export class AuthService {
         .pipe(
           tap(
             res => {
-              // update auth and sender flags
-              this.isAuthenticated = true;
-              this.isSender = res.isSender;
               // trigger additional callback funcs
               this.autoSignOut(res.expiresDuration);
               this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
@@ -111,9 +103,6 @@ export class AuthService {
       // handling the response from backend server
       .subscribe(
         res => {
-          // update auth and sender flags
-          this.isAuthenticated = true;
-          this.isSender = res.isSender;
           // trigger additional callback funcs
           this.autoSignOut(res.expiresDuration);
           this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
@@ -149,9 +138,6 @@ export class AuthService {
         .pipe(
           tap(
             res => {
-              // update auth and sender flags
-              this.isAuthenticated = true;
-              this.isSender = res.isSender;
               // trigger additional callback funcs
               this.autoSignOut(res.expiresDuration);
               this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
@@ -184,8 +170,6 @@ export class AuthService {
 
     if (expiresDuration > 0) {
       // it does not call backend to verify the token
-      this.isAuthenticated = true;
-      this.isSender = authInfo.isSender;
       this.autoSignOut(expiresDuration / 1000);
       this.authStatusListener.next(true);
       console.log('You have been logged in!');
@@ -246,7 +230,7 @@ export class AuthService {
   }
 
   /*
-    Method: get the existed token [should I get from local storage?]
+    Method: get the auth status from cookie
   */
 
   getAuthStatus() {
@@ -257,6 +241,23 @@ export class AuthService {
     const authStatus: string = this.cookieService.get('authStatus');
 
     if (authStatus !== 'true') {
+      return false;
+    }
+    return true;
+  }
+
+  /*
+    Method: get the sender from cookie
+  */
+
+  getSenderStatus() {
+    if (!this.cookieService.check('accountType')) {
+      return false;
+    }
+    // get authentication status from cookie
+    const authStatus: string = this.cookieService.get('accountType');
+
+    if (authStatus !== 'sender') {
       return false;
     }
     return true;
@@ -285,16 +286,5 @@ export class AuthService {
     // convert isSender from boolean to string
     const accountType: string = isSender ? 'sender' : 'user';
     this.cookieService.set('accountType', accountType, expiresDuration / (3600 * 24));
-  }
-
-  /*
-    Getters
-  */
-  getIsAuthenticated() {
-    return this.isAuthenticated;
-  }
-
-  getIsSender() {
-    return this.isSender;
   }
 }

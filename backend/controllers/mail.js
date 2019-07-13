@@ -17,15 +17,16 @@ exports.getMailList = async (req, res, next) => {
   // query requirements
   const isSender = req.userData.isSender;
   const receiverId = req.query.receiverId;
+  const receiverExist = typeof receiverId !== 'undefined';
 
   // fake sender tries to fetch other user's mails
   // added for better 401 error handling
-  if (receiverId && !isSender) {
+  if (receiverExist && !isSender) {
     res.status(401).json({ message: 'Get you:) you are not authorized!' });
   }
 
-  // define search criteria
-  if (isSender && receiverId) {
+  // define search criteria (what query is null)
+  if (isSender && receiverExist) {
     // request is sent from a mail sender, and he wants to get his specific
     // recipient's mails
     searchCriteria = { receiverId: receiverId, senderId: req.userData.userId };
@@ -41,6 +42,7 @@ exports.getMailList = async (req, res, next) => {
   // async function to get mails from database
   const { error, data: fetchedMails } = await async_wrapper(Mail.find(searchCriteria));
   if (error || !fetchedMails || !fetchedMails.length) {
+    console.log(fetchedMails);
     return res.status(500).json({
       message: 'Failed to fetch mails!'
     });
@@ -128,10 +130,16 @@ exports.deleteMail = async (req, res, next) => {
 
 exports.createMail = async (req, res, next) => {
   // check the user belongs to the sender
+  if (typeof req.body.read_flag === 'undefined') {
+    return res.status(401).json({
+      message: 'Please specify the recipient!'
+    });
+  }
+
   const { error: err, data: senderReceiverValid } = await async_wrapper(
-    Address.find({
+    Address.findOne({
       senderId: req.userData.userId,
-      receiverId: req.query.receiverId
+      receiverIds: req.body.receiverId // ISSUE: if receiver is empty always true!!!!
     })
   );
 
@@ -147,7 +155,7 @@ exports.createMail = async (req, res, next) => {
     description: req.body.description,
     content: req.body.content,
     senderId: mongoose.Types.ObjectId(req.userData.userId),
-    receiverId: mongoose.Types.ObjectId(req.query.receiverId),
+    receiverId: mongoose.Types.ObjectId(req.body.receiverId),
     read_flag: false,
     star_flag: false
   });

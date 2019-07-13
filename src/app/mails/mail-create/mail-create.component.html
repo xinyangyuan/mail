@@ -2,7 +2,7 @@
   <form [formGroup]="form" (submit)="onAddMail()">
     <!-- recipient -->
     <mat-form-field appearance="outline">
-      <mat-select formControlName="receiverList" placeholder="Recipient">
+      <mat-select formControlName="recipient" placeholder="Recipient">
         <mat-option *ngFor="let reciever of receiverList" [value]="reciever">
           {{ reciever }}
         </mat-option>

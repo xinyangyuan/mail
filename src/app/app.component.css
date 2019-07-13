@@ -1,4 +1,22 @@
+/* ​app-header {
+  height: 62px;
+  z-index: 2;
+} */
+
+mat-sidenav {
+  width: 280px;
+  /* display: flex; */
+}
+
+mat-sidenav-container {
+  position: absolute;
+  top: 62px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+}
+
 main {
-  width: 80%;
+  width: 90%;
   margin: 1rem auto;
 }

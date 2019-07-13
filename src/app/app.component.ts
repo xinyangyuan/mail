@@ -13,7 +13,7 @@ export class AppComponent implements OnInit {
   constructor(private authService: AuthService, private addressService: AddressService) {}
 
   ngOnInit() {
-    // try to auto sign-in when app is initialized
-    this.authService.autoSignIn();
+    // auto sign-in when app is initialized
+    // this.authService.autoSignIn();
   }
 }

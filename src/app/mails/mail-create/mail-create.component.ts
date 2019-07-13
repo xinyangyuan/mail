@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { MailService } from '../mail.service';
 import { AddressService } from 'src/app/addresses/address.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-mail-create',
@@ -18,7 +19,8 @@ export class MailCreateComponent implements OnInit {
   constructor(
     private mailService: MailService,
     private fb: FormBuilder,
-    private addressService: AddressService
+    private addressService: AddressService,
+    private routerService: Router
   ) {}
 
   // Init Method
@@ -40,14 +42,21 @@ export class MailCreateComponent implements OnInit {
 
   // Call mail-service to create new mail
   onAddMail() {
-    // this.mailService.addMail(
-    //   this.title.value as string,
-    //   this.description.value as string,
-    //   this.content.value as string
-    // );
+    this.mailService
+      ._createMail(
+        this.recipient.value,
+        this.title.value,
+        this.description.value,
+        this.content.value
+      )
+      .subscribe(() => this.routerService.navigate(['mails']));
   }
 
   // Getters
+  get recipient() {
+    return this.form.get('recipient');
+  }
+
   get title() {
     return this.form.get('title');
   }

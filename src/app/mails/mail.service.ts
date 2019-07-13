@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 import { Mail } from './mail.model';
 import { HttpClient } from '@angular/common/http';
@@ -12,88 +12,145 @@ export class MailService {
   // Attributes
   private BACKEND_URL = 'http://localhost:3000/api/mail/';
 
-  private mailList: Mail[] = [];
-  private mailsUpdatedListener = new Subject<Mail[]>();
+  // Attributes: observerables
+  private mailsListObservable = new Subject<Mail[]>();
+  private mailCreateObservable = new Subject<Mail>();
+  private mailUpdateObservable = new Subject<Mail>();
+  private mailDeletionObservable = new Subject<boolean>();
 
   // Constructor
   constructor(private http: HttpClient) {}
 
   /*
-    Method: get a list of all addresses [GET]
+    Method: get a list of all user/sender's mails [GET]
   */
 
   getMailList() {
-    // try to fetch mail list from local attribute
-    if (this.mailList.length !== 0) {
-      console.log('getMailList is called');
-      return [...this.mailList] as Mail[];
-    }
-
-    // fetch address list from the RESTapi
+    // fetch mail list from the RESTapi
     this.http
       // send get request
       .get<{ message: string; mailList: Mail[] }>(this.BACKEND_URL)
       .subscribe(
         res => {
-          this.mailList = res.mailList;
-          // this.mailsUpdatedListener.next({ mailList: [...this.mailList] });
-          return [...this.mailList] as Mail[];
+          this.mailsListObservable.next(res.mailList); // Todo: unpack needed?
+          return res.mailList;
         },
         err => {
-          console.log('Failed to fetch address list!');
+          console.log('Failed to fetch mail list!');
         }
       );
   }
 
   /*
-    Async Method: get a list of all addresses [GET]
+    $ Method: get a list of all user/sender's mails [GET]
   */
 
-  async _getMailList() {
-    // try to fetch mail list from local attribute
-    if (this.mailList.length !== 0) {
-      return [...this.mailList] as Mail[];
-    }
+  _getMailList() {
+    // call getMailList method
+    this.getMailList();
 
-    // fetch address list from the RESTapi
-    try {
-      // async http request to fetch mail list
-      const data = await this.http
-        .get<{ message: string; mailList: Mail[] }>(this.BACKEND_URL)
-        .toPromise();
-      this.mailList = data.mailList;
+    // return mailListObservable
+    return this.mailsListObservable.asObservable();
+  }
 
-      return [...this.mailList];
-    } catch {
-      console.log('Failed to fetch address list!');
-    }
+  /*
+    Method: create new mail [POST]
+  */
+
+  createMail(receiverId: string, title: string, description: string, content: string) {
+    // pack all required post data
+    const mailData = { receiverId, title, description, content };
+
+    // post mailData to RESTapi
+    this.http
+      // send get request
+      .post<{ message: string; mail: Mail }>(this.BACKEND_URL + 'create', mailData)
+      .subscribe(
+        res => {
+          this.mailCreateObservable.next(res.mail);
+          return res.mail;
+        },
+        err => {
+          console.log('Failed to send the mail!');
+        }
+      );
+  }
+
+  /*
+    $ Method: create new mail [POST]
+  */
+
+  _createMail(receiverId: string, title: string, description: string, content: string) {
+    // call createMail method
+    this.createMail(receiverId, title, description, content);
+
+    // return mailCreateObservable
+    return this.mailCreateObservable.asObservable();
   }
 
   /*
     Method: update the mail's flag [PATCH]
   */
 
-  /*
-    Method: delete a mail  [PATCH]
-  */
+  updateMail(id: string, read_flag: boolean, star_flag: boolean) {
+    // pack all required post data
+    const mailData = { id, read_flag, star_flag };
+
+    // post updated mail data to RESTapi
+    this.http
+      // send get request
+      .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + id, mailData)
+      .subscribe(
+        res => {
+          this.mailUpdateObservable.next(res.mail);
+          return res.mail;
+        },
+        err => {
+          console.log('Failed to update mail flags!');
+        }
+      );
+  }
 
   /*
-    Method: create new mail [PATCH]
+    $ Method: update the mail's flag [PATCH]
   */
 
-  // updatePost(id: string, star_flag?: boolean, read_flag?: boolean) {
-  //   // To do: this is awfully verbose..
-  //   const update = { star_flag, read_flag };
+  _updateMail(id: string, read_flag: boolean, star_flag: boolean) {
+    // call updateMail method
+    this.updateMail(id, read_flag, star_flag);
 
-  //   this.http.patch(this.BACKEND_URL + id, update).subscribe();
-
-  // }
+    // return mailCreateObservable
+    return this.mailUpdateObservable.asObservable();
+  }
 
   /*
-    Method: subscribtion to the subject
+    Method: delete a mail  [DELETE]
+  */
+  deleteMail(id: string) {
+    // post updated mail data to RESTapi
+    this.http
+      // send get request
+      .delete<{ message: string; mail: Mail }>(this.BACKEND_URL + id)
+      .subscribe(
+        res => {
+          this.mailDeletionObservable.next(true);
+          return res.mail;
+        },
+        err => {
+          console.log('Failed to update mail flags!');
+        }
+      );
+  }
+
+  /*
+    $ Method: update the mail's flag [PATCH]
   */
 
-  getMailsUpdatedListner() {
-    return this.mailsUpdatedListener.asObservable();
+  _deleteMail(id: string) {
+    // call deleteMail method
+    this.deleteMail(id);
+
+    // return mailDeletetionObsevable
+    return this.mailDeletionObservable.asObservable();
   }
 }

@@ -1,11 +1,57 @@
-<mat-toolbar color="primary">
+<!-- <mat-toolbar color="primary">
   <span>
     <a routerLink="/mails"> Mail </a>
   </span>
   <span class="spacer"></span>
   <ul>
     <li>
-      <a mat-button routerLink="/create" routerLinkActive="mat-accent">New Mail</a>
+      <a mat-button *ngIf="isSender" routerLink="/create" routerLinkActive="mat-accent">New Mail</a>
     </li>
   </ul>
+</mat-toolbar> -->
+
+<mat-toolbar color="primary">
+  <mat-toolbar-row>
+    <!-- button: side navigation toggle -->
+    <button mat-icon-button (click)="onToggleSidenav()">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <!-- side logo: Mail -->
+    <span>
+      <a routerLink="/mails"> Mail </a>
+    </span>
+
+    <!-- header buttons -->
+    <div fxFlex fxLayout fxLayoutAlign="flex-end">
+      <ul fxLayout fxLayoutGap="20px">
+        <!-- button: settings -->
+        <li fxHide.xs>
+          <button mat-icon-button>
+            <mat-icon>settings</mat-icon>
+          </button>
+        </li>
+
+        <!-- button: helps -->
+        <li fxHide.xs>
+          <button mat-icon-button>
+            <mat-icon>help_outline</mat-icon>
+          </button>
+        </li>
+
+        <!-- button: log out -->
+        <li>
+          <button mat-icon-button>
+            <mat-icon>person_outline</mat-icon>
+          </button>
+          <mat-menu>
+            <button mat-menu-item>
+              <mat-icon>exit_to_app</mat-icon>
+              <span>Sign out</span>
+            </button>
+          </mat-menu>
+        </li>
+      </ul>
+    </div>
+  </mat-toolbar-row>
 </mat-toolbar>
