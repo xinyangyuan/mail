@@ -57,9 +57,22 @@ export class MailService {
     Method: create new mail [POST]
   */
 
-  createMail(receiverId: string, title: string, description: string, content: string) {
+  createMail(
+    receiverId: string,
+    title: string,
+    description: string,
+    content: string,
+    envelop: File,
+    contentPDF: File
+  ) {
     // pack all required post data
-    const mailData = { receiverId, title, description, content };
+    const mailData = new FormData();
+    mailData.append('receiverId', receiverId);
+    mailData.append('title', title);
+    mailData.append('description', description);
+    mailData.append('content', content);
+    mailData.append('envelop', envelop);
+    mailData.append('contentPDF', contentPDF);
 
     // post mailData to RESTapi
     this.http
@@ -80,9 +93,16 @@ export class MailService {
     $ Method: create new mail [POST]
   */
 
-  _createMail(receiverId: string, title: string, description: string, content: string) {
+  _createMail(
+    receiverId: string,
+    title: string,
+    description: string,
+    content: string,
+    envelop: File,
+    contentPDF: File
+  ) {
     // call createMail method
-    this.createMail(receiverId, title, description, content);
+    this.createMail(receiverId, title, description, content, envelop, contentPDF);
 
     // return mailCreateObservable
     return this.mailCreateObservable.asObservable();

@@ -3,3 +3,11 @@ textarea {
   width: 100%;
 }
 
+/* hide HTML file picker button */
+input[type='file'] {
+  visibility: hidden;
+}
+
+div {
+  margin: 1rem auto;
+}

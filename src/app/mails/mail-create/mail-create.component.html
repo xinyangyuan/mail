@@ -36,6 +36,22 @@
       </mat-error>
     </mat-form-field>
 
+    <!-- mail envelop image -->
+    <div>
+      <button mat-stroked-button type="button" (click)="imagePicker.click()">
+        Pick Envelop Image
+      </button>
+      <input type="file" #imagePicker (change)="onImagePicked($event)" />
+    </div>
+
+    <!-- mail content pdf -->
+    <div>
+      <button mat-stroked-button type="button" (click)="pdfPicker.click()">
+        Pick Mail PDF
+      </button>
+      <input type="file" #pdfPicker (change)="onPDFPicked($event)" />
+    </div>
+
     <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">
       Send
     </button>

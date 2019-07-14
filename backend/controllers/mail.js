@@ -129,8 +129,17 @@ exports.deleteMail = async (req, res, next) => {
 */
 
 exports.createMail = async (req, res, next) => {
+  // check is there error in file type outputed by multer
+  if (req.error) {
+    return res.status(401).json(req.error);
+  }
+
+  if (typeof req.files === 'undefined') {
+    return res.status.json('Please upload required files!');
+  }
+
   // check the user belongs to the sender
-  if (typeof req.body.read_flag === 'undefined') {
+  if (typeof req.body.receiverId === 'undefined') {
     return res.status(401).json({
       message: 'Please specify the recipient!'
     });
@@ -139,7 +148,9 @@ exports.createMail = async (req, res, next) => {
   const { error: err, data: senderReceiverValid } = await async_wrapper(
     Address.findOne({
       senderId: req.userData.userId,
-      receiverIds: req.body.receiverId // ISSUE: if receiver is empty always true!!!!
+      // ISSUE: if receiver is empty always true!!!!
+      // Although mail cannot be save due to required schema
+      receiverIds: req.body.receiverId
     })
   );
 

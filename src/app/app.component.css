@@ -5,7 +5,12 @@
 
 mat-sidenav {
   width: 280px;
+  background-color: rgb(255, 255, 255);
   /* display: flex; */
+}
+
+.mat-drawer-side {
+  border-right: 0px;
 }
 
 mat-sidenav-container {
