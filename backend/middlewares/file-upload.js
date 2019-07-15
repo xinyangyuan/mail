@@ -1,5 +1,8 @@
 const multer = require('multer');
 
+//  Disk Storage or Memory Storage; turn off if want to have copy in server
+const MEMORY_STORAGE = true;
+
 /*
   Setup disk storage
 */
@@ -56,6 +59,6 @@ const fileFilter = (req, file, cb) => {
 };
 
 module.exports = multer({
-  storage: storage,
+  storage: MEMORY_STORAGE ? multer.memoryStorage() : storage,
   fileFilter: fileFilter
 }).fields([{ name: 'contentPDF', maxCount: 1 }, { name: 'envelop', maxCount: 1 }]);

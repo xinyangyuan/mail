@@ -28,6 +28,18 @@ export class MailListComponent implements OnInit, OnDestroy {
       .subscribe(data => (this.mailList = data));
   }
 
+  // Method: view mail content pdf
+  onView(id: string) {
+    const newWindow = window.open('', '_blank');
+    newWindow.document.write('Loading pdf... <br> Please turn off AdBlock to see the pdf file.');
+
+    this.mailService.getContentPDF(id).subscribe(pdf => {
+      const file = new Blob([pdf], { type: 'application/pdf' });
+      const fileURL = window.URL.createObjectURL(file);
+      newWindow.location.href = fileURL;
+    });
+  }
+
   // Destroy Method
   ngOnDestroy() {
     // cancel service subscriptions on destory

@@ -2,7 +2,7 @@ const Address = require('../models/address');
 const mongoose = require('mongoose');
 
 /*
-  Go-lang style async helper function
+  Helper Function: Go-lang style async wrapper
 */
 
 const async_wrapper = promise =>

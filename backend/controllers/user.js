@@ -4,18 +4,20 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 /*
-  Go-lang style async helper function
+  Helper Function: Go-lang style async wrapper
 */
 
 const async_wrapper = promise =>
   promise.then(data => ({ data, error: null })).catch(error => ({ error, data: null }));
 
 /*
-  Sign-up function
+  Function: signup
 */
 
 exports.userSignUp = async (req, res) => {
-  // async funtion: generate hash
+  // async funtion: generate hash, hash(plainPassword, saltRounds)
+  // saltRounds really mean cost factor, pick the cost according to the server setup
+  // https://security.stackexchange.com/questions/3959/recommended-of-iterations-when-using-pkbdf2-sha256/3993#3993
   const hash = await bcrypt.hash(req.body.password, 10); // bcrpt error is NOT HANDELED
 
   // async function: create the user in database
@@ -47,7 +49,7 @@ exports.userSignUp = async (req, res) => {
 };
 
 /*
-  Sign-in function
+  Function: sign-in
 */
 
 exports.userSignIn = async (req, res) => {
@@ -61,7 +63,7 @@ exports.userSignIn = async (req, res) => {
   }
 
   // async func: check user credentials
-  const result = bcrypt.compare(req.body.password, fetchedUser.password); // bcrpt error is NOT HANDELED
+  const result = await bcrypt.compare(req.body.password, fetchedUser.password); // bcrpt error is NOT HANDELED
   if (!result) {
     return res.status(401).json({
       message: 'Wrong user password entered.'

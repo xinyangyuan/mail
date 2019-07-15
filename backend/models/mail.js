@@ -8,7 +8,9 @@ const postSchema = mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   read_flag: { type: Boolean, required: true },
-  star_flag: { type: Boolean, required: true }
+  star_flag: { type: Boolean, required: true },
+  envelopKey: { type: String, required: true },
+  contentPDFKey: { type: String, required: true }
 });
 
 // Export mongoose model

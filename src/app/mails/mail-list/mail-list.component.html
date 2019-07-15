@@ -2,6 +2,35 @@
   <mat-progress-bar *ngIf="!mailList" mode="indeterminate"></mat-progress-bar>
   <mat-accordion>
     <mat-expansion-panel
+      *ngFor="let mail of mailList"
+      [ngStyle]="mail.read_flag && { 'background-color': '#F4F4F7' }"
+    >
+      <mat-expansion-panel-header class="aligned-headers">
+        <mat-panel-title>
+          {{ mail.title }}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ mail.description }}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <p>
+        {{ mail.content }}
+      </p>
+
+      <mat-action-row>
+        <button mat-button color="warn" rout>FLAG</button>
+        <button mat-raised-button color="primary" (click)="onView(mail._id)" type="button">
+          VIEW
+        </button>
+      </mat-action-row>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>
+
+<div>
+  <mat-accordion>
+    <mat-expansion-panel
       hideToggle="true"
       *ngFor="let mail of mailList"
       [ngStyle]="mail.read_flag && { 'background-color': '#F4F4F7' }"
@@ -23,33 +52,6 @@
       <mat-action-row>
         <button mat-button color="warn">FLAG</button>
         <button mat-raised-button color="primary">VIEW</button>
-      </mat-action-row>
-    </mat-expansion-panel>
-  </mat-accordion>
-</div>
-
-<div>
-  <mat-accordion>
-    <mat-expansion-panel
-      *ngFor="let mail of mailList"
-      [ngStyle]="mail.read_flag && { 'background-color': '#F4F4F7' }"
-    >
-      <mat-expansion-panel-header class="aligned-headers">
-        <mat-panel-title>
-          {{ mail.title }}
-        </mat-panel-title>
-        <mat-panel-description>
-          {{ mail.description }}
-        </mat-panel-description>
-      </mat-expansion-panel-header>
-
-      <p>
-        {{ mail.content }}
-      </p>
-
-      <mat-action-row>
-        <button mat-flat-button color="warn">FLAG</button>
-        <button mat-flat-button color="primary">VIEW</button>
       </mat-action-row>
     </mat-expansion-panel>
   </mat-accordion>

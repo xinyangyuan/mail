@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 import { Mail } from './mail.model';
-import { HttpClient } from '@angular/common/http';
-// import { readFile } from 'fs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -172,5 +171,20 @@ export class MailService {
 
     // return mailDeletetionObsevable
     return this.mailDeletionObservable.asObservable();
+  }
+
+  /*
+    Method: delete a mail  [DELETE]
+  */
+  getContentPDF(id: string) {
+    // post updated mail data to RESTapi
+    let headers = new HttpHeaders();
+    headers = headers.set('Accept', 'application/pdf');
+
+    return (
+      this.http
+        // send get request
+        .get(this.BACKEND_URL + 'contentPDF/' + id, { headers: headers, responseType: 'blob' })
+    );
   }
 }

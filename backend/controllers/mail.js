@@ -1,19 +1,22 @@
-const Mail = require('../models/mail');
-const Address = require('../models/address');
 const mongoose = require('mongoose');
 
+const Mail = require('../models/mail');
+const Address = require('../models/address');
+const crypto = require('../utils/encrypt');
+const s3 = require('../utils/aws');
+
 /*
-  Async helper function
+  Helper Function: Go-lang style async wrapper
 */
 
 const async_wrapper = promise =>
   promise.then(data => ({ data, error: null })).catch(error => ({ error, data: null }));
 
 /*
-  Function: fetch mails belongs to the user or sent by the sender [GET]
+  Helper Function: generate search criteria based on user status and req querry
 */
 
-exports.getMailList = async (req, res, next) => {
+const getUserSearchCriteria = req => {
   // query requirements
   const isSender = req.userData.isSender;
   const receiverId = req.query.receiverId;
@@ -39,10 +42,22 @@ exports.getMailList = async (req, res, next) => {
     searchCriteria = { receiverId: req.userData.userId };
   }
 
+  return searchCriteria;
+};
+
+/*
+  Function: fetch mails belongs to the user or sent by the sender [GET]
+*/
+
+exports.getMailList = async (req, res, next) => {
+  // get search criteria
+  const searchCriteria = getUserSearchCriteria(req);
+
   // async function to get mails from database
-  const { error, data: fetchedMails } = await async_wrapper(Mail.find(searchCriteria));
+  const { error, data: fetchedMails } = await async_wrapper(
+    Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
+  );
   if (error || !fetchedMails || !fetchedMails.length) {
-    console.log(fetchedMails);
     return res.status(500).json({
       message: 'Failed to fetch mails!'
     });
@@ -61,12 +76,8 @@ exports.getMailList = async (req, res, next) => {
 
 exports.updateMail = async (req, res, next) => {
   // define search criteria :: make sure the request from mail's sender/user
-  const isSender = req.userData.isSender;
-  if (isSender) {
-    searchCriteria = { _id: req.params.id, senderId: req.userData.userId };
-  } else {
-    searchCriteria = { _id: req.params.id, receiverId: req.userData.userId };
-  }
+  const searchCriteria = getUserSearchCriteria(req);
+  searchCriteria['_id'] = req.params.id;
 
   // req.params retrieve route parameters in the path portion of URL
   // To do: this is awfully verbose..
@@ -80,7 +91,10 @@ exports.updateMail = async (req, res, next) => {
 
   // async function to update one mail's flag and get the updated doc
   const { error, data: fetchedMail } = await async_wrapper(
-    Mail.findByIdAndUpdate(searchCriteria, update, { new: true })
+    Mail.findByIdAndUpdate(searchCriteria, update, {
+      fields: { envelopKey: 0, contentPDFKey: 0 },
+      new: true
+    })
   );
 
   if (error || !fetchedMail) {
@@ -101,15 +115,13 @@ exports.updateMail = async (req, res, next) => {
 */
 exports.deleteMail = async (req, res, next) => {
   // define search criteria
-  const isSender = req.userData.isSender;
-  if (isSender) {
-    searchCriteria = { _id: req.params.id, senderId: req.userData.userId };
-  } else {
-    searchCriteria = { _id: req.params.id, receiverId: req.userData.userId };
-  }
+  const searchCriteria = getUserSearchCriteria(req);
+  searchCriteria['_id'] = req.params.id;
 
   // async function to update one mail's flag
-  const { error, data: fetchedMail } = await async_wrapper(Mail.deleteOne(searchCriteria));
+  const { error, data: fetchedMail } = await async_wrapper(
+    Mail.deleteOne(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
+  );
 
   if (error || !fetchedMail) {
     return res.status(500).json({
@@ -125,6 +137,94 @@ exports.deleteMail = async (req, res, next) => {
 };
 
 /*
+  Function: get envelop image of one mail [GET]
+*/
+
+exports.getEnvelop = async (req, res, next) => {
+  // get search criteria
+  const searchCriteria = getUserSearchCriteria(req);
+  searchCriteria['_id'] = req.params.id;
+
+  // async function to get the requested mail from database
+  const { err, data: fetchedMail } = await async_wrapper(Mail.findOne(searchCriteria));
+  if (err || !fetchedMail) {
+    return res.status(500).json({
+      message: 'Failed to find the mail!'
+    });
+  }
+
+  // define search params
+  const key = crypto.decrypt(fetchedMail.envelopKey);
+  const params = {
+    Bucket: process.env.AWS_BUCKET,
+    Key: key
+  };
+  const ext = key.split('.').slice(-1)[0];
+
+  // find file from S3 and pipe it to response
+  try {
+    // set headers
+    res.setHeader('Content-Type', 'image/' + ext);
+
+    // get file from S3
+    s3.getObject(params)
+      .createReadStream()
+      .pipe(res);
+  } catch {
+    res.status(500).json({
+      message: 'Failed to get mail envelop image!'
+    });
+  }
+};
+
+/*
+  Function: get one mail's content PDF [GET]
+*/
+exports.getContentPDF = async (req, res, next) => {
+  // get search criteria
+  const searchCriteria = getUserSearchCriteria(req);
+  searchCriteria['_id'] = req.params.id;
+
+  // async function to get the requested mail from database
+  const { err, data: fetchedMail } = await async_wrapper(Mail.findOne(searchCriteria));
+  if (err || !fetchedMail) {
+    return res.status(500).json({
+      message: 'Failed to find the mail!'
+    });
+  }
+
+  // define search params
+  const key = crypto.decrypt(fetchedMail.contentPDFKey);
+
+  const params = {
+    Bucket: process.env.AWS_BUCKET,
+    Key: key
+  };
+
+  // find file from S3 and pipe it to response
+  try {
+    // set headers
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="' + 'Mail Content' + '"');
+
+    //get file from S3
+    s3.getObject(params)
+      .createReadStream()
+      .pipe(res);
+
+    // let stream = s3.getObject(params).createReadStream();
+    // stream.on('end', () => {
+    //   console.log('already done');
+    // });
+    // stream.pipe(res);
+  } catch {
+    res.status(500).json({
+      message: 'Failed to get mail content pdf!'
+    });
+  }
+};
+
+/*
   Function: send a new mail [POST]
 */
 
@@ -134,11 +234,7 @@ exports.createMail = async (req, res, next) => {
     return res.status(401).json(req.error);
   }
 
-  if (typeof req.files === 'undefined') {
-    return res.status.json('Please upload required files!');
-  }
-
-  // check the user belongs to the sender
+  // check whether the recipient belongs to the sender TODO
   if (typeof req.body.receiverId === 'undefined') {
     return res.status(401).json({
       message: 'Please specify the recipient!'
@@ -160,6 +256,10 @@ exports.createMail = async (req, res, next) => {
     });
   }
 
+  // encrypt s3 keys beofre save to database
+  const envelopKey = crypto.encrypt(req.fileData.envelopKey);
+  const contentPDFKey = crypto.encrypt(req.fileData.contentPDFKey);
+
   // prepare the mail contents
   const mail = new Mail({
     title: req.body.title,
@@ -168,7 +268,9 @@ exports.createMail = async (req, res, next) => {
     senderId: mongoose.Types.ObjectId(req.userData.userId),
     receiverId: mongoose.Types.ObjectId(req.body.receiverId),
     read_flag: false,
-    star_flag: false
+    star_flag: false,
+    envelopKey: envelopKey,
+    contentPDFKey: contentPDFKey
   });
 
   // async function to save mail into database
@@ -181,6 +283,9 @@ exports.createMail = async (req, res, next) => {
   }
 
   // send POST request's result to frontend
+  delete fetchedMail.envelopKey;
+  delete fetchedMail.contentPDFKey;
+
   res.status(201).json({
     message: 'Mail sent successfully.',
     mail: fetchedMail
