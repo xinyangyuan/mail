@@ -1,19 +1,12 @@
-import { Component, OnInit } from '@angular/core';
-import { AuthService } from './auth/auth.service';
-import { AddressService } from './addresses/address.service';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'mail';
 
-  constructor(private authService: AuthService, private addressService: AddressService) {}
-
-  ngOnInit() {
-    // auto sign-in when app is initialized
-    // this.authService.autoSignIn();
-  }
+  constructor() {}
 }

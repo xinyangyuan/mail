@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { Subject, Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 import { Mail } from './mail.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -44,12 +45,33 @@ export class MailService {
     $ Method: get a list of all user/sender's mails [GET]
   */
 
-  _getMailList() {
-    // call getMailList method
-    this.getMailList();
+  _getMailList(
+    mailsPerPage: number,
+    currentPage: number
+  ): Observable<{ message: string; mailList: Mail[]; mailCount: number }> {
+    // set query parameters
+    const queryParams = `?mailsPerPage=${mailsPerPage}&currentPage=${currentPage}`;
 
-    // return mailListObservable
-    return this.mailsListObservable.asObservable();
+    // fetch mail list from the RESTapi
+    return (
+      this.http
+        // send get request
+        .get<{ message: string; mailList: Mail[]; mailCount: number }>(
+          this.BACKEND_URL + queryParams
+        )
+        .pipe(
+          tap(
+            res => {
+              this.mailsListObservable.next(res.mailList);
+              console.log(res.message);
+            },
+            err => {
+              console.log('unable to sign-up new user');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
   }
 
   /*
@@ -76,7 +98,7 @@ export class MailService {
     // post mailData to RESTapi
     this.http
       // send get request
-      .post<{ message: string; mail: Mail }>(this.BACKEND_URL + 'create', mailData)
+      .post<{ message: string; mail: Mail }>(this.BACKEND_URL, mailData)
       .subscribe(
         res => {
           this.mailCreateObservable.next(res.mail);
@@ -99,12 +121,34 @@ export class MailService {
     content: string,
     envelop: File,
     contentPDF: File
-  ) {
-    // call createMail method
-    this.createMail(receiverId, title, description, content, envelop, contentPDF);
+  ): Observable<{ message: string; mail: Mail }> {
+    // pack all required post data
+    const mailData = new FormData();
+    mailData.append('receiverId', receiverId);
+    mailData.append('title', title);
+    mailData.append('description', description);
+    mailData.append('content', content);
+    mailData.append('envelop', envelop);
+    mailData.append('contentPDF', contentPDF);
 
-    // return mailCreateObservable
-    return this.mailCreateObservable.asObservable();
+    // call createMail method
+    return (
+      this.http
+        // send get request
+        .post<{ message: string; mail: Mail }>(this.BACKEND_URL, mailData)
+        .pipe(
+          tap(
+            res => {
+              this.mailCreateObservable.next(res.mail);
+              console.log(res.message);
+            },
+            err => {
+              console.log('Failed to send the mail!');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
   }
 
   /*
@@ -134,12 +178,30 @@ export class MailService {
     $ Method: update the mail's flag [PATCH]
   */
 
-  _updateMail(id: string, read_flag: boolean, star_flag: boolean) {
-    // call updateMail method
-    this.updateMail(id, read_flag, star_flag);
+  _updateMail(
+    id: string,
+    read_flag: boolean,
+    star_flag: boolean
+  ): Observable<{ message: string; mail: Mail }> {
+    // pack all required post data
+    const mailData = { id, read_flag, star_flag };
 
-    // return mailCreateObservable
-    return this.mailUpdateObservable.asObservable();
+    // post updated mail data to RESTapi
+    return (
+      this.http
+        // send patch request
+        .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + id, mailData)
+        .pipe(
+          tap(
+            res => {
+              this.mailUpdateObservable.next(res.mail);
+            },
+            err => {
+              console.log('Failed to update mail flags!');
+            }
+          )
+        )
+    );
   }
 
   /*
@@ -148,7 +210,7 @@ export class MailService {
   deleteMail(id: string) {
     // post updated mail data to RESTapi
     this.http
-      // send get request
+      // send delete request
       .delete<{ message: string; mail: Mail }>(this.BACKEND_URL + id)
       .subscribe(
         res => {
@@ -162,29 +224,54 @@ export class MailService {
   }
 
   /*
-    $ Method: update the mail's flag [PATCH]
+    $ Method: delete a mail  [DELETE]
   */
 
-  _deleteMail(id: string) {
-    // call deleteMail method
-    this.deleteMail(id);
-
-    // return mailDeletetionObsevable
-    return this.mailDeletionObservable.asObservable();
+  _deleteMail(id: string): Observable<{ message: string; mail: Mail }> {
+    // post updated mail data to RESTapi
+    return (
+      this.http
+        // send delete request
+        .delete<{ message: string; mail: Mail }>(this.BACKEND_URL + id)
+        .pipe(
+          tap(
+            res => {
+              this.mailDeletionObservable.next(true);
+            },
+            err => {
+              console.log('Failed to update mail flags!');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
   }
 
   /*
-    Method: delete a mail  [DELETE]
+    Method: get mail conten pdf  [GET]
   */
-  getContentPDF(id: string) {
-    // post updated mail data to RESTapi
-    let headers = new HttpHeaders();
-    headers = headers.set('Accept', 'application/pdf');
+  getEnvelop(id: string) {
+    // let headers = new HttpHeaders(); header already set by RESTapi
+    // headers = headers.set('Accept', 'application/pdf');
 
     return (
       this.http
         // send get request
-        .get(this.BACKEND_URL + 'contentPDF/' + id, { headers: headers, responseType: 'blob' })
+        .get(this.BACKEND_URL + 'envelop/' + id, { responseType: 'blob' })
+    );
+  }
+
+  /*
+    Method: get mail content pdf  [GET]
+  */
+  getContentPDF(id: string) {
+    // let headers = new HttpHeaders(); header already set by RESTapi
+    // headers = headers.set('Accept', 'application/pdf');
+
+    return (
+      this.http
+        // send get request
+        .get(this.BACKEND_URL + 'contentPDF/' + id, { responseType: 'blob' })
     );
   }
 }

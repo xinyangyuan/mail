@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 
 import { MailService } from '../mail.service';
 import { Mail } from '../mail.model';
+import { PageEvent } from '@angular/material';
 
 @Component({
   selector: 'app-mail-list',
@@ -12,31 +14,65 @@ import { Mail } from '../mail.model';
 export class MailListComponent implements OnInit, OnDestroy {
   // Attributes
   public mailList: Mail[];
+  public imageURL: any;
+  // pagination
+  public mailCount = 0;
+  public mailsPerPage = 15;
+  public currentPage = 1;
+  public pageSizeOptions = [15, 20, 25];
+  // progress bar
+  public isloading = true;
 
-  // Attributes: observers
-  private mailsListObserver: Subscription;
-  private mailCreateObserver: Subscription;
-  private mailUpdateObserver: Subscription;
-  private mailDeletionObserver: Subscription;
-
-  constructor(private mailService: MailService) {}
+  constructor(private mailService: MailService, private sanitizer: DomSanitizer) {}
 
   // Init Method
   async ngOnInit() {
-    this.mailsListObserver = this.mailService
-      ._getMailList()
-      .subscribe(data => (this.mailList = data));
+    this.mailService._getMailList(this.mailsPerPage, this.currentPage).subscribe(data => {
+      this.mailList = data.mailList;
+      this.mailCount = data.mailCount;
+      this.isloading = false;
+    });
+  }
+
+  // Method: view mail envelop image
+  loadImage(id: string) {
+    this.imageURL = null;
+
+    // get mail envelop image pdf
+    this.mailService.getEnvelop(id).subscribe(file => {
+      const envelopImage = new Blob([file], { type: file.type });
+      const imageURL = window.URL.createObjectURL(envelopImage);
+      this.imageURL = this.sanitizer.bypassSecurityTrustUrl(imageURL);
+    });
   }
 
   // Method: view mail content pdf
   onView(id: string) {
-    const newWindow = window.open('', '_blank');
-    newWindow.document.write('Loading pdf... <br> Please turn off AdBlock to see the pdf file.');
+    // open new window and display loading message
+    const pdfWindow = window.open('', '_blank');
+    pdfWindow.document.write('Loading pdf... <br> Please turn off AdBlock to see the pdf file.');
 
-    this.mailService.getContentPDF(id).subscribe(pdf => {
-      const file = new Blob([pdf], { type: 'application/pdf' });
-      const fileURL = window.URL.createObjectURL(file);
-      newWindow.location.href = fileURL;
+    // get content pdf
+    this.mailService.getContentPDF(id).subscribe(file => {
+      const pdf = new Blob([file], { type: file.type });
+      const pdfURL = window.URL.createObjectURL(pdf);
+      pdfWindow.location.href = pdfURL;
+    });
+  }
+
+  // Method: call change page in paginator
+  onChangedPage(pageData: PageEvent) {
+    // show progress bar
+    this.isloading = true;
+    this.mailList = null;
+
+    // change page status
+    this.currentPage = pageData.pageIndex + 1;
+    this.mailsPerPage = pageData.pageSize;
+
+    this.mailService._getMailList(this.mailsPerPage, this.currentPage).subscribe(data => {
+      this.mailList = data.mailList;
+      this.isloading = false;
     });
   }
 

@@ -3,7 +3,6 @@ module.exports = (req, res, next) => {
 
   // verify account type is sender
   if (req.userData.isSender) {
-    console.log(req.userData.isSender);
     next();
   } else {
     // senderVerify failed

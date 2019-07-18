@@ -1,4 +1,13 @@
 /* align header text */
+mat-paginator {
+  background-color: rgba(245, 245, 245, 1);
+}
+
+main {
+  width: 90%;
+  margin: 1rem auto;
+}
+
 /* restrict title moving upwards when adding button to panel title */
 .aligned-headers .mat-expansion-panel-header-title,
 .aligned-headers .mat-expansion-panel-header-description {
@@ -7,13 +16,13 @@
   align-items: center;
 }
 
-div {
-  margin-bottom: 1rem;
+mat-expansion-panel {
+  border-bottom: 1px solid rgb(240, 242, 244);
 }
 
-mat-expansion-panel {
-  border: 1px solid rgb(240, 242, 244);
-}
+/* mat-action-row {
+  border-top: none;
+} */
 
 mat-expansion-panel:hover {
   position: relative;
@@ -21,4 +30,17 @@ mat-expansion-panel:hover {
   -moz-box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75);
   box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75);
   z-index: 1;
+}
+
+.post-image {
+  width: 100%;
+}
+
+.post-image img {
+  width: 100%;
+  /* box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5); */
+}
+
+.example-viewport {
+  height: 800vh;
 }

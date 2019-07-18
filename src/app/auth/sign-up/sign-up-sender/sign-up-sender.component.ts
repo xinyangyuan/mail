@@ -60,9 +60,17 @@ export class SignUpSenderComponent implements OnInit {
     const redirect = () => this.routerService.navigate(['mails']);
 
     // sign-up service
-    this.authService._signUp(this.email.value, this.password.value, true).subscribe(() => {
-      addReceiver.subscribe(redirect);
-    });
+    this.authService
+      ._signUp(
+        this.firstName.value,
+        this.lastName.value,
+        this.email.value,
+        this.password.value,
+        true
+      )
+      .subscribe(() => {
+        addReceiver.subscribe(redirect);
+      });
   }
 
   // Getters

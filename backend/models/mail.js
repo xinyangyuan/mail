@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+const timestampPlugin = require('./plugins/timestamp');
 
 // Schema
-const postSchema = mongoose.Schema({
+const mailSchema = mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   content: { type: String, required: true },
@@ -13,5 +14,8 @@ const postSchema = mongoose.Schema({
   contentPDFKey: { type: String, required: true }
 });
 
+// use timestamp plugin/middleware
+mailSchema.plugin(timestampPlugin);
+
 // Export mongoose model
-module.exports = mongoose.model('Mail', postSchema, 'mails');
+module.exports = mongoose.model('Mail', mailSchema, 'mails');

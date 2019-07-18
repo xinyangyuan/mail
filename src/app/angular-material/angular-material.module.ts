@@ -13,7 +13,9 @@ import {
   MatMenuModule,
   MatSidenavModule,
   MatDividerModule,
-  MatListModule
+  MatListModule,
+  MatPaginatorModule,
+  MatGridListModule
 } from '@angular/material';
 
 @NgModule({
@@ -32,7 +34,9 @@ import {
     MatSidenavModule,
     MatDividerModule,
     MatListModule,
-    MatMenuModule
+    MatMenuModule,
+    MatPaginatorModule,
+    MatGridListModule
   ]
 })
 export class AngularMaterialModule {}

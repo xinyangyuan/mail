@@ -53,12 +53,14 @@ export class AuthService {
   */
 
   _signUp(
+    firstName: string,
+    lastName: string,
     email: string,
     password: string,
     isSender: boolean
   ): Observable<{ token: string; expiresDuration: number; userId: string; isSender: boolean }> {
     // pack all required post data
-    const authData: AuthData = { email, password, isSender };
+    const authData = { firstName, lastName, email, password, isSender };
 
     return (
       this.http

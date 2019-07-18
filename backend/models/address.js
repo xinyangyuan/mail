@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const timestampPlugin = require('./plugins/timestamp');
 
 // Schema
 const addressSchema = mongoose.Schema({
@@ -10,6 +11,9 @@ const addressSchema = mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   receiverIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
+
+// use timestamp plugin/middleware
+addressSchema.plugin(timestampPlugin);
 
 // Export mongoose model
 module.exports = mongoose.model('Address', addressSchema, 'addresses');

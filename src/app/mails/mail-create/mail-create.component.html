@@ -3,8 +3,8 @@
     <!-- recipient -->
     <mat-form-field appearance="outline">
       <mat-select formControlName="recipient" placeholder="Recipient">
-        <mat-option *ngFor="let reciever of receiverList" [value]="reciever">
-          {{ reciever }}
+        <mat-option *ngFor="let reciever of receiverList" [value]="reciever._id">
+          {{ reciever.name.first + ' ' + reciever.name.last }}
         </mat-option>
       </mat-select>
     </mat-form-field>

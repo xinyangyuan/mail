@@ -1,7 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const User = require('../models/user');
+const Mail = require('../models/mail'); // used to send gretting mail to new user
+const crypto = require('../utils/encrypt');
 
 /*
   Helper Function: Go-lang style async wrapper
@@ -9,6 +12,27 @@ const User = require('../models/user');
 
 const async_wrapper = promise =>
   promise.then(data => ({ data, error: null })).catch(error => ({ error, data: null }));
+
+/*
+  Helper Function: send greeting mail to newly signed-up user
+*/
+const sendGreeting = async fetchedUser => {
+  // prepare the mail contents
+  const mail = new Mail({
+    title: 'Hello: ' + fetchedUser.fullName + '!',
+    description: 'Your first virtual mail is here!',
+    content: 'Hope you have a great time using it!',
+    senderId: mongoose.Types.ObjectId(fetchedUser._id),
+    receiverId: mongoose.Types.ObjectId(fetchedUser._id),
+    read_flag: false,
+    star_flag: false,
+    envelopKey: crypto.encrypt('000'),
+    contentPDFKey: crypto.encrypt('111')
+  });
+
+  // async function to save mail into database
+  await mail.save();
+};
 
 /*
   Function: signup
@@ -21,13 +45,21 @@ exports.userSignUp = async (req, res) => {
   const hash = await bcrypt.hash(req.body.password, 10); // bcrpt error is NOT HANDELED
 
   // async function: create the user in database
-  const user = new User({ email: req.body.email, password: hash, isSender: req.body.isSender });
+  const user = new User({
+    name: { first: req.body.firstName, last: req.body.lastName },
+    email: req.body.email,
+    password: hash,
+    isSender: req.body.isSender
+  });
   const { error, data: fetchedUser } = await async_wrapper(user.save());
 
   if (error || !fetchedUser) {
     // 500 or 401
     return res.status(401).json({ message: 'Your email is already registered!' });
   }
+
+  // send a gretting email to the user
+  await sendGreeting(fetchedUser);
 
   // get account type
   const accountType = fetchedUser.isSender ? 'sender' : 'user';

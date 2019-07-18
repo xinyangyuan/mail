@@ -30,8 +30,8 @@ export class SignInComponent implements OnInit {
   }
 
   // Method: call signUp serivce
-  onSignIn() {
-    this.authService.signIn(this.email.value, this.password.value);
+  async onSignIn() {
+    await this.authService._signIn(this.email.value, this.password.value).toPromise();
     this.routerService.navigate(['/mails']);
   }
 

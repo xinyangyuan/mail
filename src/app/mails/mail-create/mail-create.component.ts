@@ -13,7 +13,7 @@ import { Router } from '@angular/router';
 export class MailCreateComponent implements OnInit {
   // Attributes
   public form: FormGroup;
-  public receiverList: string[];
+  public receiverList: [{ _id: string; name: { first: string; last: string } }];
 
   // Constructor Method
   constructor(
@@ -27,7 +27,6 @@ export class MailCreateComponent implements OnInit {
   ngOnInit() {
     // get the list of receivers
     this.addressService._getMyAddressInfo().subscribe(res => {
-      console.log(res.addressInfo);
       this.receiverList = res.addressInfo.receiverIds;
     });
 

@@ -50,14 +50,25 @@ const getUserSearchCriteria = req => {
 */
 
 exports.getMailList = async (req, res, next) => {
-  // get search criteria
+  // get search criteria and prepare db request template
   const searchCriteria = getUserSearchCriteria(req);
+  const mailQuery = Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 });
 
-  // async function to get mails from database
-  const { error, data: fetchedMails } = await async_wrapper(
+  // async query: get total mail count from database
+  const { error: err, data: mailCount } = await async_wrapper(mailQuery.count());
+
+  // get pagination requirements from querry
+  const mailPerPage = +req.query.mailsPerPage;
+  const currentPage = +req.query.currentPage;
+
+  // async query:get mails from database TODO
+  const { error: error, data: fetchedMails } = await async_wrapper(
     Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
+      .skip(mailPerPage && currentPage ? mailPerPage * (currentPage - 1) : 0)
+      .limit(mailPerPage && currentPage ? mailPerPage : mailCount)
   );
-  if (error || !fetchedMails || !fetchedMails.length) {
+
+  if (err || error || !fetchedMails || !fetchedMails.length) {
     return res.status(500).json({
       message: 'Failed to fetch mails!'
     });
@@ -66,7 +77,8 @@ exports.getMailList = async (req, res, next) => {
   // send fetched mails to frontend
   res.status(200).json({
     message: 'Mails fetched successfully.',
-    mailList: fetchedMails
+    mailList: fetchedMails,
+    mailCount: mailCount
   });
 };
 
@@ -153,6 +165,13 @@ exports.getEnvelop = async (req, res, next) => {
     });
   }
 
+  // eject on empty key  TODELET!
+  if (typeof fetchedMail.envelopKey === 'undefined') {
+    return res.status(500).json({
+      message: 'Failed to the mail envelop!'
+    });
+  }
+
   // define search params
   const key = crypto.decrypt(fetchedMail.envelopKey);
   const params = {
@@ -168,7 +187,7 @@ exports.getEnvelop = async (req, res, next) => {
 
     // get file from S3
     s3.getObject(params)
-      .createReadStream()
+      .createReadStream() // this is a readable stream
       .pipe(res);
   } catch {
     res.status(500).json({
@@ -193,6 +212,13 @@ exports.getContentPDF = async (req, res, next) => {
     });
   }
 
+  // eject on empty key  TODELET!
+  if (typeof fetchedMail.contentPDFKey === 'undefined') {
+    return res.status(500).json({
+      message: 'Failed to the mail pdf!'
+    });
+  }
+
   // define search params
   const key = crypto.decrypt(fetchedMail.contentPDFKey);
 
@@ -209,7 +235,7 @@ exports.getContentPDF = async (req, res, next) => {
 
     //get file from S3
     s3.getObject(params)
-      .createReadStream()
+      .createReadStream() // this is a readable stream
       .pipe(res);
 
     // let stream = s3.getObject(params).createReadStream();
