@@ -58,16 +58,43 @@ export class AuthService {
     email: string,
     password: string,
     isSender: boolean
-  ): Observable<{ token: string; expiresDuration: number; userId: string; isSender: boolean }> {
+  ): Observable<{ message: string }> {
     // pack all required post data
     const authData = { firstName, lastName, email, password, isSender };
 
     return (
       this.http
         // send user sign-up request to backend server
+        .post<{ message: string }>(this.BACKEND_URL + 'signup', authData)
+        // handling the response from backend server
+        .pipe(
+          tap(
+            _ => {
+              console.log('You have been logged in!');
+            },
+            _ => {
+              console.log('unable to sign-up new user');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
+  }
+
+  /*
+    $ Method: sign-in function
+  */
+
+  _sendConfirmation(
+    password: string,
+    emailToken: string
+  ): Observable<{ token: string; expiresDuration: number; userId: string; isSender: boolean }> {
+    return (
+      this.http
+        // send user log-in request to backend server
         .post<{ token: string; expiresDuration: number; userId: string; isSender: boolean }>(
-          this.BACKEND_URL + 'signup',
-          authData
+          this.BACKEND_URL + 'confirmation/' + emailToken,
+          { password }
         )
         // handling the response from backend server
         .pipe(
@@ -81,7 +108,8 @@ export class AuthService {
               console.log('You have been logged in!');
             },
             err => {
-              console.log('unable to sign-up new user');
+              console.log('get error response from server');
+              console.log('unable to sign in the user');
             }
           ),
           catchError(error => throwError(error))
@@ -143,6 +171,9 @@ export class AuthService {
               // trigger additional callback funcs
               this.autoSignOut(res.expiresDuration);
               this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
+              console.log(res.token);
+              console.log(res.isSender);
+              console.log(res.expiresDuration);
               // push auth listener
               this.authStatusListener.next(true);
               console.log('You have been logged in!');

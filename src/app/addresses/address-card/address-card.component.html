@@ -1,0 +1,18 @@
+<mat-card class="address-card">
+  <img
+    mat-card-image
+    src="https://material-components.github.io/material-components-web-catalog/static/media/photos/3x2/2.jpg"
+    alt="Photo of a Shiba Inu"
+  />
+  <mat-card-content>
+    <p mat-body-1 class="address-card-text">
+      {{ address.address }} <br />
+      {{ address.address2 }} <br />
+      {{ address.city }} <br />
+      {{ address.country + ' ' + address.zipCode }}
+    </p>
+  </mat-card-content>
+  <mat-card-actions class="address-card-button">
+    <button mat-button color="primary" (click)="onSelect()">SELECT</button>
+  </mat-card-actions>
+</mat-card>

@@ -55,7 +55,7 @@ exports.getMailList = async (req, res, next) => {
   const mailQuery = Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 });
 
   // async query: get total mail count from database
-  const { error: err, data: mailCount } = await async_wrapper(mailQuery.count());
+  const { error: err, data: mailCount } = await async_wrapper(mailQuery.countDocuments());
 
   // get pagination requirements from querry
   const mailPerPage = +req.query.mailsPerPage;

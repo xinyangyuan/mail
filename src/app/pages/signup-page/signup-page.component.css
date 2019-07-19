@@ -1,0 +1,53 @@
+.background {
+  background: url('../../../assets/img/lock_bg.jpg') no-repeat center center;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.container {
+  height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  position: relative;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  -webkit-animation-name: card;
+  -moz-animation-name: card;
+  -o-animation-name: card;
+  animation-name: card;
+  -webkit-animation-duration: 600ms;
+  -moz-animation-duration: 600ms;
+  -o-animation-duration: 600ms;
+  animation-duration: 600ms;
+  -webkit-animation-fill-mode: forwards;
+  -moz-animation-fill-mode: forwards;
+  -o-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes card {
+  from {
+    top: -40px;
+  }
+  to {
+    top: 0;
+  }
+}
+
+@keyframes card {
+  from {
+    top: -40px;
+  }
+  to {
+    top: 0;
+  }
+}

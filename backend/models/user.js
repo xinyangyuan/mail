@@ -10,7 +10,8 @@ const userSchema = mongoose.Schema({
   },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  isSender: { type: Boolean, required: true }
+  isSender: { type: Boolean, required: true },
+  isConfirmed: { type: Boolean, required: true }
 });
 
 // virtual attribute

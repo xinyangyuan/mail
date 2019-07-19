@@ -5,30 +5,43 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { AngularMaterialModule } from './angular-material/angular-material.module';
-
 import { CookieService } from 'ngx-cookie-service';
-import { AppRoutingModule, routingComponents } from './app-routing.module';
+
+import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MailCreateComponent } from './mails/mail-create/mail-create.component';
-import { SignInComponent } from './auth/sign-in/sign-in.component';
 import { SignUpComponent } from './auth/sign-up/sign-up.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { HeaderComponent } from './header/header.component';
-import { SignUpUserComponent } from './auth/sign-up/sign-up-user/sign-up-user.component';
-import { SignUpSenderComponent } from './auth/sign-up/sign-up-sender/sign-up-sender.component';
 import { NavigationListComponent } from './navigation-list/navigation-list.component';
+import { SignupPageComponent } from './pages/signup-page/signup-page.component';
+import { DashboardPageComponent } from './pages/dashboard-page/dashboard-page.component';
+import { MailListComponent } from './mails/mail-list/mail-list.component';
+import { UserListComponent } from './users/user-list/user-list.component';
+import { HeaderPublicComponent } from './header-public/header-public.component';
+import { AddressSelectComponent } from './addresses/address-select/address-select.component';
+import { AddressCardComponent } from './addresses/address-card/address-card.component';
+import { AddressCreateComponent } from './addresses/address-create/address-create.component';
+import { SignUpConfirmationComponent } from './auth/sign-up-confirmation/sign-up-confirmation.component';
+import { SignInComponent } from './auth/sign-in/sign-in.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    routingComponents,
+    MailListComponent,
+    UserListComponent,
     MailCreateComponent,
-    SignInComponent,
     SignUpComponent,
     HeaderComponent,
-    SignUpUserComponent,
-    SignUpSenderComponent,
-    NavigationListComponent
+    NavigationListComponent,
+    SignupPageComponent,
+    DashboardPageComponent,
+    HeaderPublicComponent,
+    AddressSelectComponent,
+    AddressCardComponent,
+    AddressCreateComponent,
+    SignUpConfirmationComponent,
+    SignInComponent
   ],
   imports: [
     BrowserModule,

@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const User = require('../models/user');
 const Mail = require('../models/mail'); // used to send gretting mail to new user
 const crypto = require('../utils/encrypt');
+const transporter = require('../utils/nodemailer');
 
 /*
   Helper Function: Go-lang style async wrapper
@@ -35,6 +36,24 @@ const sendGreeting = async fetchedUser => {
 };
 
 /*
+  Helper Function: generate verification email template
+*/
+const generateVerifyEmail = (req, emailToken) => {
+  const accountType = req.body.isSender ? 'sender' : 'user';
+  const confimationURL = `http://localhost:4200/confirmation/${accountType}/${emailToken}`;
+
+  return (emailTemplate = {
+    from: 'awesome@bar.com',
+    to: req.body.email,
+    subject: 'Hello ' + req.body.firstName + ' ' + req.body.lastName,
+    text: 'Hello world',
+    html: `<b>Hello world</b> <br />
+     Please click this email to confirm your email: <a href="${confimationURL}">${confimationURL}</a>
+    `
+  });
+};
+
+/*
   Function: signup
 */
 
@@ -49,7 +68,8 @@ exports.userSignUp = async (req, res) => {
     name: { first: req.body.firstName, last: req.body.lastName },
     email: req.body.email,
     password: hash,
-    isSender: req.body.isSender
+    isSender: req.body.isSender,
+    isConfirmed: false
   });
   const { error, data: fetchedUser } = await async_wrapper(user.save());
 
@@ -61,22 +81,22 @@ exports.userSignUp = async (req, res) => {
   // send a gretting email to the user
   await sendGreeting(fetchedUser);
 
-  // get account type
-  const accountType = fetchedUser.isSender ? 'sender' : 'user';
-
-  // send the response to frontend
+  // generate email verifcation link
   const payload = {
-    email: fetchedUser.email,
-    userId: fetchedUser._id,
-    accountType: accountType
+    userId: fetchedUser._id
   };
-  const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '1h' });
+  const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
 
-  res.status(201).json({
-    token: token,
-    expiresDuration: 3600, // unit: second
-    userId: fetchedUser._id,
-    isSender: fetchedUser.isSender
+  // send email verification to user
+  const email = generateVerifyEmail(req, emailToken);
+  transporter.sendMail(email, (err, info) => {
+    if (err) {
+      console.log(err);
+      res.status(201).json({ message: 'Failed to send email verification!' });
+    } else {
+      console.log('Message sent: ' + info.response); // TODO
+      res.status(201).json({ message: 'Message sent:' + info.response });
+    }
   });
 };
 
@@ -91,6 +111,12 @@ exports.userSignIn = async (req, res) => {
   if (error || !fetchedUser) {
     return res.status(401).json({
       message: 'Email is not associated to a user.'
+    });
+  }
+
+  if (!fetchedUser.isConfirmed) {
+    return res.status(401).json({
+      message: 'Please verify your email address!'
     });
   }
 
@@ -116,4 +142,69 @@ exports.userSignIn = async (req, res) => {
     userId: fetchedUser._id,
     isSender: fetchedUser.isSender
   });
+};
+
+/*
+  Function: confirm registered user email
+*/
+exports.verifyConfirmation = async (req, res) => {
+  try {
+    console.log('verifyConfirmation is called');
+    // get email token from param
+    const emailToken = req.params.emailToken;
+
+    // synchronous func: will throw error if token is not verified
+    const decodedEmailToken = jwt.verify(emailToken, process.env.EMAIL_JWT_KEY);
+
+    // async funtion: find user by ID in db
+    const { error, data: fetchedUser } = await async_wrapper(
+      User.findById(decodedEmailToken.userId)
+    );
+    if (error || !fetchedUser) {
+      return res.status(401).json({
+        message: 'Failed to find your account.'
+      });
+    }
+
+    // async func: check user credentials
+    const result = await bcrypt.compare(req.body.password, fetchedUser.password); // bcrpt error is NOT HANDELED
+    if (!result) {
+      return res.status(401).json({
+        message: 'Wrong user password entered.'
+      });
+    }
+
+    // update the user confirmation status
+    const update = {
+      $set: { isConfirmed: true }
+    };
+    const { err, data: updatedUser } = await async_wrapper(
+      User.findOneAndUpdate({ _id: decodedEmailToken.userId }, update)
+    );
+    if (err || !updatedUser) {
+      return res.status(401).json({
+        message: 'Failed to update your account status.'
+      });
+    }
+
+    // finally send the response to frontend
+    const payload = {
+      email: updatedUser.email,
+      userId: updatedUser._id,
+      accountType: updatedUser.isSender ? 'sender' : 'user'
+    };
+    const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '1h' });
+
+    res.status(200).json({
+      token: token,
+      expiresDuration: 3600, // unit: second
+      userId: updatedUser._id,
+      isSender: updatedUser.isSender
+    });
+  } catch {
+    console.log('error occured');
+    return res.status(401).json({
+      message: 'Invalid user password entered.'
+    });
+  }
 };

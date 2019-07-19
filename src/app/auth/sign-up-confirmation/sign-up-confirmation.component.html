@@ -1,14 +1,5 @@
 <mat-card>
-  <form [formGroup]="form" (submit)="onSignIn()" class="signin-form">
-    <!-- email form control -->
-    <mat-form-field appearance="outline">
-      <mat-label>E-mail</mat-label>
-      <input matInput formControlName="email" />
-      <mat-error *ngIf="email.invalid && email.touched">
-        Please enter a valid email
-      </mat-error>
-    </mat-form-field>
-
+  <form [formGroup]="form" (submit)="onConfirm()" class="signup-confirmation-form">
     <!-- password form control -->
     <mat-form-field appearance="outline">
       <mat-label>Password</mat-label>
@@ -20,7 +11,7 @@
 
     <!-- button to submit -->
     <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">
-      Sign In
+      CONFIRM
     </button>
   </form>
 </mat-card>

@@ -1,0 +1,58 @@
+<mat-card class="selectAddress">
+  <form [formGroup]="form" (submit)="onSubmit()" class="address-create-form">
+    <!-- address form control -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Address</mat-label>
+      <input matInput formControlName="address" />
+      <mat-error *ngIf="address.invalid && address.touched">
+        Please enter a valid address
+      </mat-error>
+    </mat-form-field>
+
+    <!-- address2 form control -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Address 2</mat-label>
+      <input matInput formControlName="address2" />
+      <mat-error *ngIf="address2.invalid && address2.touched">
+        Please enter a valid address
+      </mat-error>
+    </mat-form-field>
+
+    <!-- city form control -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>City</mat-label>
+      <input matInput formControlName="city" />
+      <mat-error *ngIf="city.invalid && city.touched">
+        Please enter a valid city
+      </mat-error>
+    </mat-form-field>
+
+    <!-- zip code form control -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Zip Code</mat-label>
+      <input matInput formControlName="zipCode" />
+      <mat-error *ngIf="zipCode.invalid && zipCode.touched">
+        Please enter a valid zipcode
+      </mat-error>
+    </mat-form-field>
+
+    <!-- country form control -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-select formControlName="country" placeholder="Country">
+        <mat-option value="US">United States</mat-option>
+        <mat-option value="UK">United Kingdom</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- button to submit -->
+    <button
+      mat-button
+      color="primary"
+      [disabled]="form.invalid"
+      type="submit"
+      class="address-create-btn"
+    >
+      SUBMIT
+    </button>
+  </form>
+</mat-card>

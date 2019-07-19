@@ -3,7 +3,7 @@ main {
   margin-left: 5%;
 }
 
-mat-card {
+.user-list-card {
   display: inline-block;
   max-width: 200px;
   min-width: 100px;

@@ -32,7 +32,7 @@ export class SignInComponent implements OnInit {
   // Method: call signUp serivce
   async onSignIn() {
     await this.authService._signIn(this.email.value, this.password.value).toPromise();
-    this.routerService.navigate(['/mails']);
+    this.routerService.navigate(['mails']);
   }
 
   // Getters
