@@ -15,10 +15,14 @@ const generateFilename = (req, file) => {
   const ext = file.originalname.split('.').slice(-1)[0];
 
   // default filename body
-  const name = 'From_' + req.userData.userId + '_To_' + req.body.receiverId + '_' + file.filename;
+  const name = 'From_' + req.userData.userId + '_To_' + req.body.receiverId + '_' + file.fieldname;
 
   // return filename
-  filename = new Date().toISOString() + '_' + name + '.' + ext;
+  let filename = new Date().toISOString() + '_' + name + '.' + ext;
+
+  // add pseude folder directory receiverId/content/filename or receiverId/envelop/filename, file.fieldname = contentPDF | envelop
+  filename = req.body.receiverId + '/' + file.fieldname + '/' + filename;
+
   return filename;
 };
 

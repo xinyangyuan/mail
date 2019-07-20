@@ -14,7 +14,8 @@ import { PageEvent } from '@angular/material';
 export class MailListComponent implements OnInit, OnDestroy {
   // Attributes
   public mailList: Mail[];
-  public imageURL: any;
+  public imageURLs: { [key: string]: any } = {};
+
   // pagination
   public mailCount = 0;
   public mailsPerPage = 15;
@@ -36,13 +37,11 @@ export class MailListComponent implements OnInit, OnDestroy {
 
   // Method: view mail envelop image
   loadImage(id: string) {
-    this.imageURL = null;
-
     // get mail envelop image pdf
     this.mailService.getEnvelop(id).subscribe(file => {
       const envelopImage = new Blob([file], { type: file.type });
       const imageURL = window.URL.createObjectURL(envelopImage);
-      this.imageURL = this.sanitizer.bypassSecurityTrustUrl(imageURL);
+      this.imageURLs.id = this.sanitizer.bypassSecurityTrustUrl(imageURL);
     });
   }
 

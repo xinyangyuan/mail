@@ -15,7 +15,8 @@ import {
   MatDividerModule,
   MatListModule,
   MatPaginatorModule,
-  MatGridListModule
+  MatGridListModule,
+  MatSnackBarModule
 } from '@angular/material';
 
 @NgModule({
@@ -36,7 +37,8 @@ import {
     MatListModule,
     MatMenuModule,
     MatPaginatorModule,
-    MatGridListModule
+    MatGridListModule,
+    MatSnackBarModule
   ]
 })
 export class AngularMaterialModule {}

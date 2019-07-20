@@ -171,9 +171,6 @@ export class AuthService {
               // trigger additional callback funcs
               this.autoSignOut(res.expiresDuration);
               this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
-              console.log(res.token);
-              console.log(res.isSender);
-              console.log(res.expiresDuration);
               // push auth listener
               this.authStatusListener.next(true);
               console.log('You have been logged in!');

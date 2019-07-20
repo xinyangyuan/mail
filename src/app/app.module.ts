@@ -24,6 +24,7 @@ import { AddressCardComponent } from './addresses/address-card/address-card.comp
 import { AddressCreateComponent } from './addresses/address-create/address-create.component';
 import { SignUpConfirmationComponent } from './auth/sign-up-confirmation/sign-up-confirmation.component';
 import { SignInComponent } from './auth/sign-in/sign-in.component';
+import { ErrorInterceptor } from './interceptors/error.interceptor';
 
 @NgModule({
   declarations: [
@@ -54,7 +55,8 @@ import { SignInComponent } from './auth/sign-in/sign-in.component';
   ],
   providers: [
     CookieService,
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
 })

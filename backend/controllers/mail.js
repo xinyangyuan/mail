@@ -181,19 +181,22 @@ exports.getEnvelop = async (req, res, next) => {
   const ext = key.split('.').slice(-1)[0];
 
   // find file from S3 and pipe it to response
-  try {
-    // set headers
-    res.setHeader('Content-Type', 'image/' + ext);
+  // set res header
+  res.setHeader('Content-Type', 'image/' + ext);
 
-    // get file from S3
-    s3.getObject(params)
-      .createReadStream() // this is a readable stream
-      .pipe(res);
-  } catch {
-    res.status(500).json({
+  // create readable stream from aws s3
+  stream = s3.getObject(params).createReadStream();
+
+  // handle error
+  stream.on('error', error => {
+    console.log(error);
+    return res.status(500).json({
       message: 'Failed to get mail envelop image!'
     });
-  }
+  });
+
+  // start fetching the file and pipe it to response
+  stream.pipe(res);
 };
 
 /*
@@ -221,33 +224,33 @@ exports.getContentPDF = async (req, res, next) => {
 
   // define search params
   const key = crypto.decrypt(fetchedMail.contentPDFKey);
-
   const params = {
     Bucket: process.env.AWS_BUCKET,
     Key: key
   };
 
   // find file from S3 and pipe it to response
-  try {
-    // set headers
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'inline; filename="' + 'Mail Content' + '"');
+  // set headers
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'inline; filename="' + 'Mail Content' + '"');
 
-    //get file from S3
-    s3.getObject(params)
-      .createReadStream() // this is a readable stream
-      .pipe(res);
+  // create readable stream from aws s3
+  stream = s3.getObject(params).createReadStream();
 
-    // let stream = s3.getObject(params).createReadStream();
-    // stream.on('end', () => {
-    //   console.log('already done');
-    // });
-    // stream.pipe(res);
-  } catch {
-    res.status(500).json({
+  // handle error
+  stream.on('error', error => {
+    console.log(error);
+    return res.status(500).json({
       message: 'Failed to get mail content pdf!'
     });
-  }
+  });
+
+  // stream.on('end', () => {
+  //   console.log('already done');
+  // });
+
+  // start fetching the file and pipe it to response
+  stream.pipe(res);
 };
 
 /*

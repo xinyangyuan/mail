@@ -6,6 +6,7 @@ const User = require('../models/user');
 const Mail = require('../models/mail'); // used to send gretting mail to new user
 const crypto = require('../utils/encrypt');
 const transporter = require('../utils/nodemailer');
+const mailGenerator = require('../utils/mailgen');
 
 /*
   Helper Function: Go-lang style async wrapper
@@ -27,8 +28,8 @@ const sendGreeting = async fetchedUser => {
     receiverId: mongoose.Types.ObjectId(fetchedUser._id),
     read_flag: false,
     star_flag: false,
-    envelopKey: crypto.encrypt('000'),
-    contentPDFKey: crypto.encrypt('111')
+    envelopKey: crypto.encrypt('hello.jpg'),
+    contentPDFKey: crypto.encrypt('hello.pdf')
   });
 
   // async function to save mail into database
@@ -39,17 +40,39 @@ const sendGreeting = async fetchedUser => {
   Helper Function: generate verification email template
 */
 const generateVerifyEmail = (req, emailToken) => {
+  // token information
   const accountType = req.body.isSender ? 'sender' : 'user';
   const confimationURL = `http://localhost:4200/confirmation/${accountType}/${emailToken}`;
 
+  // prepare email html template
+  const email = {
+    body: {
+      name: req.body.firstName + ' ' + req.body.lastName,
+      intro: "Welcome to My Mail! We're very excited to have you on board.",
+      action: {
+        instructions: 'To get started with MyMail, please click here:',
+        button: {
+          color: '#22BC66', // Optional action button color
+          text: 'Confirm your account',
+          link: confimationURL
+        }
+      },
+      //greeting: 'Dear',
+      signature: 'Sincerely',
+      outro: "Need help, or have questions? Just reply to this email, we'd love to help."
+    }
+  };
+
+  const emailBody = mailGenerator.generate(email);
+  const emailText = mailGenerator.generatePlaintext(email);
+
+  // email template
   return (emailTemplate = {
     from: 'awesome@bar.com',
     to: req.body.email,
     subject: 'Hello ' + req.body.firstName + ' ' + req.body.lastName,
-    text: 'Hello world',
-    html: `<b>Hello world</b> <br />
-     Please click this email to confirm your email: <a href="${confimationURL}">${confimationURL}</a>
-    `
+    text: emailText,
+    html: emailBody
   });
 };
 
@@ -105,6 +128,7 @@ exports.userSignUp = async (req, res) => {
 */
 
 exports.userSignIn = async (req, res) => {
+  console.log('userSignIn is called');
   // async funtion: find user with matched email in db
   const { error, data: fetchedUser } = await async_wrapper(User.findOne({ email: req.body.email }));
 

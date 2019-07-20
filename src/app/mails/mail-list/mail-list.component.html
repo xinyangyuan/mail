@@ -22,8 +22,8 @@
         </mat-panel-description>
       </mat-expansion-panel-header>
 
-      <div *ngIf="imageURL" class="post-image">
-        <img [src]="imageURL" [alt]="mail.content" />
+      <div *ngIf="imageURLs[mail._id]" class="post-image">
+        <img [src]="imageURLs[mail._id]" [alt]="mail.content" />
       </div>
 
       <!-- <p>

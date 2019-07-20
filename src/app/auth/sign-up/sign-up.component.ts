@@ -22,6 +22,13 @@ export class SignUpComponent implements OnInit {
     private authService: AuthService // need to be public ?
   ) {}
 
+  // Static method
+  static titleCase(text: string) {
+    return text.toLowerCase().replace('/\bS/g', t => {
+      return t.toUpperCase();
+    });
+  }
+
   // Init Method
   ngOnInit() {
     // initialize the reactive form
