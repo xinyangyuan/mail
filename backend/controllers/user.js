@@ -1,12 +1,9 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 
-const User = require('../models/user');
-const Mail = require('../models/mail'); // used to send gretting mail to new user
-const crypto = require('../utils/encrypt');
 const transporter = require('../utils/nodemailer');
 const mailGenerator = require('../utils/mailgen');
+const User = require('../models/user');
 
 /*
   Helper Function: Go-lang style async wrapper
@@ -14,27 +11,6 @@ const mailGenerator = require('../utils/mailgen');
 
 const async_wrapper = promise =>
   promise.then(data => ({ data, error: null })).catch(error => ({ error, data: null }));
-
-/*
-  Helper Function: send greeting mail to newly signed-up user
-*/
-const sendGreeting = async fetchedUser => {
-  // prepare the mail contents
-  const mail = new Mail({
-    title: 'Hello: ' + fetchedUser.fullName + '!',
-    description: 'Your first virtual mail is here!',
-    content: 'Hope you have a great time using it!',
-    senderId: mongoose.Types.ObjectId(fetchedUser._id),
-    receiverId: mongoose.Types.ObjectId(fetchedUser._id),
-    read_flag: false,
-    star_flag: false,
-    envelopKey: crypto.encrypt('hello.jpg'),
-    contentPDFKey: crypto.encrypt('hello.pdf')
-  });
-
-  // async function to save mail into database
-  await mail.save();
-};
 
 /*
   Helper Function: generate verification email template
@@ -77,10 +53,50 @@ const generateVerifyEmail = (req, emailToken) => {
 };
 
 /*
+  Helper Function: generate password reset email template
+*/
+const generatePasswordResetEmail = (req, emailToken) => {
+  // token information
+  const confimationURL = `http://localhost:4200/reset-password/${emailToken}`;
+
+  // prepare email html template
+  const email = {
+    body: {
+      name: req.body.firstName + ' ' + req.body.lastName,
+      intro:
+        'You have received this email because a password reset request for your account was received.',
+      action: {
+        instructions: 'Click the button below to reset your password:',
+        button: {
+          color: '#DC4D2F', // Optional action button color
+          text: 'Reset your password',
+          link: confimationURL
+        }
+      },
+      //greeting: 'Dear',
+      signature: 'Sincerely',
+      outro: 'If you did not request a password reset, no further action is required on your part.'
+    }
+  };
+
+  const emailBody = mailGenerator.generate(email);
+  const emailText = mailGenerator.generatePlaintext(email);
+
+  // email template
+  return (emailTemplate = {
+    from: 'awesome@bar.com',
+    to: req.body.email,
+    subject: 'Hello ' + req.body.firstName + ' ' + req.body.lastName,
+    text: emailText,
+    html: emailBody
+  });
+};
+
+/*
   Function: signup
 */
 
-exports.userSignUp = async (req, res) => {
+exports.userSignUp = async (req, res, next) => {
   // async funtion: generate hash, hash(plainPassword, saltRounds)
   // saltRounds really mean cost factor, pick the cost according to the server setup
   // https://security.stackexchange.com/questions/3959/recommended-of-iterations-when-using-pkbdf2-sha256/3993#3993
@@ -101,9 +117,6 @@ exports.userSignUp = async (req, res) => {
     return res.status(401).json({ message: 'Your email is already registered!' });
   }
 
-  // send a gretting email to the user
-  await sendGreeting(fetchedUser);
-
   // generate email verifcation link
   const payload = {
     userId: fetchedUser._id
@@ -115,10 +128,13 @@ exports.userSignUp = async (req, res) => {
   transporter.sendMail(email, (err, info) => {
     if (err) {
       console.log(err);
-      res.status(201).json({ message: 'Failed to send email verification!' });
+      return res.status(201).json({ message: 'Failed to send email verification!' });
     } else {
       console.log('Message sent: ' + info.response); // TODO
       res.status(201).json({ message: 'Message sent:' + info.response });
+      // send first gretting mail to user
+      req.fetchedUser = fetchedUser;
+      next();
     }
   });
 };
@@ -169,8 +185,60 @@ exports.userSignIn = async (req, res) => {
 };
 
 /*
-  Function: confirm registered user email
+  Function: (re)-send email verification
 */
+
+exports.sendConfirmation = async (req, res) => {
+  console.log('sendConfirmation is called');
+
+  // async funtion: find user with matched email in db
+  const { error, data: fetchedUser } = await async_wrapper(
+    User.findOne({ email: req.params.email })
+  );
+
+  if (error || !fetchedUser) {
+    return res.status(401).json({
+      message: 'Email is not associated to a user.'
+    });
+  }
+
+  if (fetchedUser.isConfirmed) {
+    return res.status(401).json({
+      message: 'Email is already verified.'
+    });
+  }
+
+  // generate email verifcation link
+  const payload = {
+    userId: fetchedUser._id
+  };
+  const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
+
+  // add required email required filds
+  req.body = {
+    email: req.params.email,
+    firstName: fetchedUser.name.first,
+    lastName: fetchedUser.name.last,
+    isSender: fetchedUser.isSender
+  };
+
+  // send verification email to user
+  const email = generateVerifyEmail(req, emailToken);
+  transporter.sendMail(email, (err, info) => {
+    if (err) {
+      console.log(err);
+      res.status(201).json({ message: 'Failed to send email verification!' });
+    } else {
+      console.log('Message sent: ' + info.response); // TODO
+      res.status(201).json({ message: 'Message sent:' + info.response });
+    }
+  });
+};
+
+/*
+  Function: confirm registered user's email
+*/
+
 exports.verifyConfirmation = async (req, res) => {
   try {
     console.log('verifyConfirmation is called');
@@ -228,7 +296,109 @@ exports.verifyConfirmation = async (req, res) => {
   } catch {
     console.log('error occured');
     return res.status(401).json({
-      message: 'Invalid user password entered.'
+      message: 'Invalid confirmation request.'
+    });
+  }
+};
+
+/*
+  Function: send password reset request to requested email
+*/
+
+exports.resetPassword = async (req, res) => {
+  console.log('resetPassword is called');
+
+  // async funtion: find user with matched email in db
+  const { error, data: fetchedUser } = await async_wrapper(
+    User.findOne({ email: req.params.email })
+  );
+
+  if (error || !fetchedUser) {
+    return res.status(401).json({
+      message: 'Email is not associated to a user'
+    });
+  }
+
+  if (!fetchedUser.isConfirmed) {
+    return res.status(401).json({
+      message: 'Need to confirm the email address before password reset'
+    });
+  }
+
+  // generate email verifcation link
+  const payload = {
+    userId: fetchedUser._id
+  };
+  const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
+
+  // add required email required filds
+  req.body = {
+    email: req.params.email,
+    firstName: fetchedUser.name.first,
+    lastName: fetchedUser.name.last,
+    isSender: fetchedUser.isSender
+  };
+
+  // send verification email to user
+  const email = generatePasswordResetEmail(req, emailToken);
+  transporter.sendMail(email, (err, info) => {
+    if (err) {
+      console.log(err);
+      res.status(201).json({ message: 'Failed to send password reset email!' });
+    } else {
+      console.log('Message sent: ' + info.response); // TODO
+      res.status(201).json({ message: 'Message sent:' + info.response });
+    }
+  });
+};
+
+/*
+  Function: verify password reset and update password field
+*/
+
+exports.verifyReset = async (req, res) => {
+  try {
+    console.log('verifyReset is called');
+    // get email token from param
+    const emailToken = req.params.emailToken;
+
+    // synchronous func: will throw error if token is not verified
+    const decodedEmailToken = jwt.verify(emailToken, process.env.EMAIL_JWT_KEY);
+
+    // generate new password hash
+    const hash = await bcrypt.hash(req.body.password, 10);
+
+    // update the user confirmation status
+    const update = {
+      $set: { password: hash }
+    };
+    const { err, data: fetchedUser } = await async_wrapper(
+      User.findOneAndUpdate({ _id: decodedEmailToken.userId }, update)
+    );
+    if (err || !fetchedUser) {
+      return res.status(401).json({
+        message: 'Failed to reset your password.'
+      });
+    }
+
+    // finally send the response to frontend
+    const payload = {
+      email: fetchedUser.email,
+      userId: fetchedUser._id,
+      accountType: fetchedUser.isSender ? 'sender' : 'user'
+    };
+    const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '1h' });
+
+    res.status(200).json({
+      token: token,
+      expiresDuration: 3600, // unit: second
+      userId: fetchedUser._id,
+      isSender: fetchedUser.isSender
+    });
+  } catch {
+    console.log('error occured');
+    return res.status(401).json({
+      message: 'Invalid password reset request'
     });
   }
 };

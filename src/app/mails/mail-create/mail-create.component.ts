@@ -14,6 +14,7 @@ export class MailCreateComponent implements OnInit {
   // Attributes
   public form: FormGroup;
   public receiverList: [{ _id: string; name: { first: string; last: string } }];
+  public isLoading = false;
 
   // Constructor Method
   constructor(
@@ -43,6 +44,7 @@ export class MailCreateComponent implements OnInit {
 
   // Call mail-service to create new mail
   onAddMail() {
+    this.isLoading = true;
     this.mailService
       ._createMail(
         this.recipient.value,
@@ -52,7 +54,10 @@ export class MailCreateComponent implements OnInit {
         this.envelop.value,
         this.contentPDF.value
       )
-      .subscribe(() => this.routerService.navigate(['mails']));
+      .subscribe(() => {
+        this.isLoading = false;
+        this.routerService.navigate(['mails']);
+      });
   }
 
   // add envelop image to the form-controll

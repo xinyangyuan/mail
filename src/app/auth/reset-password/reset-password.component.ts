@@ -4,14 +4,13 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth.service';
 
 @Component({
-  selector: 'app-sign-up-confirmation',
-  templateUrl: './sign-up-confirmation.component.html',
-  styleUrls: ['./sign-up-confirmation.component.css']
+  selector: 'app-reset-password',
+  templateUrl: './reset-password.component.html',
+  styleUrls: ['./reset-password.component.css']
 })
-export class SignUpConfirmationComponent implements OnInit {
+export class ResetPasswordComponent implements OnInit {
   // Attributes
   form: FormGroup;
-  accountType: string;
   emailToken: string;
 
   // Constructor
@@ -26,7 +25,6 @@ export class SignUpConfirmationComponent implements OnInit {
   ngOnInit() {
     // get url parameters
     this.route.paramMap.subscribe(paramsMap => {
-      this.accountType = paramsMap.get('accountType');
       this.emailToken = paramsMap.get('emailToken');
     });
 
@@ -37,18 +35,11 @@ export class SignUpConfirmationComponent implements OnInit {
   }
 
   // Method: call signUp serivce
-  async onConfirm() {
+  async onReset() {
     // async request: send email confirmation request to server
     await this.authService
-      ._verifyEmailConfirmation(this.password.value, this.emailToken)
-      .toPromise();
-
-    // redirect user to pick address or create address
-    if (this.accountType === 'user') {
-      this.router.navigate(['addAddress']);
-    } else if (this.accountType === 'sender') {
-      this.router.navigate(['newAddress']);
-    }
+      ._verifyReset(this.password.value, this.emailToken)
+      .subscribe(() => this.router.navigate(['mails']));
   }
 
   // Getters

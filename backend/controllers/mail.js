@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
+const crypto = require('../utils/encrypt');
+const s3 = require('../utils/aws');
 
 const Mail = require('../models/mail');
 const Address = require('../models/address');
-const crypto = require('../utils/encrypt');
-const s3 = require('../utils/aws');
 
 /*
   Helper Function: Go-lang style async wrapper
@@ -190,7 +190,7 @@ exports.getEnvelop = async (req, res, next) => {
   // handle error
   stream.on('error', error => {
     console.log(error);
-    return res.status(500).json({
+    return res.status(401).json({
       message: 'Failed to get mail envelop image!'
     });
   });

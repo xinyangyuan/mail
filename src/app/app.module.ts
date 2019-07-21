@@ -25,6 +25,8 @@ import { AddressCreateComponent } from './addresses/address-create/address-creat
 import { SignUpConfirmationComponent } from './auth/sign-up-confirmation/sign-up-confirmation.component';
 import { SignInComponent } from './auth/sign-in/sign-in.component';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
+import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +44,9 @@ import { ErrorInterceptor } from './interceptors/error.interceptor';
     AddressCardComponent,
     AddressCreateComponent,
     SignUpConfirmationComponent,
-    SignInComponent
+    SignInComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent
   ],
   imports: [
     BrowserModule,

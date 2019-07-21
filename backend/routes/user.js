@@ -1,12 +1,16 @@
 const express = require('express');
+
+const sendGreeting = require('../hooks/send-greeting');
 const UserController = require('../controllers/user');
 
 const router = express.Router();
 
 // user api routes
-router.post('/signup', UserController.userSignUp);
+router.post('/signup', UserController.userSignUp, sendGreeting);
 router.post('/signin', UserController.userSignIn);
-router.post('/confirmation/:emailToken', UserController.verifyConfirmation); // verify confirmation
-//router.get('/confirmation/:id', UserController.sendConfirmation) // send a new email confimation
+router.get('/confirmation/:email', UserController.sendConfirmation); // send new email confimation
+router.post('/confirmation/:emailToken', UserController.verifyConfirmation); // verify email confirmation
+router.get('/reset/:email', UserController.resetPassword);
+router.post('/reset/:emailToken', UserController.verifyReset);
 
 module.exports = router;

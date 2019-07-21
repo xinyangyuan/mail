@@ -12,6 +12,8 @@ import { AddressSelectComponent } from './addresses/address-select/address-selec
 import { SignInComponent } from './auth/sign-in/sign-in.component';
 import { SignUpComponent } from './auth/sign-up/sign-up.component';
 import { SignUpConfirmationComponent } from './auth/sign-up-confirmation/sign-up-confirmation.component';
+import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 
 const routes: Routes = [
   {
@@ -23,7 +25,9 @@ const routes: Routes = [
       { path: 'signup', component: SignUpComponent },
       { path: 'confirmation/:accountType/:emailToken', component: SignUpConfirmationComponent },
       { path: 'newAddress', component: AddressCreateComponent },
-      { path: 'addAddress', component: AddressSelectComponent }
+      { path: 'addAddress', component: AddressSelectComponent },
+      { path: 'forgot-password', component: ForgotPasswordComponent },
+      { path: 'reset-password/:emailToken', component: ResetPasswordComponent }
     ]
   },
   {

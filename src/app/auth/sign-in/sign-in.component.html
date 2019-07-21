@@ -19,8 +19,20 @@
     </mat-form-field>
 
     <!-- button to submit -->
-    <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">
-      Sign In
-    </button>
+    <div fxLayout="row" fxLayoutAlign="space-between center">
+      <button mat-button color="primary" type="button" (click)="onForgot()">Forgot Password</button>
+      <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">
+        SIGN IN
+      </button>
+    </div>
   </form>
 </mat-card>
+
+<!-- Basic Error Message -->
+<div *ngIf="needConfirmation" class="error-message">
+  <p class="error-text">
+    Please verify your email address <br />
+    Click to resend verification email
+  </p>
+  <button class="send-confirmation-btn" mat-button (click)="onResend()">RESEND</button>
+</div>

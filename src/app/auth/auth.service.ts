@@ -73,7 +73,7 @@ export class AuthService {
               console.log('You have been logged in!');
             },
             _ => {
-              console.log('unable to sign-up new user');
+              console.log('Unable to sign-up new user');
             }
           ),
           catchError(error => throwError(error))
@@ -82,10 +82,34 @@ export class AuthService {
   }
 
   /*
-    $ Method: sign-in function
+    $ Method: request server to send new verification email
   */
 
-  _sendConfirmation(
+  _sendEmailConfirmation(email: string): Observable<{ message: string }> {
+    return (
+      this.http
+        // request user to send new verification email
+        .get<{ message: string }>(this.BACKEND_URL + 'confirmation/' + email)
+        // handling the response from backend server
+        .pipe(
+          tap(
+            _ => {
+              console.log('New verification email is sent!');
+            },
+            _ => {
+              console.log('Failed to send new email verification');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
+  }
+
+  /*
+    $ Method: request server to verify the user's email address
+  */
+
+  _verifyEmailConfirmation(
     password: string,
     emailToken: string
   ): Observable<{ token: string; expiresDuration: number; userId: string; isSender: boolean }> {
@@ -185,13 +209,72 @@ export class AuthService {
   }
 
   /*
+    $ Method: send password reset request
+  */
+
+  _resetPassword(email: string): Observable<{ message: string }> {
+    return (
+      this.http
+        // send password reset request to backend server
+        .get<{ message: string }>(this.BACKEND_URL + 'reset/' + email)
+        // handling the response from backend server
+        .pipe(
+          tap(
+            res => {
+              console.log('Password reset email is sent!');
+            },
+            err => {
+              console.log('Unable to send password reset email');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
+  }
+
+  /*
+    $ Method: update user's account with new password
+  */
+
+  _verifyReset(
+    password: string,
+    emailToken: string
+  ): Observable<{ token: string; expiresDuration: number; userId: string; isSender: boolean }> {
+    return (
+      this.http
+        // send password reset request to backend server
+        .post<{ token: string; expiresDuration: number; userId: string; isSender: boolean }>(
+          this.BACKEND_URL + 'reset/' + emailToken,
+          { password }
+        )
+        // handling the response from backend server
+        .pipe(
+          tap(
+            res => {
+              // trigger additional callback funcs
+              this.autoSignOut(res.expiresDuration);
+              this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
+              // push auth listener
+              this.authStatusListener.next(true);
+              console.log('You have been logged in!');
+            },
+            err => {
+              console.log('Unable to reset your password');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
+  }
+
+  /*
     Method: auto sigin-in using credentials in cookies
   */
-  autoSignIn() {
+  autoSignIn(): boolean {
     // get auth information from cookies
     const authInfo = this.getAuthInfo();
     if (!authInfo) {
-      return;
+      return false;
     }
 
     // valid expiration time
@@ -203,6 +286,7 @@ export class AuthService {
       this.autoSignOut(expiresDuration / 1000);
       this.authStatusListener.next(true);
       console.log('You have been logged in!');
+      return true;
     }
   }
 

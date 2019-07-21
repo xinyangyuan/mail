@@ -52,8 +52,28 @@
       <input type="file" #pdfPicker (change)="onPDFPicked($event)" />
     </div>
 
-    <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">
-      Send
+    <!-- submit button -->
+    <button
+      *ngIf="!isLoading"
+      mat-raised-button
+      color="primary"
+      [disabled]="form.invalid"
+      type="submit"
+    >
+      SEND
+    </button>
+
+    <!-- loading spinner in button -->
+    <button
+      *ngIf="isLoading"
+      mat-raised-button
+      color="primary"
+      [disabled]="form.invalid"
+      type="button"
+    >
+      <mat-icon>
+        <mat-spinner color="primary" diameter="20"> </mat-spinner>
+      </mat-icon>
     </button>
   </form>
 </mat-card>

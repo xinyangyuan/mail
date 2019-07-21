@@ -55,7 +55,7 @@ export class AddressService {
     return (
       // fetch address list from the RESTapi
       this.http
-        .get<{ addressList: Address[] }>(this.BACKEND_URL + 'list')
+        .get<{ addressList: Address[] }>(this.BACKEND_URL)
         // insert extra operations
         .pipe(
           tap(
@@ -167,7 +167,7 @@ export class AddressService {
 
     this.http
       // send post request to RESTapi
-      .post<{ addressInfo: AddressInfo }>(this.BACKEND_URL + 'new', addressData)
+      .post<{ addressInfo: AddressInfo }>(this.BACKEND_URL, addressData)
       .subscribe(
         res => {
           this.myAddressInfo = res.addressInfo;
@@ -195,7 +195,7 @@ export class AddressService {
 
     return (
       this.http
-        .post<{ addressInfo: AddressInfo }>(this.BACKEND_URL + 'new', addressData)
+        .post<{ addressInfo: AddressInfo }>(this.BACKEND_URL, addressData)
         // insert extra operations
         .pipe(
           tap(

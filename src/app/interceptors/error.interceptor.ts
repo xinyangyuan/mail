@@ -17,12 +17,19 @@ export class ErrorInterceptor implements HttpInterceptor {
 
         // Display error
         // alert(error.error.message);
-        this.snackBar.open(error.error.message, '', {
-          duration: 2200,
-          verticalPosition: 'bottom',
-          horizontalPosition: 'center',
-          panelClass: ['red-snackbar']
-        });
+
+        if (error.error.message !== 'Please verify your email address!') {
+          this.snackBar.open(
+            error.error.message ? error.error.message : 'Unknow error occured',
+            'CLOSE',
+            {
+              duration: 2200,
+              verticalPosition: 'bottom',
+              horizontalPosition: 'left'
+              // panelClass: ['red-snackbar']
+            }
+          );
+        }
 
         // Return error to service subscriber
         return throwError(error);

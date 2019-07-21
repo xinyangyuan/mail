@@ -22,7 +22,7 @@ userSchema.virtual('fullName').get(function() {
 // use unique validator plugin/middleware
 userSchema.plugin(uniqueValidator);
 
-// use timestamp plugin/middleware
+// use timestamp plugin/pre-middleware
 userSchema.plugin(timestampPlugin);
 
 // export mongoose model

@@ -9,6 +9,30 @@ const async_wrapper = promise =>
   promise.then(data => ({ data, error: null })).catch(error => ({ error, data: null }));
 
 /*
+Function: get list of all addresses [GET]
+*/
+
+exports.getAddressList = async (req, res) => {
+  console.log('getAddressList is called');
+
+  // async funtion: find user with matched email in db
+  const { error, data: fetchedAddresses } = await async_wrapper(
+    Address.find({}, { senderId: 0, receiverIds: 0, __v: 0 }).lean()
+  );
+
+  if (error || !fetchedAddresses || !fetchedAddresses.length) {
+    return res.status(401).json({
+      message: 'Failed to find your address!'
+    });
+  }
+
+  // send the response to frontend
+  res.status(200).json({
+    addressList: fetchedAddresses
+  });
+};
+
+/*
   Function: get one address [GET]
 */
 
@@ -16,7 +40,7 @@ exports.getAddress = async (req, res) => {
   console.log('getAddress is called');
   // async funtion: find user with matched email in db
   const { error, data: fetchedAddress } = await async_wrapper(
-    Address.findOne({ receiverIds: req.userData.userId })
+    Address.findOne({ _id: req.params._id })
   );
 
   if (error || !fetchedAddress) {
@@ -74,30 +98,6 @@ exports.getAddressInfo = async (req, res) => {
 };
 
 /*
-  Function: get list of all addresses [GET]
-*/
-
-exports.getAddressList = async (req, res) => {
-  console.log('getAddressList is called');
-
-  // async funtion: find user with matched email in db
-  const { error, data: fetchedAddresses } = await async_wrapper(
-    Address.find({}, { senderId: 0, receiverIds: 0, __v: 0 }).lean()
-  );
-
-  if (error || !fetchedAddresses || !fetchedAddresses.length) {
-    return res.status(401).json({
-      message: 'Failed to find your address!'
-    });
-  }
-
-  // send the response to frontend
-  res.status(200).json({
-    addressList: fetchedAddresses
-  });
-};
-
-/*
   Function: create one new address [POST]
 */
 
@@ -133,7 +133,7 @@ exports.createAddress = async (req, res) => {
   Function: add one extra receiver to an address [PATCH]
 */
 
-exports.addReceiver = async (req, res) => {
+exports.addReceiver = async (req, res, next) => {
   console.log('addReceiver is called');
   // prepare the update; $addToSet ensure all array ids are uniques
   const update = {
@@ -150,6 +150,10 @@ exports.addReceiver = async (req, res) => {
       message: 'Failed to add new reciever to the address!'
     });
   }
+
+  // call next() to update user's document as well
+  // req.fetchedAddress = fetchedAddress
+  // next()
 
   // send the response to frontend
   res.status(201).json({

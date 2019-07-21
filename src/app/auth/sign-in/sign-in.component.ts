@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
 import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 
@@ -12,6 +11,7 @@ import { Router } from '@angular/router';
 export class SignInComponent implements OnInit {
   // Attributes
   form: FormGroup;
+  needConfirmation = false;
 
   // Constructor
   constructor(
@@ -30,9 +30,28 @@ export class SignInComponent implements OnInit {
   }
 
   // Method: call signUp serivce
-  async onSignIn() {
-    await this.authService._signIn(this.email.value, this.password.value).toPromise();
-    this.routerService.navigate(['mails']);
+  onSignIn() {
+    this.authService._signIn(this.email.value, this.password.value).subscribe(
+      // redirect user to dashboard
+      () => this.routerService.navigate(['mails']),
+      // error occured
+      error => {
+        if (error.error.message === 'Please verify your email address!') {
+          this.needConfirmation = true;
+        }
+      }
+    );
+  }
+
+  // Method: call send email verification service
+  onResend() {
+    this.needConfirmation = false;
+    this.authService._sendEmailConfirmation(this.email.value).subscribe();
+  }
+
+  // Method: call forgot password
+  onForgot() {
+    this.routerService.navigate(['forgot-password']);
   }
 
   // Getters

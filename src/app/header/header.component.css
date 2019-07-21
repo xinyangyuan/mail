@@ -12,9 +12,10 @@ a {
   padding-left: 1rem;
 }
 
-/* mat-toolbar {
-  border-bottom: solid 1px gray;
-} */
+mat-toolbar {
+  background-color: rgb(114, 138, 248);
+  color: white;
+}
 
 /* mat-toolbar {
   position: fixed;

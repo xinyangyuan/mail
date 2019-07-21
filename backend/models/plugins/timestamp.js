@@ -6,7 +6,7 @@ module.exports = function timestamp(schema) {
   });
 
   // Create a pre-save hook
-  schema.pre('save', function(next) {
+  schema.pre('save', next => {
     let now = Date.now();
 
     this.updatedAt = now;
