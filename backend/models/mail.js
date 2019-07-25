@@ -8,10 +8,12 @@ const mailSchema = mongoose.Schema({
   content: { type: String, required: true },
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  read_flag: { type: Boolean, required: true },
-  star_flag: { type: Boolean, required: true },
   envelopKey: { type: String, required: true },
-  contentPDFKey: { type: String, required: true }
+  contentPDFKey: { type: String, required: true },
+  flags: {
+    type: { read: { type: Boolean }, star: { type: Boolean }, issue: { type: Boolean } },
+    default: { read: false, star: false, issue: false }
+  }
 });
 
 // use timestamp plugin/middleware

@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { Subscription } from 'rxjs';
+import { ActivatedRoute, Data } from '@angular/router';
+import { Subscription, Subject, Observable } from 'rxjs';
+import { switchMap, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { MailService } from '../mail.service';
 import { Mail } from '../mail.model';
@@ -13,27 +15,65 @@ import { PageEvent } from '@angular/material';
 })
 export class MailListComponent implements OnInit, OnDestroy {
   // Attributes
+  public urlData: Data;
   public mailList: Mail[];
   public imageURLs: { [key: string]: any } = {};
 
-  // pagination
+  // Pagination
   public mailCount = 0;
   public mailsPerPage = 15;
   public currentPage = 1;
   public pageSizeOptions = [15, 20, 25];
-  // progress bar
+
+  // UI & Cancel Http Request on Re-directing
   public isloading = true;
+  private currentMailListSubscription: Subscription;
 
-  constructor(private mailService: MailService, private sanitizer: DomSanitizer) {}
+  // Constructor:
+  constructor(
+    private mailService: MailService,
+    private sanitizer: DomSanitizer,
+    private route: ActivatedRoute
+  ) {}
 
-  // Init Method
+  // Init Method:
   async ngOnInit() {
-    this.mailService._getMailList(this.mailsPerPage, this.currentPage).subscribe(data => {
-      this.mailList = data.mailList;
-      this.mailCount = data.mailCount;
-      this.isloading = false;
-    });
+    // get url route data
+    this.currentMailListSubscription = this.route.data
+      .pipe(
+        // switchMap is actually NOT needed, the component will be reloaded when redirects
+        switchMap(urlData => {
+          this.urlData = urlData;
+          return this.mailService._getMailList(this.mailsPerPage, this.currentPage, urlData);
+        })
+      )
+      // fetch mail list
+      .subscribe(data => {
+        this.mailList = data.mailList;
+        this.mailCount = data.mailCount;
+        this.isloading = false;
+      });
   }
+
+  // Method: stared a mail
+  onStar(mail: Mail, event: MouseEvent, idx: number) {
+    // disable mat-expansion panel from expanding
+    event.stopPropagation();
+
+    // change star icon state and update to server
+    mail.flags.star = !mail.flags.star;
+    this.mailService._updateMail(mail._id, undefined, mail.flags.star).subscribe();
+    // .subscribe(fetchedMail => (mail.flags.star = fetchedMail.mail.flags.star));
+
+    // delete mail from view if we are in stared route
+    if (this.urlData.starFlag === true) {
+      this.mailList.splice(idx, 1);
+    }
+  }
+
+  // Method: read a mail
+  // Method: issue a mail
+  // Method: delete a mail
 
   // Method: view mail envelop image
   loadImage(id: string) {
@@ -46,17 +86,19 @@ export class MailListComponent implements OnInit, OnDestroy {
   }
 
   // Method: view mail content pdf
-  onView(id: string) {
+  async onView(mail: Mail) {
     // open new window and display loading message
     const pdfWindow = window.open('', '_blank');
     pdfWindow.document.write('Loading pdf... <br> Please turn off AdBlock to see the pdf file.');
 
     // get content pdf
-    this.mailService.getContentPDF(id).subscribe(file => {
-      const pdf = new Blob([file], { type: file.type });
-      const pdfURL = window.URL.createObjectURL(pdf);
-      pdfWindow.location.href = pdfURL;
-    });
+    const file = await this.mailService.getContentPDF(mail._id).toPromise();
+    const pdfURL = window.URL.createObjectURL(file);
+    pdfWindow.location.href = pdfURL;
+
+    // change read flag
+    await this.mailService._updateMail(mail._id, true).toPromise();
+    mail.flags.read = true;
   }
 
   // Method: call change page in paginator
@@ -69,18 +111,18 @@ export class MailListComponent implements OnInit, OnDestroy {
     this.currentPage = pageData.pageIndex + 1;
     this.mailsPerPage = pageData.pageSize;
 
-    this.mailService._getMailList(this.mailsPerPage, this.currentPage).subscribe(data => {
-      this.mailList = data.mailList;
-      this.isloading = false;
-    });
+    // fetch mails and update to the newest mailList request
+    this.currentMailListSubscription = this.mailService
+      ._getMailList(this.mailsPerPage, this.currentPage, this.urlData)
+      .subscribe(data => {
+        this.mailList = data.mailList;
+        this.isloading = false;
+      });
   }
 
   // Destroy Method
   ngOnDestroy() {
-    // cancel service subscriptions on destory
-    // this.mailsListObserver.unsubscribe();
-    // this.mailCreateObserver.unsubscribe();
-    // this.mailUpdateObserver.unsubscribe();
-    // this.mailDeletionObserver.unsubscribe();
+    // abort mailList request when changes page
+    this.currentMailListSubscription.unsubscribe();
   }
 }

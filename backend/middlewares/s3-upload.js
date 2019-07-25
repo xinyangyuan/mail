@@ -1,4 +1,5 @@
 const s3 = require('../utils/aws');
+const time = new Date().toISOString();
 
 /*
   Async helper function
@@ -18,10 +19,10 @@ const generateFilename = (req, file) => {
   const name = 'From_' + req.userData.userId + '_To_' + req.body.receiverId + '_' + file.fieldname;
 
   // return filename
-  let filename = new Date().toISOString() + '_' + name + '.' + ext;
+  let filename = time + '_' + name + '.' + ext;
 
   // add pseude folder directory receiverId/content/filename or receiverId/envelop/filename, file.fieldname = contentPDF | envelop
-  filename = req.body.receiverId + '/' + file.fieldname + '/' + filename;
+  filename = req.body.receiverId + '/' + time + '/' + filename;
 
   return filename;
 };
@@ -54,7 +55,7 @@ module.exports = async (req, res, next) => {
     const { error, data: uploadedFile } = await async_wrapper(s3.upload(params).promise());
 
     if (error) {
-      res.status(500).json({ message: error });
+      return res.status(500).json({ message: error });
     } else {
       res.fileDate = filename;
     }

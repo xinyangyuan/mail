@@ -5,6 +5,11 @@ export interface Mail {
   content: string;
   senderId: string;
   receiverId: string;
-  read_flag: boolean;
-  star_flag: boolean;
+  flags: {
+    read: boolean;
+    star: boolean;
+    issue: boolean;
+  };
+  updatedAt: Date;
+  createdAt: Date;
 }

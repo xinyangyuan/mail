@@ -27,6 +27,7 @@ import { SignInComponent } from './auth/sign-in/sign-in.component';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
+import { DebounceClickDirective } from './directives/debounce-click.directive';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,8 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password.com
     SignUpConfirmationComponent,
     SignInComponent,
     ForgotPasswordComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    DebounceClickDirective
   ],
   imports: [
     BrowserModule,

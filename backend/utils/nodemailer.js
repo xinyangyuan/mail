@@ -12,9 +12,6 @@ var options = {
 // specify the method of mail delivery
 const transporter = nodemailer.createTransport(sgTransport(options));
 
-// export email transporter
-module.exports = transporter;
-
 // const email = {
 // from: 'awesome@bar.com',
 // to: 'mr.walrus@foo.com',
@@ -30,3 +27,6 @@ module.exports = transporter;
 //     console.log('Message sent: ' + info.response);
 //   }
 // });
+
+// export email transporter
+module.exports = transporter;

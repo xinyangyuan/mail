@@ -52,6 +52,17 @@ const getUserSearchCriteria = req => {
 exports.getMailList = async (req, res, next) => {
   // get search criteria and prepare db request template
   const searchCriteria = getUserSearchCriteria(req);
+
+  if (typeof req.query.readFlag !== 'undefined') {
+    searchCriteria['flags.read'] = req.query.readFlag === 'true'; // read filter
+  }
+  if (typeof req.query.starFlag !== 'undefined') {
+    searchCriteria['flags.star'] = req.query.starFlag === 'true'; // star filter
+  }
+  if (typeof req.query.issueFlag !== 'undefined') {
+    searchCriteria['flags.issue'] = req.query.issueFlag === 'true'; // issue filter
+  }
+
   const mailQuery = Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 });
 
   // async query: get total mail count from database
@@ -61,14 +72,22 @@ exports.getMailList = async (req, res, next) => {
   const mailPerPage = +req.query.mailsPerPage;
   const currentPage = +req.query.currentPage;
 
+  // sort method
+  const sort = { sort: { createdAt: -1 } }; // default: sort by date descending order
+  if (
+    ['title', '-title', 'createdAt', '-createdAt', 'content', '-content'].includes(req.query.sort)
+  ) {
+    sort = { sort: req.query.sort };
+  }
+
   // async query:get mails from database TODO
   const { error: error, data: fetchedMails } = await async_wrapper(
-    Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
+    Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 }, sort)
       .skip(mailPerPage && currentPage ? mailPerPage * (currentPage - 1) : 0)
       .limit(mailPerPage && currentPage ? mailPerPage : mailCount)
   );
 
-  if (err || error || !fetchedMails || !fetchedMails.length) {
+  if (err || error || !fetchedMails) {
     return res.status(500).json({
       message: 'Failed to fetch mails!'
     });
@@ -87,26 +106,36 @@ exports.getMailList = async (req, res, next) => {
 */
 
 exports.updateMail = async (req, res, next) => {
+  console.log('update is called');
   // define search criteria :: make sure the request from mail's sender/user
   const searchCriteria = getUserSearchCriteria(req);
   searchCriteria['_id'] = req.params.id;
 
   // req.params retrieve route parameters in the path portion of URL
-  // To do: this is awfully verbose..
+  // ToDo: this is awfully verbose..
   const update = {};
-  if (typeof req.body.read_flag !== 'undefined') {
-    update.read_flag = req.body.read_flag;
+
+  if (typeof req.body.readFlag === 'boolean' /*&& !req.userData.isSender*/) {
+    update['flags.read'] = req.body.readFlag;
   }
-  if (typeof req.body.star_flag !== 'undefined') {
-    update.star_flag = req.body.star_flag;
+  if (typeof req.body.starFlag === 'boolean' /*&& !req.userData.isSender*/) {
+    update['flags.star'] = req.body.starFlag;
+  }
+  if (typeof req.body.issueFlag === 'boolean' /*&& !req.userData.isSender*/) {
+    update['flags.issue'] = req.body.issueFlag;
   }
 
   // async function to update one mail's flag and get the updated doc
   const { error, data: fetchedMail } = await async_wrapper(
-    Mail.findByIdAndUpdate(searchCriteria, update, {
-      fields: { envelopKey: 0, contentPDFKey: 0 },
-      new: true
-    })
+    Mail.findByIdAndUpdate(
+      searchCriteria,
+      { $set: update },
+      {
+        fields: { envelopKey: 0, contentPDFKey: 0 },
+        new: true,
+        runValidators: true
+      }
+    )
   );
 
   if (error || !fetchedMail) {
@@ -217,9 +246,7 @@ exports.getContentPDF = async (req, res, next) => {
 
   // eject on empty key  TODELET!
   if (typeof fetchedMail.contentPDFKey === 'undefined') {
-    return res.status(500).json({
-      message: 'Failed to the mail pdf!'
-    });
+    return res.status(401).json({ message: 'Failed to find mail pdf!' });
   }
 
   // define search params
@@ -239,8 +266,7 @@ exports.getContentPDF = async (req, res, next) => {
 
   // handle error
   stream.on('error', error => {
-    console.log(error);
-    return res.status(500).json({
+    res.status(500).json({
       message: 'Failed to get mail content pdf!'
     });
   });
@@ -296,8 +322,6 @@ exports.createMail = async (req, res, next) => {
     content: req.body.content,
     senderId: mongoose.Types.ObjectId(req.userData.userId),
     receiverId: mongoose.Types.ObjectId(req.body.receiverId),
-    read_flag: false,
-    star_flag: false,
     envelopKey: envelopKey,
     contentPDFKey: contentPDFKey
   });

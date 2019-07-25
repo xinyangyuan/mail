@@ -35,6 +35,8 @@ const routes: Routes = [
     component: DashboardPageComponent,
     children: [
       { path: 'mails', component: MailListComponent },
+      { path: 'stared', component: MailListComponent, data: { starFlag: true } },
+      { path: 'unread', component: MailListComponent, data: { readFlag: false } },
       { path: 'users', component: UserListComponent },
       { path: 'create', component: MailCreateComponent }
     ]

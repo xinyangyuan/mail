@@ -1,13 +1,10 @@
 mat-card {
   margin: 1rem auto;
   width: 400px;
+  text-align: center;
 }
 
 mat-form-field,
 textarea {
   width: 100%;
-}
-
-.address-create-btn {
-  float: right;
 }

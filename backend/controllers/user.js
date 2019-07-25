@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const transporter = require('../utils/nodemailer');
-const mailGenerator = require('../utils/mailgen');
+const mailgen = require('../utils/mailgen');
 const User = require('../models/user');
 
 /*
@@ -10,87 +10,11 @@ const User = require('../models/user');
 */
 
 const async_wrapper = promise =>
-  promise.then(data => ({ data, error: null })).catch(error => ({ error, data: null }));
-
-/*
-  Helper Function: generate verification email template
-*/
-const generateVerifyEmail = (req, emailToken) => {
-  // token information
-  const accountType = req.body.isSender ? 'sender' : 'user';
-  const confimationURL = `http://localhost:4200/confirmation/${accountType}/${emailToken}`;
-
-  // prepare email html template
-  const email = {
-    body: {
-      name: req.body.firstName + ' ' + req.body.lastName,
-      intro: "Welcome to My Mail! We're very excited to have you on board.",
-      action: {
-        instructions: 'To get started with MyMail, please click here:',
-        button: {
-          color: '#22BC66', // Optional action button color
-          text: 'Confirm your account',
-          link: confimationURL
-        }
-      },
-      //greeting: 'Dear',
-      signature: 'Sincerely',
-      outro: "Need help, or have questions? Just reply to this email, we'd love to help."
-    }
-  };
-
-  const emailBody = mailGenerator.generate(email);
-  const emailText = mailGenerator.generatePlaintext(email);
-
-  // email template
-  return (emailTemplate = {
-    from: 'awesome@bar.com',
-    to: req.body.email,
-    subject: 'Hello ' + req.body.firstName + ' ' + req.body.lastName,
-    text: emailText,
-    html: emailBody
-  });
-};
-
-/*
-  Helper Function: generate password reset email template
-*/
-const generatePasswordResetEmail = (req, emailToken) => {
-  // token information
-  const confimationURL = `http://localhost:4200/reset-password/${emailToken}`;
-
-  // prepare email html template
-  const email = {
-    body: {
-      name: req.body.firstName + ' ' + req.body.lastName,
-      intro:
-        'You have received this email because a password reset request for your account was received.',
-      action: {
-        instructions: 'Click the button below to reset your password:',
-        button: {
-          color: '#DC4D2F', // Optional action button color
-          text: 'Reset your password',
-          link: confimationURL
-        }
-      },
-      //greeting: 'Dear',
-      signature: 'Sincerely',
-      outro: 'If you did not request a password reset, no further action is required on your part.'
-    }
-  };
-
-  const emailBody = mailGenerator.generate(email);
-  const emailText = mailGenerator.generatePlaintext(email);
-
-  // email template
-  return (emailTemplate = {
-    from: 'awesome@bar.com',
-    to: req.body.email,
-    subject: 'Hello ' + req.body.firstName + ' ' + req.body.lastName,
-    text: emailText,
-    html: emailBody
-  });
-};
+  promise
+    // on success
+    .then(data => ({ data, error: null }))
+    // on error
+    .catch(error => ({ error, data: null }));
 
 /*
   Function: signup
@@ -113,7 +37,6 @@ exports.userSignUp = async (req, res, next) => {
   const { error, data: fetchedUser } = await async_wrapper(user.save());
 
   if (error || !fetchedUser) {
-    // 500 or 401
     return res.status(401).json({ message: 'Your email is already registered!' });
   }
 
@@ -124,11 +47,13 @@ exports.userSignUp = async (req, res, next) => {
   const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
 
   // send email verification to user
-  const email = generateVerifyEmail(req, emailToken);
+  // generate email from template
+  const email = mailgen.generateVerifyEmail(req, emailToken);
+
   transporter.sendMail(email, (err, info) => {
     if (err) {
       console.log(err);
-      return res.status(201).json({ message: 'Failed to send email verification!' });
+      return res.status(500).json({ message: 'Failed to send email verification!' });
     } else {
       console.log('Message sent: ' + info.response); // TODO
       res.status(201).json({ message: 'Message sent:' + info.response });
@@ -223,7 +148,9 @@ exports.sendConfirmation = async (req, res) => {
   };
 
   // send verification email to user
-  const email = generateVerifyEmail(req, emailToken);
+  // generate email from template
+  const email = mailgen.generateVerifyEmail(req, emailToken);
+
   transporter.sendMail(email, (err, info) => {
     if (err) {
       console.log(err);
@@ -340,7 +267,9 @@ exports.resetPassword = async (req, res) => {
   };
 
   // send verification email to user
-  const email = generatePasswordResetEmail(req, emailToken);
+  // generate email from template
+  const email = mailgen.generatePasswordResetEmail(req, emailToken);
+
   transporter.sendMail(email, (err, info) => {
     if (err) {
       console.log(err);

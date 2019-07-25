@@ -4,7 +4,7 @@ const multer = require('multer');
 const MEMORY_STORAGE = true;
 
 /*
-  Setup disk storage
+  Setup: disk storage settings
 */
 
 const destination = (req, file, cb) => {
@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
 });
 
 /*
-  Setup file filter
+  Setup: file-type filter
 */
 
 const IMG_MIME_TYPE_MAP = {
@@ -57,6 +57,10 @@ const fileFilter = (req, file, cb) => {
     };
   }
 };
+
+/*
+  Middleware: multer multi-fields files upload
+*/
 
 module.exports = multer({
   storage: MEMORY_STORAGE ? multer.memoryStorage() : storage,

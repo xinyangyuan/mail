@@ -1,5 +1,9 @@
 const jwt = require('jsonwebtoken');
 
+/*
+  Middleware: check user authentication via JWT
+*/
+
 module.exports = (req, res, next) => {
   try {
     console.log('authVerify is called');

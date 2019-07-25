@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.get('', authVerify, MailController.getMailList);
 router.post('', authVerify, senderVerify, fileUpload, s3Upload, MailController.createMail);
-router.patch('/:id', authVerify, MailController.updateMail);
+router.patch('/:id', authVerify, MailController.updateMail); // Only can modify flags
 router.delete('/:id', authVerify, MailController.deleteMail); // CAUTION
 router.get('/envelop/:id', authVerify, MailController.getEnvelop);
 router.get('/contentPDF/:id', authVerify, MailController.getContentPDF);

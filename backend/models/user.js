@@ -10,6 +10,7 @@ const userSchema = mongoose.Schema({
   },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  address: { type: mongoose.Schema.Types.ObjectId, ref: 'Address' },
   isSender: { type: Boolean, required: true },
   isConfirmed: { type: Boolean, required: true }
 });

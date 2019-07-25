@@ -3,9 +3,13 @@ mat-paginator {
   background-color: rgba(245, 245, 245, 1);
 }
 
-main {
+/* main {
   width: 90%;
   margin: 1rem auto;
+} */
+
+main {
+  margin: 10px 10px;
 }
 
 /* restrict title moving upwards when adding button to panel title */
@@ -24,6 +28,10 @@ mat-expansion-panel {
   border-top: none;
 } */
 
+.star-border-btn {
+  color: lightgrey;
+}
+
 mat-expansion-panel:hover {
   position: relative;
   -webkit-box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75);
@@ -32,8 +40,8 @@ mat-expansion-panel:hover {
   z-index: 1;
 }
 
-.post-image {
-  width: 100%;
+mat-expansion-panel:hover .star-border-btn {
+  color: dimgrey;
 }
 
 .post-image img {

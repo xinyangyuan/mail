@@ -4,19 +4,44 @@
 
   <mat-accordion>
     <mat-expansion-panel
-      *ngFor="let mail of mailList"
-      [ngStyle]="mail.read_flag && { 'background-color': '#F4F4F7' }"
+      *ngFor="let mail of mailList; let idx = index"
+      [ngStyle]="mail.flags.read && { 'background-color': '#F4F4F7' }"
       (click)="loadImage(mail._id)"
+      #panel
     >
-      <mat-expansion-panel-header class="aligned-headers">
-        <mat-panel-title fxLayout="row" fxFlex>
-          <button *ngIf="false" mat-icon-button fxFlex="15">
-            <mat-icon>favorite</mat-icon>
-          </button>
-          <p fxFlex="85">
+      <mat-expansion-panel-header
+        fxLayout="row"
+        class="aligned-headers"
+        (opened)="panelOpenState = true"
+        (closed)="panelOpenState = false"
+      >
+        <mat-panel-title fxFlex>
+          <div fxFlex="12">
+            <button mat-icon-button class="button-hide">
+              <mat-icon
+                *ngIf="!mail.flags.star && !panel.expanded"
+                appDebounceClick
+                (debounceClick)="onStar(mail, $event, idx)"
+                [debounceTime]="150"
+                class="star-border-btn"
+                >star_border</mat-icon
+              >
+              <mat-icon
+                *ngIf="mail.flags.star && !panel.expanded"
+                appDebounceClick
+                (debounceClick)="onStar(mail, $event, idx)"
+                [debounceTime]="150"
+                [ngStyle]="{ color: 'gold' }"
+                >star</mat-icon
+              >
+            </button>
+          </div>
+
+          <p fxFlex="88">
             {{ mail.title }}
           </p>
         </mat-panel-title>
+
         <mat-panel-description>
           {{ mail.description }}
         </mat-panel-description>
@@ -31,8 +56,8 @@
       </p> -->
 
       <mat-action-row>
-        <button mat-button color="warn" rout>FLAG</button>
-        <button mat-raised-button color="primary" (click)="onView(mail._id)" type="button">
+        <!-- <button mat-button color="warn" rout>FLAG</button> -->
+        <button mat-button color="primary" (click)="onView(mail)" type="button">
           VIEW
         </button>
       </mat-action-row>
@@ -48,32 +73,3 @@
   (page)="onChangedPage($event)"
 >
 </mat-paginator>
-
-<!-- <div>
-  <mat-accordion>
-    <mat-expansion-panel
-      hideToggle="true"
-      *ngFor="let mail of mailList"
-      [ngStyle]="mail.read_flag && { 'background-color': '#F4F4F7' }"
-    >
-      <mat-expansion-panel-header class="aligned-headers">
-        <mat-panel-title>
-          {{ mail.title }}
-        </mat-panel-title>
-        <mat-panel-description>
-          {{ mail.description }}
-        </mat-panel-description>
-        <button mat-button color="primary" (click)="$event.stopPropagation()">Flag</button>
-      </mat-expansion-panel-header>
-
-      <p>
-        {{ mail.content }}
-      </p>
-
-      <mat-action-row>
-        <button mat-button color="warn">FLAG</button>
-        <button mat-raised-button color="primary">VIEW</button>
-      </mat-action-row>
-    </mat-expansion-panel>
-  </mat-accordion>
-</div> -->

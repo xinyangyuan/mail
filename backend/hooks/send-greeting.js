@@ -25,4 +25,8 @@ const sendGreeting = async (req, res) => {
   await mail.save();
 };
 
+/*
+  (Post)-Hook: send welcome mail to the newly registered user
+*/
+
 module.exports = sendGreeting;

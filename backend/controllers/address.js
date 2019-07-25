@@ -101,7 +101,7 @@ exports.getAddressInfo = async (req, res) => {
   Function: create one new address [POST]
 */
 
-exports.createAddress = async (req, res) => {
+exports.createAddress = async (req, res, next) => {
   console.log('createAddress is called');
   // patch all fields from request
   const address = new Address({
@@ -127,6 +127,10 @@ exports.createAddress = async (req, res) => {
   res.status(201).json({
     addressInfo: fetchedAddress
   });
+
+  // call post-hook
+  req.fetchedAddress = fetchedAddress;
+  next();
 };
 
 /*
@@ -142,7 +146,7 @@ exports.addReceiver = async (req, res, next) => {
 
   // async funtion: push a new user into address doc's receiverId field
   const { error, data: fetchedAddress } = await async_wrapper(
-    Address.findOneAndUpdate({ _id: req.body.addressId }, update)
+    Address.findOneAndUpdate({ _id: req.body.addressId }, update, { runValidators: true })
   );
 
   if (error || !fetchedAddress) {
@@ -150,10 +154,6 @@ exports.addReceiver = async (req, res, next) => {
       message: 'Failed to add new reciever to the address!'
     });
   }
-
-  // call next() to update user's document as well
-  // req.fetchedAddress = fetchedAddress
-  // next()
 
   // send the response to frontend
   res.status(201).json({
@@ -166,4 +166,8 @@ exports.addReceiver = async (req, res, next) => {
       country: fetchedAddress.country
     }
   });
+
+  // call post-hook
+  req.fetchedAddress = fetchedAddress;
+  next();
 };

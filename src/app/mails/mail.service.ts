@@ -1,6 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Subject, Observable, throwError, timer } from 'rxjs';
+import {
+  catchError,
+  tap,
+  debounceTime,
+  distinctUntilChanged,
+  debounce,
+  delay
+} from 'rxjs/operators';
 
 import { Mail } from './mail.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -47,10 +54,32 @@ export class MailService {
 
   _getMailList(
     mailsPerPage: number,
-    currentPage: number
+    currentPage: number,
+    flags?: { readFlag?: boolean; starFlag?: boolean; issueFlag?: boolean }
   ): Observable<{ message: string; mailList: Mail[]; mailCount: number }> {
-    // set query parameters
-    const queryParams = `?mailsPerPage=${mailsPerPage}&currentPage=${currentPage}`;
+    // retrieve flags query
+    let readFlagParam = '';
+    let starFlagParam = '';
+    let issueFlagParam = '';
+
+    if (typeof flags !== 'undefined') {
+      if (flags.hasOwnProperty('readFlag')) {
+        readFlagParam = `&readFlag=${flags.readFlag.toString()}`;
+      }
+      if (flags.hasOwnProperty('starFlag')) {
+        starFlagParam = `&starFlag=${flags.starFlag.toString()}`;
+      }
+      if (flags.hasOwnProperty('issueFlag')) {
+        issueFlagParam = `&issueFlag=${flags.issueFlag.toString()}`;
+      }
+    }
+
+    // set querParams
+    const queryParams =
+      `?mailsPerPage=${mailsPerPage}&currentPage=${currentPage}` +
+      readFlagParam +
+      starFlagParam +
+      issueFlagParam;
 
     // fetch mail list from the RESTapi
     return (
@@ -66,7 +95,7 @@ export class MailService {
               console.log(res.message);
             },
             err => {
-              console.log('unable to sign-up new user');
+              console.log('Failed to fetch mails');
             }
           ),
           catchError(error => throwError(error))
@@ -180,11 +209,12 @@ export class MailService {
 
   _updateMail(
     id: string,
-    read_flag: boolean,
-    star_flag: boolean
+    readFlag?: boolean,
+    starFlag?: boolean,
+    issueFlag?: boolean
   ): Observable<{ message: string; mail: Mail }> {
     // pack all required post data
-    const mailData = { id, read_flag, star_flag };
+    const mailData = { readFlag, starFlag, issueFlag };
 
     // post updated mail data to RESTapi
     return (
@@ -272,6 +302,17 @@ export class MailService {
       this.http
         // send get request
         .get(this.BACKEND_URL + 'contentPDF/' + id, { responseType: 'blob' })
+        .pipe(
+          tap(
+            res => {
+              console.log('Get mail pdf suceessfully');
+            },
+            err => {
+              console.log('Failed to get mail PDF!');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
     );
   }
 }

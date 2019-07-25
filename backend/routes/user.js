@@ -8,8 +8,9 @@ const router = express.Router();
 // user api routes
 router.post('/signup', UserController.userSignUp, sendGreeting);
 router.post('/signin', UserController.userSignIn);
-router.get('/confirmation/:email', UserController.sendConfirmation); // send new email confimation
-router.post('/confirmation/:emailToken', UserController.verifyConfirmation); // verify email confirmation
+
+router.get('/confirmation/:email', UserController.sendConfirmation);
+router.post('/confirmation/:emailToken', UserController.verifyConfirmation);
 router.get('/reset/:email', UserController.resetPassword);
 router.post('/reset/:emailToken', UserController.verifyReset);
 

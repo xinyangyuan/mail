@@ -1,3 +1,7 @@
+/*
+  Middleware: sender role authentication
+*/
+
 module.exports = (req, res, next) => {
   console.log('senderVerify is called');
 
@@ -6,6 +10,6 @@ module.exports = (req, res, next) => {
     next();
   } else {
     // senderVerify failed
-    res.status(401).json({ message: 'You are not authorized!' });
+    res.status(403).json({ message: 'You are not authorized!' });
   }
 };
