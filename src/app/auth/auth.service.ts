@@ -5,19 +5,25 @@ import { tap, catchError } from 'rxjs/operators';
 
 import { AuthData } from './auth-data.model';
 import { CookieService } from 'ngx-cookie-service';
+import { Router } from '@angular/router';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   // Attributes:
-  private BACKEND_URL = 'http://localhost:3000/api/user/';
+  private BACKEND_URL = environment.apiURL + '/user/';
 
   private authStatusListener = new Subject<boolean>();
   private tokenExpireTimer: any;
 
   // Constructor:
-  constructor(private http: HttpClient, private cookieService: CookieService) {}
+  constructor(
+    private http: HttpClient,
+    private cookieService: CookieService,
+    private router: Router
+  ) {}
 
   /*
      Method: sign-up function
@@ -299,6 +305,8 @@ export class AuthService {
     clearTimeout(this.tokenExpireTimer);
     this.cookieService.deleteAll();
     this.authStatusListener.next(false);
+    // TODELETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    this.router.navigate(['']);
     console.log('You have been logged out!');
   }
 

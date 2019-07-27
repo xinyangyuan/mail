@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-navigation-list',
@@ -6,7 +7,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./navigation-list.component.css']
 })
 export class NavigationListComponent implements OnInit {
-  constructor() {}
+  senderStatus: boolean;
 
-  ngOnInit() {}
+  constructor(private authService: AuthService) {}
+
+  ngOnInit() {
+    this.senderStatus = this.authService.getSenderStatus();
+  }
 }

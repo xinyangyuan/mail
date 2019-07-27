@@ -5,13 +5,14 @@ import { Address } from './address.model';
 import { AddressInfo } from './address-info.model';
 import { Subject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AddressService {
   // Attributes:
-  private BACKEND_URL = 'http://localhost:3000/api/address/';
+  private BACKEND_URL = environment.apiURL + '/address/';
 
   private addressList: Address[];
   private myAddress: Address;

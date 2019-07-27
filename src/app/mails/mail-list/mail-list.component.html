@@ -6,7 +6,7 @@
     <mat-expansion-panel
       *ngFor="let mail of mailList; let idx = index"
       [ngStyle]="mail.flags.read && { 'background-color': '#F4F4F7' }"
-      (click)="loadImage(mail._id)"
+      (click)="onExpand(mail)"
       #panel
     >
       <mat-expansion-panel-header
@@ -47,16 +47,13 @@
         </mat-panel-description>
       </mat-expansion-panel-header>
 
-      <div *ngIf="imageURLs[mail._id]" class="post-image">
+      <app-image-loading-spinner *ngIf="imageIsLoading"></app-image-loading-spinner>
+      <div *ngIf="!imageIsLoading" class="post-image">
         <img [src]="imageURLs[mail._id]" [alt]="mail.content" />
       </div>
 
-      <!-- <p>
-        {{ mail.content }}
-      </p> -->
-
       <mat-action-row>
-        <!-- <button mat-button color="warn" rout>FLAG</button> -->
+        <button mat-button color="warn" (click)="onDelete(mail)">DELETE</button>
         <button mat-button color="primary" (click)="onView(mail)" type="button">
           VIEW
         </button>

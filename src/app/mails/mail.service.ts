@@ -1,23 +1,17 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable, throwError, timer } from 'rxjs';
-import {
-  catchError,
-  tap,
-  debounceTime,
-  distinctUntilChanged,
-  debounce,
-  delay
-} from 'rxjs/operators';
+import { Subject, Observable, throwError } from 'rxjs';
+import { catchError, tap, map } from 'rxjs/operators';
 
 import { Mail } from './mail.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MailService {
   // Attributes
-  private BACKEND_URL = 'http://localhost:3000/api/mail/';
+  private BACKEND_URL = environment.apiURL + '/mail/';
 
   // Attributes: observerables
   private mailsListObservable = new Subject<Mail[]>();
@@ -288,6 +282,11 @@ export class MailService {
       this.http
         // send get request
         .get(this.BACKEND_URL + 'envelop/' + id, { responseType: 'blob' })
+        .pipe(
+          map(file => {
+            return { id, file };
+          })
+        )
     );
   }
 

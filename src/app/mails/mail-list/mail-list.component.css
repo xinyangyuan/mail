@@ -1,8 +1,3 @@
-/* align header text */
-mat-paginator {
-  background-color: rgba(245, 245, 245, 1);
-}
-
 /* main {
   width: 90%;
   margin: 1rem auto;
@@ -24,12 +19,17 @@ mat-expansion-panel {
   border-bottom: 1px solid rgb(240, 242, 244);
 }
 
-/* mat-action-row {
-  border-top: none;
-} */
-
 .star-border-btn {
   color: lightgrey;
+}
+
+.star-border-btn:hover {
+  transition: all 0.3s;
+  color: rgb(54, 53, 53) !important;
+}
+
+mat-expansion-panel:hover .star-border-btn {
+  color: dimgrey;
 }
 
 mat-expansion-panel:hover {
@@ -40,15 +40,16 @@ mat-expansion-panel:hover {
   z-index: 1;
 }
 
-mat-expansion-panel:hover .star-border-btn {
-  color: dimgrey;
-}
-
 .post-image img {
   width: 100%;
+  height: 500px;
   /* box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5); */
 }
 
-.example-viewport {
-  height: 800vh;
+/* mat-action-row {
+  border-top: none;
+} */
+
+mat-paginator {
+  background-color: rgba(245, 245, 245, 1);
 }

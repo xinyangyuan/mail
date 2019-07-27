@@ -35,7 +35,7 @@ module.exports = async (req, res, next) => {
   // req.files: {envelop: [Object], contentPDF: [Object]}
   // Object.values(req.files) => [[Object], [Object]]
   // .flat() => [Object, Object]
-  const files = Object.values(req.files).flat();
+  const files = Object.values(req.files).flat(); // not compatible with node.js 10.X
   const filenames = [];
 
   for (let file of files) {

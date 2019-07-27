@@ -214,14 +214,17 @@ exports.getEnvelop = async (req, res, next) => {
   res.setHeader('Content-Type', 'image/' + ext);
 
   // create readable stream from aws s3
-  stream = s3.getObject(params).createReadStream();
+  const stream = s3.getObject(params).createReadStream();
 
   // handle error
   stream.on('error', error => {
-    console.log(error);
-    return res.status(401).json({
-      message: 'Failed to get mail envelop image!'
-    });
+    stream.end(); // mannually closes the stream
+    console.log('cannot find the image');
+  });
+
+  // closes redableStream
+  req.on('close', () => {
+    stream.end(); // if request is cancelled, also closes the stream
   });
 
   // start fetching the file and pipe it to response
@@ -262,18 +265,17 @@ exports.getContentPDF = async (req, res, next) => {
   res.setHeader('Content-Disposition', 'inline; filename="' + 'Mail Content' + '"');
 
   // create readable stream from aws s3
-  stream = s3.getObject(params).createReadStream();
+  const stream = s3.getObject(params).createReadStream();
 
   // handle error
   stream.on('error', error => {
-    res.status(500).json({
-      message: 'Failed to get mail content pdf!'
-    });
+    stream.end(); // mannually closes the stream
   });
 
-  // stream.on('end', () => {
-  //   console.log('already done');
-  // });
+  // closes redableStream
+  req.on('end', () => {
+    stream.end(); //if request is cancelled, also closes the stream
+  });
 
   // start fetching the file and pipe it to response
   stream.pipe(res);

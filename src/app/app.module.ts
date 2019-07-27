@@ -28,6 +28,7 @@ import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { DebounceClickDirective } from './directives/debounce-click.directive';
+import { ImageLoadingSpinnerComponent } from './ui/image-loading-spinner/image-loading-spinner.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { DebounceClickDirective } from './directives/debounce-click.directive';
     SignInComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
-    DebounceClickDirective
+    DebounceClickDirective,
+    ImageLoadingSpinnerComponent
   ],
   imports: [
     BrowserModule,
