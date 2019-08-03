@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Subject, Observable, throwError } from 'rxjs';
+import { Subject, Observable, throwError, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 
 import { AuthData } from './auth-data.model';
@@ -196,20 +196,14 @@ export class AuthService {
         )
         // handling the response from backend server
         .pipe(
-          tap(
-            res => {
-              // trigger additional callback funcs
-              this.autoSignOut(res.expiresDuration);
-              this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
-              // push auth listener
-              this.authStatusListener.next(true);
-              console.log('You have been logged in!');
-            },
-            err => {
-              console.log('unable to sign in the user');
-            }
-          ),
-          catchError(error => throwError(error))
+          tap(res => {
+            // trigger additional callback funcs
+            this.autoSignOut(res.expiresDuration);
+            this.saveAuthInCookie(res.token, res.expiresDuration, res.isSender);
+            // push auth listener
+            this.authStatusListener.next(true);
+            console.log('You have been logged in!');
+          })
         )
     );
   }

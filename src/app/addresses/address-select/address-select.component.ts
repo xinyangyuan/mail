@@ -25,8 +25,8 @@ export class AddressSelectComponent implements OnInit {
   }
 
   // Method: update the selected address
-  onOptionChange(value) {
-    this.address = value;
+  onOptionChange(address: Address) {
+    this.address = address;
   }
 
   // Method: add the selected address to user doc & add new receiver to selected address

@@ -274,14 +274,14 @@ export class MailService {
   /*
     Method: get mail conten pdf  [GET]
   */
-  getEnvelop(id: string) {
+  getEnvelop(id: string): Observable<{ id: string; file: Blob }> {
     // let headers = new HttpHeaders(); header already set by RESTapi
     // headers = headers.set('Accept', 'application/pdf');
 
     return (
       this.http
         // send get request
-        .get(this.BACKEND_URL + 'envelop/' + id, { responseType: 'blob' })
+        .get(this.BACKEND_URL + id + '/envelop/', { responseType: 'blob' })
         .pipe(
           map(file => {
             return { id, file };
@@ -300,7 +300,7 @@ export class MailService {
     return (
       this.http
         // send get request
-        .get(this.BACKEND_URL + 'contentPDF/' + id, { responseType: 'blob' })
+        .get(this.BACKEND_URL + id + '/contentPDF/', { responseType: 'blob' })
         .pipe(
           tap(
             res => {

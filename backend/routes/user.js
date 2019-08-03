@@ -11,6 +11,7 @@ router.post('/signin', UserController.userSignIn);
 
 router.get('/confirmation/:email', UserController.sendConfirmation);
 router.post('/confirmation/:emailToken', UserController.verifyConfirmation);
+
 router.get('/reset/:email', UserController.resetPassword);
 router.post('/reset/:emailToken', UserController.verifyReset);
 

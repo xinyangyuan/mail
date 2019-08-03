@@ -12,10 +12,15 @@ const router = express.Router();
 */
 
 router.get('', authVerify, MailController.getMailList);
+router.get('/:id/envelop', authVerify, MailController.getEnvelop);
+router.get('/:id/contentPDF', authVerify, MailController.getContentPDF);
+
 router.post('', authVerify, senderVerify, fileUpload, s3Upload, MailController.createMail);
+
+router.patch('', authVerify, MailController.updateMails); // Only can modify flags
 router.patch('/:id', authVerify, MailController.updateMail); // Only can modify flags
-router.delete('/:id', authVerify, MailController.deleteMail); // CAUTION
-router.get('/envelop/:id', authVerify, MailController.getEnvelop);
-router.get('/contentPDF/:id', authVerify, MailController.getContentPDF);
+
+router.delete('', authVerify, MailController.deleteMails);
+router.delete('/:id', authVerify, MailController.deleteMail);
 
 module.exports = router;

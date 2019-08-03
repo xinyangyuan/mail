@@ -21,7 +21,7 @@ const updateUserAddress = async (req, res) => {
 };
 
 /*
-  (Post)-Hook: send welcome mail to the newly registered user
+  (Post)-Hook: update user document's address field
 */
 
 module.exports = updateUserAddress;

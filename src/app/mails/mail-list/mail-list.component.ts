@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Data } from '@angular/router';
 import { Subscription, Subject, Observable, forkJoin, pipe } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -18,7 +18,6 @@ export class MailListComponent implements OnInit, OnDestroy {
   // Attributes
   public urlData: Data;
   public mailList: Mail[];
-  public imageURL: any;
   public senderStatus: boolean;
 
   // Pagination
@@ -34,8 +33,8 @@ export class MailListComponent implements OnInit, OnDestroy {
 
   // ADVANCE IMAGE FETCHING METHOD
   imageTaskPool: string[];
-  imageURLs: { [key: string]: any } = {};
   currentImageTasks = [];
+  imageURLs: { [key: string]: SafeUrl } = {};
 
   getImageTasks$ = new Subject();
   imageTasks$ = new Subject<Observable<{ id: string; file: Blob }[]>>();

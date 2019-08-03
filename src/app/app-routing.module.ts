@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { SignupPageComponent } from './pages/signup-page/signup-page.component';
-import { DashboardPageComponent } from './pages/dashboard-page/dashboard-page.component';
+import { SignupPageComponent } from './layout/signup-page/signup-page.component';
+import { DashboardPageComponent } from './layout/dashboard-page/dashboard-page.component';
 
 import { MailListComponent } from './mails/mail-list/mail-list.component';
 import { UserListComponent } from './users/user-list/user-list.component';

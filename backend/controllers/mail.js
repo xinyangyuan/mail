@@ -105,6 +105,56 @@ exports.getMailList = async (req, res, next) => {
   Function: update flags associated with the mail [PATCH] HAS DANGER!
 */
 
+exports.updateMails = async (req, res, next) => {
+  console.log('update is called');
+  // define search criteria :: make sure the request from mail's sender/user
+  const searchCriteria = getUserSearchCriteria(req);
+  searchCriteria['_id'] = { $in: [req.query.ids.split(',')] };
+
+  // req.params retrieve route parameters in the path portion of URL
+  // ToDo: this is awfully verbose..
+  const update = {};
+
+  if (typeof req.body.readFlag === 'boolean' /*&& !req.userData.isSender*/) {
+    update['flags.read'] = req.body.readFlag;
+  }
+  if (typeof req.body.starFlag === 'boolean' /*&& !req.userData.isSender*/) {
+    update['flags.star'] = req.body.starFlag;
+  }
+  if (typeof req.body.issueFlag === 'boolean' /*&& !req.userData.isSender*/) {
+    update['flags.issue'] = req.body.issueFlag;
+  }
+
+  // async function to update one mail's flag and get the updated doc
+  const { error, data: fetchedMail } = await async_wrapper(
+    Mail.findByIdAndUpdate(
+      searchCriteria,
+      { $set: update },
+      {
+        fields: { envelopKey: 0, contentPDFKey: 0 },
+        new: true,
+        runValidators: true
+      }
+    )
+  );
+
+  if (error || !fetchedMail) {
+    return res.status(500).json({
+      message: 'Failed to toggle mail flag(s)!'
+    });
+  }
+
+  // send POST request's result to frontend
+  res.status(201).json({
+    message: 'Mail flag(s) set successfully.',
+    mail: fetchedMail
+  });
+};
+
+/*
+  Function: update flags associated with the mail [PATCH] HAS DANGER!
+*/
+
 exports.updateMail = async (req, res, next) => {
   console.log('update is called');
   // define search criteria :: make sure the request from mail's sender/user
@@ -152,16 +202,16 @@ exports.updateMail = async (req, res, next) => {
 };
 
 /*
-  Function: delete a mail [DELETE]
+  Function: delete mails [DELETE]
 */
-exports.deleteMail = async (req, res, next) => {
+exports.deleteMails = async (req, res, next) => {
   // define search criteria
   const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = req.params.id;
+  searchCriteria['_id'] = { $in: [req.query.ids.split(',')] };
 
   // async function to update one mail's flag
   const { error, data: fetchedMail } = await async_wrapper(
-    Mail.deleteOne(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
+    Mail.deleteMany(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
   );
 
   if (error || !fetchedMail) {
@@ -174,6 +224,31 @@ exports.deleteMail = async (req, res, next) => {
   res.status(201).json({
     message: 'Mail deleted successfully.',
     mail: fetchedMail
+  });
+};
+
+/*
+  Function: delete a mail [DELETE]
+*/
+exports.deleteMail = async (req, res, next) => {
+  // define search criteria
+  const searchCriteria = getUserSearchCriteria(req);
+  searchCriteria['_id'] = req.params.id;
+
+  // async function to update one mail's flag
+  const { error, data: deletionResult } = await async_wrapper(
+    Mail.deleteOne(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
+  );
+
+  if (error) {
+    return res.status(500).json({
+      message: 'Failed to delete mail!'
+    });
+  }
+  //console.log(deletionResult.deletedCount);
+  // send POST request's result to frontend
+  res.status(201).json({
+    message: 'Mail deleted successfully.'
   });
 };
 
