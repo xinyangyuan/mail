@@ -6,6 +6,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { AngularMaterialModule } from './core/angular-material/angular-material.module';
 import { CookieService } from 'ngx-cookie-service';
+import { NgxsModule } from '@ngxs/store';
+import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -29,6 +31,11 @@ import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { DebounceClickDirective } from './core/directives/debounce-click.directive';
 import { ImageLoadingSpinnerComponent } from './ui/image-loading-spinner/image-loading-spinner.component';
+import { MailState } from './mails/state/mail.state';
+import { ngxsConfig } from './state/ngxs.config';
+import { MailExpansionListItemComponent } from './mails/mail-expansion-list-item/mail-expansion-list-item.component';
+import { MailCardListItemComponent } from './mails/mail-card-list-item/mail-card-list-item.component';
+import { MailCardGridItemComponent } from './mails/mail-card-grid-item/mail-card-grid-item.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +57,10 @@ import { ImageLoadingSpinnerComponent } from './ui/image-loading-spinner/image-l
     ForgotPasswordComponent,
     ResetPasswordComponent,
     DebounceClickDirective,
-    ImageLoadingSpinnerComponent
+    ImageLoadingSpinnerComponent,
+    MailExpansionListItemComponent,
+    MailCardListItemComponent,
+    MailCardGridItemComponent
   ],
   imports: [
     BrowserModule,
@@ -59,7 +69,9 @@ import { ImageLoadingSpinnerComponent } from './ui/image-loading-spinner/image-l
     AngularMaterialModule,
     ReactiveFormsModule,
     HttpClientModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    NgxsModule.forRoot([MailState], ngxsConfig),
+    NgxsLoggerPluginModule.forRoot()
   ],
   providers: [
     CookieService,

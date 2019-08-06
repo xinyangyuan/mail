@@ -50,41 +50,21 @@ const getUserSearchCriteria = req => {
 */
 
 exports.getMailList = async (req, res, next) => {
+  console.log('getMailList is called');
+
   // get search criteria and prepare db request template
-  const searchCriteria = getUserSearchCriteria(req);
-
-  if (typeof req.query.readFlag !== 'undefined') {
-    searchCriteria['flags.read'] = req.query.readFlag === 'true'; // read filter
-  }
-  if (typeof req.query.starFlag !== 'undefined') {
-    searchCriteria['flags.star'] = req.query.starFlag === 'true'; // star filter
-  }
-  if (typeof req.query.issueFlag !== 'undefined') {
-    searchCriteria['flags.issue'] = req.query.issueFlag === 'true'; // issue filter
-  }
-
-  const mailQuery = Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 });
+  let searchCriteria = getUserSearchCriteria(req);
+  searchCriteria = { ...searchCriteria, ...req.queryData.filterBy };
 
   // async query: get total mail count from database
+  const mailQuery = Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 });
   const { error: err, data: mailCount } = await async_wrapper(mailQuery.countDocuments());
 
-  // get pagination requirements from querry
-  const mailPerPage = +req.query.mailsPerPage;
-  const currentPage = +req.query.currentPage;
-
-  // sort method
-  const sort = { sort: { createdAt: -1 } }; // default: sort by date descending order
-  if (
-    ['title', '-title', 'createdAt', '-createdAt', 'content', '-content'].includes(req.query.sort)
-  ) {
-    sort = { sort: req.query.sort };
-  }
-
-  // async query:get mails from database TODO
+  // async query:get mails from database
   const { error: error, data: fetchedMails } = await async_wrapper(
-    Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 }, sort)
-      .skip(mailPerPage && currentPage ? mailPerPage * (currentPage - 1) : 0)
-      .limit(mailPerPage && currentPage ? mailPerPage : mailCount)
+    Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 }, req.queryData.sortBy)
+      .skip(req.queryData.skip)
+      .limit(Math.min(req.queryData.limit, mailCount)) // cap limit with mailCount
   );
 
   if (err || error || !fetchedMails) {
@@ -102,43 +82,39 @@ exports.getMailList = async (req, res, next) => {
 };
 
 /*
-  Function: update flags associated with the mail [PATCH] HAS DANGER!
+  Function: update flags OR status associated with mails [PATCH]
 */
 
 exports.updateMails = async (req, res, next) => {
-  console.log('update is called');
+  console.log('updateMails is called');
   // define search criteria :: make sure the request from mail's sender/user
   const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = { $in: [req.query.ids.split(',')] };
+  searchCriteria['_id'] = { $in: req.queryData.ids };
 
-  // req.params retrieve route parameters in the path portion of URL
-  // ToDo: this is awfully verbose..
-  const update = {};
-
-  if (typeof req.body.readFlag === 'boolean' /*&& !req.userData.isSender*/) {
-    update['flags.read'] = req.body.readFlag;
-  }
-  if (typeof req.body.starFlag === 'boolean' /*&& !req.userData.isSender*/) {
-    update['flags.star'] = req.body.starFlag;
-  }
-  if (typeof req.body.issueFlag === 'boolean' /*&& !req.userData.isSender*/) {
-    update['flags.issue'] = req.body.issueFlag;
-  }
+  // prepare update
+  const update = {
+    'flags.read': typeof req.body.flags.read === 'boolean' ? req.body.flags.read : undefined,
+    'flags.star': typeof req.body.flags.star === 'boolean' ? req.body.flags.star : undefined,
+    'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
+    // 'flags.terminated': req.body.status === 'COLLECTED' || 'TRASHED' ? true : undefined, // only triggered by collected || trashed
+    status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
+  };
+  update.status = req.body.flags.issue ? 'RE_SCANNING' : undefined;
+  Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
 
   // async function to update one mail's flag and get the updated doc
-  const { error, data: fetchedMail } = await async_wrapper(
-    Mail.findByIdAndUpdate(
+  const { error, data: result } = await async_wrapper(
+    Mail.updateMany(
       searchCriteria,
       { $set: update },
       {
         fields: { envelopKey: 0, contentPDFKey: 0 },
-        new: true,
-        runValidators: true
+        runValidators: true // run mongoose validators to check updated field type
       }
     )
   );
 
-  if (error || !fetchedMail) {
+  if (error || result.n === 0) {
     return res.status(500).json({
       message: 'Failed to toggle mail flag(s)!'
     });
@@ -147,48 +123,43 @@ exports.updateMails = async (req, res, next) => {
   // send POST request's result to frontend
   res.status(201).json({
     message: 'Mail flag(s) set successfully.',
-    mail: fetchedMail
+    mail: result
   });
 };
 
 /*
-  Function: update flags associated with the mail [PATCH] HAS DANGER!
+  Function: update flags OR status associated with the mail [PATCH]
 */
 
 exports.updateMail = async (req, res, next) => {
-  console.log('update is called');
+  console.log('updateMail is called');
   // define search criteria :: make sure the request from mail's sender/user
   const searchCriteria = getUserSearchCriteria(req);
   searchCriteria['_id'] = req.params.id;
 
-  // req.params retrieve route parameters in the path portion of URL
-  // ToDo: this is awfully verbose..
-  const update = {};
-
-  if (typeof req.body.readFlag === 'boolean' /*&& !req.userData.isSender*/) {
-    update['flags.read'] = req.body.readFlag;
-  }
-  if (typeof req.body.starFlag === 'boolean' /*&& !req.userData.isSender*/) {
-    update['flags.star'] = req.body.starFlag;
-  }
-  if (typeof req.body.issueFlag === 'boolean' /*&& !req.userData.isSender*/) {
-    update['flags.issue'] = req.body.issueFlag;
-  }
+  // prepare update
+  const update = {
+    'flags.read': typeof req.body.flags.read === 'boolean' ? req.body.flags.read : undefined,
+    'flags.star': typeof req.body.flags.star === 'boolean' ? req.body.flags.star : undefined,
+    'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
+    // 'flags.terminated': req.body.status === 'COLLECTED' || 'TRASHED' ? true : undefined, // only triggered by collected || trashed
+    status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
+  };
+  Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
 
   // async function to update one mail's flag and get the updated doc
-  const { error, data: fetchedMail } = await async_wrapper(
-    Mail.findByIdAndUpdate(
+  const { error, data: result } = await async_wrapper(
+    Mail.updateOne(
       searchCriteria,
       { $set: update },
       {
         fields: { envelopKey: 0, contentPDFKey: 0 },
-        new: true,
         runValidators: true
       }
     )
   );
 
-  if (error || !fetchedMail) {
+  if (error || result.n === 0) {
     return res.status(500).json({
       message: 'Failed to toggle mail flag(s)!'
     });
@@ -207,23 +178,22 @@ exports.updateMail = async (req, res, next) => {
 exports.deleteMails = async (req, res, next) => {
   // define search criteria
   const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = { $in: [req.query.ids.split(',')] };
+  searchCriteria['_id'] = { $in: req.queryData.ids };
 
   // async function to update one mail's flag
-  const { error, data: fetchedMail } = await async_wrapper(
+  const { error, data: deletionResult } = await async_wrapper(
     Mail.deleteMany(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
   );
 
-  if (error || !fetchedMail) {
+  if (error || deletionResult.deletedCount) {
     return res.status(500).json({
       message: 'Failed to delete mail!'
     });
   }
 
-  // send POST request's result to frontend
+  // send DELETE request's result to frontend
   res.status(201).json({
-    message: 'Mail deleted successfully.',
-    mail: fetchedMail
+    message: 'Mail deleted successfully.'
   });
 };
 
@@ -235,18 +205,21 @@ exports.deleteMail = async (req, res, next) => {
   const searchCriteria = getUserSearchCriteria(req);
   searchCriteria['_id'] = req.params.id;
 
+  // sender cannot delete scanned mails
+  // if (req.userData.isSender) searchCriteria['status'] = 'CREATED';
+
   // async function to update one mail's flag
   const { error, data: deletionResult } = await async_wrapper(
     Mail.deleteOne(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
   );
 
-  if (error) {
+  if (error || deletionResult.deletedCount === 0) {
     return res.status(500).json({
       message: 'Failed to delete mail!'
     });
   }
-  //console.log(deletionResult.deletedCount);
-  // send POST request's result to frontend
+
+  // send DELETE request's result to frontend
   res.status(201).json({
     message: 'Mail deleted successfully.'
   });
@@ -294,7 +267,6 @@ exports.getEnvelop = async (req, res, next) => {
   // handle error
   stream.on('error', error => {
     stream.end(); // mannually closes the stream
-    console.log('cannot find the image');
   });
 
   // closes redableStream
@@ -361,12 +333,13 @@ exports.getContentPDF = async (req, res, next) => {
 */
 
 exports.createMail = async (req, res, next) => {
-  // check is there error in file type outputed by multer
-  if (req.error) {
-    return res.status(401).json(req.error);
+  // check is there error in file type outputed by multer || no envelop image uploaded
+  if (req.fileTypeError || typeof req.fileData.envelopKey === 'undefined') {
+    const message = req.error || 'Unable to find envelop image!';
+    return res.status(401).json(message);
   }
 
-  // check whether the recipient belongs to the sender TODO
+  // check whether recipient is provided TODO
   if (typeof req.body.receiverId === 'undefined') {
     return res.status(401).json({
       message: 'Please specify the recipient!'
@@ -384,13 +357,16 @@ exports.createMail = async (req, res, next) => {
 
   if (err || !senderReceiverValid) {
     return res.status(401).json({
-      message: 'Cannot send mail to this user!'
+      message: 'Cannot send mail to this user!' // this will expose that this is a valid USERID !! TODOTODOTODO
     });
   }
 
   // encrypt s3 keys beofre save to database
   const envelopKey = crypto.encrypt(req.fileData.envelopKey);
-  const contentPDFKey = crypto.encrypt(req.fileData.contentPDFKey);
+  const contentPDFKey =
+    typeof req.fileData.contentPDFKey !== 'undefined'
+      ? crypto.encrypt(req.fileData.contentPDFKey)
+      : undefined;
 
   // prepare the mail contents
   const mail = new Mail({
@@ -400,13 +376,15 @@ exports.createMail = async (req, res, next) => {
     senderId: mongoose.Types.ObjectId(req.userData.userId),
     receiverId: mongoose.Types.ObjectId(req.body.receiverId),
     envelopKey: envelopKey,
-    contentPDFKey: contentPDFKey
+    contentPDFKey: contentPDFKey, // undefined will automatically trimmed by mongoose
+    status: 'CREATED'
   });
 
   // async function to save mail into database
   const { data: fetchedMail, error } = await async_wrapper(mail.save());
 
   if (error) {
+    console.log(error);
     return res.status(500).json({
       message: 'Failed to send the new mail!'
     });
@@ -419,5 +397,61 @@ exports.createMail = async (req, res, next) => {
   res.status(201).json({
     message: 'Mail sent successfully.',
     mail: fetchedMail
+  });
+};
+
+/*
+  Function: modify a mail (change mail text content, envelop image, upload content pdf) [PUT]
+*/
+exports.modifyMail = async (req, res, next) => {
+  // check is there error in file type outputed by multer
+  if (req.fileTypeError) {
+    return res.status(401).json(req.error);
+  }
+
+  // encrypt s3 keys beofre save to database
+  const envelopKey =
+    typeof req.fileData.envelopKey !== 'undefined'
+      ? crypto.encrypt(req.fileData.envelopKey)
+      : undefined;
+  const contentPDFKey =
+    typeof req.fileData.contentPDFKey !== 'undefined'
+      ? crypto.encrypt(req.fileData.contentPDFKey)
+      : undefined;
+
+  // prepare the mail contents
+  const update = {
+    title: req.body.title,
+    description: req.body.description,
+    content: req.body.content,
+    envelopKey: envelopKey,
+    contentPDFKey: contentPDFKey,
+    status: contentPDFKey ? 'SCANNED_ARCHIVED' : undefined,
+    updatedAt: Date.now()
+  };
+  for (const param in update) if (!update[param]) delete update[param]; // trim undefined fields in update
+
+  // async function to save mail into database
+  const { data: result, error } = await async_wrapper(
+    Mail.updateOne(
+      { _id: req.params.id, senderId: req.userData.userId },
+      { $set: update },
+      {
+        fields: { envelopKey: 0, contentPDFKey: 0 },
+        runValidators: true // run mongoose validators to check updated field type
+      }
+    )
+  );
+
+  if (error || result.n === 0) {
+    return res.status(500).json({
+      message: 'Failed to update the mail!'
+    });
+  }
+
+  // send PUT request's result to frontend
+  res.status(201).json({
+    message: 'Mail updated successfully.',
+    mail: result
   });
 };

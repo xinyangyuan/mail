@@ -1,0 +1,61 @@
+/*
+   Expansion panel:
+*/
+
+mat-expansion-panel {
+  border-bottom: 1px solid rgb(240, 242, 244);
+}
+
+mat-expansion-panel:hover {
+  position: relative;
+  z-index: 1;
+}
+
+/* star button change when hover on expansion panel */
+mat-expansion-panel:hover .star-border-btn {
+  color: dimgrey;
+}
+
+/* restrict title moving upwards when adding button to panel title */
+.aligned-headers .mat-expansion-panel-header-title,
+.aligned-headers .mat-expansion-panel-header-description {
+  flex-basis: 0;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/*
+   Star button:
+*/
+
+.star-border-btn {
+  color: lightgrey;
+}
+
+.star-border-btn:hover {
+  transition: all 0.3s;
+  color: rgb(54, 53, 53) !important;
+}
+
+.envelop-image img {
+  width: 100%;
+  height: 500px;
+}
+
+/* mat-action-row {
+  border-top: none;
+} */
+
+/* mat-expansion-panel {
+  position: relative;
+  border: 1px solid dimgrey;
+  border-radius: 3px !important;
+  margin: 3px !important;
+  box-shadow: none !important;
+} */
+
+/* mat-expansion-panel:hover {
+  -webkit-box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75);
+  -moz-box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75);
+  box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75);
+} */

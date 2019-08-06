@@ -23,6 +23,7 @@
     "@angular/platform-browser": "~8.0.1",
     "@angular/platform-browser-dynamic": "~8.0.1",
     "@angular/router": "~8.0.1",
+    "@ngxs/logger-plugin": "^3.5.0-dev.master-461d580",
     "@ngxs/store": "^3.5.0",
     "aws-sdk": "^2.493.0",
     "bcrypt": "^3.0.6",

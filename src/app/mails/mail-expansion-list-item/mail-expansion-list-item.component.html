@@ -1,0 +1,53 @@
+<mat-expansion-panel
+  [ngStyle]="mail.flags.read && { 'background-color': '#F4F4F7' }"
+  (click)="onExpand()"
+  #panel
+>
+  <mat-expansion-panel-header
+    fxLayout="row"
+    class="aligned-headers"
+    (opened)="panelOpenState = true"
+    (closed)="panelOpenState = false"
+  >
+    <mat-panel-title fxFlex>
+      <div fxFlex="12">
+        <button mat-icon-button class="button-hide">
+          <mat-icon
+            *ngIf="!mail.flags.star && !panel.expanded"
+            appDebounceClick
+            (debounceClick)="onStar($event)"
+            [debounceTime]="150"
+            class="star-border-btn"
+            >star_border
+          </mat-icon>
+          <mat-icon
+            *ngIf="mail.flags.star && !panel.expanded"
+            appDebounceClick
+            (debounceClick)="onStar($event)"
+            [debounceTime]="150"
+            [ngStyle]="{ color: 'gold' }"
+            >star
+          </mat-icon>
+        </button>
+      </div>
+
+      <p fxFlex="88">
+        {{ mail.title }}
+      </p>
+    </mat-panel-title>
+
+    <mat-panel-description>
+      {{ mail.description }}
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+
+  <app-image-loading-spinner *ngIf="!imageURL"></app-image-loading-spinner>
+  <div *ngIf="imageURL" class="envelop-image">
+    <img [src]="imageURL" [alt]="mail.content" />
+  </div>
+
+  <mat-action-row>
+    <button mat-button color="warn" (click)="onDelete()">DELETE</button>
+    <button mat-button color="primary" (click)="onView()" type="button">VIEW</button>
+  </mat-action-row>
+</mat-expansion-panel>

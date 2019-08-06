@@ -52,7 +52,7 @@ const fileFilter = (req, file, cb) => {
   else {
     cb(null, false);
     // notice controller the error in file type
-    req.error = {
+    req.fileTypeError = {
       message: 'Invalid file type uploaded!'
     };
   }

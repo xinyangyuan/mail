@@ -47,8 +47,8 @@ export class MailService {
   */
 
   _getMailList(
-    mailsPerPage: number,
-    currentPage: number,
+    skip: number,
+    limit: number,
     flags?: { readFlag?: boolean; starFlag?: boolean; issueFlag?: boolean }
   ): Observable<{ message: string; mailList: Mail[]; mailCount: number }> {
     // retrieve flags query
@@ -58,22 +58,19 @@ export class MailService {
 
     if (typeof flags !== 'undefined') {
       if (flags.hasOwnProperty('readFlag')) {
-        readFlagParam = `&readFlag=${flags.readFlag.toString()}`;
+        readFlagParam = `&read=${flags.readFlag.toString()}`;
       }
       if (flags.hasOwnProperty('starFlag')) {
-        starFlagParam = `&starFlag=${flags.starFlag.toString()}`;
+        starFlagParam = `&star=${flags.starFlag.toString()}`;
       }
       if (flags.hasOwnProperty('issueFlag')) {
-        issueFlagParam = `&issueFlag=${flags.issueFlag.toString()}`;
+        issueFlagParam = `&issue=${flags.issueFlag.toString()}`;
       }
     }
 
     // set querParams
     const queryParams =
-      `?mailsPerPage=${mailsPerPage}&currentPage=${currentPage}` +
-      readFlagParam +
-      starFlagParam +
-      issueFlagParam;
+      `?skip=${skip}&limit=${limit}` + readFlagParam + starFlagParam + issueFlagParam;
 
     // fetch mail list from the RESTapi
     return (
@@ -208,7 +205,7 @@ export class MailService {
     issueFlag?: boolean
   ): Observable<{ message: string; mail: Mail }> {
     // pack all required post data
-    const mailData = { readFlag, starFlag, issueFlag };
+    const mailData = { flags: { read: readFlag, star: starFlag, issue: issueFlag } };
 
     // post updated mail data to RESTapi
     return (

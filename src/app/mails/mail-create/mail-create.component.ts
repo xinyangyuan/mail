@@ -38,7 +38,8 @@ export class MailCreateComponent implements OnInit {
       description: ['', [Validators.required, Validators.maxLength(50)]],
       content: ['', [Validators.required]],
       envelop: ['', [Validators.required]],
-      contentPDF: ['', [Validators.required]]
+      // contentPDF: ['', [Validators.required]]
+      contentPDF: ''
     });
   }
 

@@ -186,7 +186,7 @@ exports.verifyConfirmation = async (req, res) => {
     }
 
     // async func: check user credentials
-    const result = await bcrypt.compare(req.body.password, fetchedUser.password); // bcrpt error is NOT HANDELED
+    const result = await bcrypt.compare(req.body.password, fetchedUser.password);
     if (!result) {
       return res.status(401).json({
         message: 'Wrong user password entered.'
@@ -198,7 +198,7 @@ exports.verifyConfirmation = async (req, res) => {
       $set: { isConfirmed: true }
     };
     const { err, data: updatedUser } = await async_wrapper(
-      User.findOneAndUpdate({ _id: decodedEmailToken.userId }, update)
+      User.findOneAndUpdate({ _id: decodedEmailToken.userId }, update, { runValidators: true })
     );
     if (err || !updatedUser) {
       return res.status(401).json({
@@ -302,7 +302,7 @@ exports.verifyReset = async (req, res) => {
       $set: { password: hash }
     };
     const { err, data: fetchedUser } = await async_wrapper(
-      User.findOneAndUpdate({ _id: decodedEmailToken.userId }, update)
+      User.findOneAndUpdate({ _id: decodedEmailToken.userId }, update, { runValidators: true })
     );
     if (err || !fetchedUser) {
       return res.status(401).json({

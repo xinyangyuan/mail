@@ -1,4 +1,5 @@
 import { Mail } from '../mail.model';
+import { Data } from '@angular/router';
 
 /*
     Action: get mail list from API
@@ -6,10 +7,12 @@ import { Mail } from '../mail.model';
 
 export class GetMails {
   static readonly type = '[Mail Page] Get Mails';
+  constructor(public payload: { urlData: Data }) {}
 }
 
 export class GetEnvelopImage {
   static readonly type = '[Mail Page] Get Envelop Image';
+  constructor(public payload: Mail) {}
 }
 
 export class GetEnvelopImages {
@@ -22,11 +25,11 @@ export class GenerateImageTasks {
 
 export class ChangePage {
   static readonly type = '[Mail Page] Change Page';
-  constructor(public payload: { currentPage: number; mailsPerPage: number }) {}
+  constructor(public payload: { currentPage: number; mailsPerPage: number; urlData: Data }) {}
 }
 
 /*
-    Action:
+    Action: star
 */
 
 export class StarredMail {
@@ -61,4 +64,12 @@ export class DeleteMail {
 export class DeleteMails {
   static readonly type = '[Mail Page] Delete Mails';
   constructor(public payload: Mail[]) {}
+}
+
+/*
+    Action:
+*/
+
+export class ResetStore {
+  static readonly type = '[Mail Page] Reset Store';
 }

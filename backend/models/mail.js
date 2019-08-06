@@ -9,10 +9,33 @@ const mailSchema = mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   envelopKey: { type: String, required: true },
-  contentPDFKey: { type: String, required: true },
+  contentPDFKey: {
+    type: String,
+    required: function() {
+      return this.status !== 'CREATED' && this.status !== 'SCANNING';
+    }
+  },
   flags: {
-    type: { read: { type: Boolean }, star: { type: Boolean }, issue: { type: Boolean } },
-    default: { read: false, star: false, issue: false }
+    type: {
+      read: { type: Boolean },
+      star: { type: Boolean },
+      issue: { type: Boolean },
+      terminated: { type: Boolean }
+    },
+    default: { read: false, star: false, issue: false, terminated: false }
+  },
+  status: {
+    type: String,
+    enum: [
+      'CREATED',
+      'SCANNING',
+      'SCANNED_ARCHIVED',
+      'UNSCANNED_ARCHIVED',
+      'RE_SCANNING',
+      'COLLECTED',
+      'TRASHED'
+    ],
+    required: true
   }
 });
 

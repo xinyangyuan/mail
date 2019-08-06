@@ -1,19 +1,19 @@
 const express = require('express');
 
-const authVerify = require('../middlewares/auth-verify');
-const senderVerify = require('../middlewares/sender-verify');
-const updateUserAddress = require('../hooks/update-user-address');
+const AuthMiddleware = require('../middlewares/auth-verify');
 const AddressController = require('../controllers/address');
+const updateUserAddress = require('../hooks/update-user-address');
 
 const router = express.Router();
 
 // Address api routes
-router.get('/info', authVerify, senderVerify, AddressController.getAddressInfo);
-router.patch('/addReceiver', authVerify, AddressController.addReceiver, updateUserAddress);
+router.get('/info', AuthMiddleware.authVerify, AuthMiddleware.senderVerify, AddressController.getAddressInfo);
+router.patch('/addReceiver', AuthMiddleware.authVerify, AddressController.addReceiver, updateUserAddress);
 
 router.get('', AddressController.getAddressList); // PUBLIC ACCESSIBLE
 router.get('/:id', AddressController.getAddress); // PUBLIC ACCESSIBLE
-router.post('', authVerify, senderVerify, AddressController.createAddress, updateUserAddress);
-// router.patch('/:id', authVerify, senderVerify, AddressController.updateAddress);
+
+router.post('', AuthMiddleware.authVerify, AuthMiddleware.senderVerify, AddressController.createAddress, updateUserAddress);
+// router.patch('/:id', AuthMiddleware.authVerify, senderVerify, AddressController.updateAddress);
 
 module.exports = router;

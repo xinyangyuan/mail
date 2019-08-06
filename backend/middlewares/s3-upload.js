@@ -56,15 +56,13 @@ module.exports = async (req, res, next) => {
 
     if (error) {
       return res.status(500).json({ message: error });
-    } else {
-      res.fileDate = filename;
     }
   }
 
-  // store filename (also the key to access file in S3) into req
+  // store filename (the key to access file in S3) into req
   req.fileData = {
-    envelopKey: filenames[0],
-    contentPDFKey: filenames[1]
+    envelopKey: filenames[0], // will be undefined type when filenames undefined
+    contentPDFKey: filenames[1] // will be undefined type when filenames || filenames[1] undefined
   };
   next();
 };

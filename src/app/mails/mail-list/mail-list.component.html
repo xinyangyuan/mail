@@ -1,71 +1,22 @@
 <!-- mail-list body -->
 <main>
-  <mat-progress-bar *ngIf="isloading" mode="indeterminate"></mat-progress-bar>
-
-  <mat-accordion>
-    <mat-expansion-panel
-      *ngFor="let mail of mailList; let idx = index"
-      [ngStyle]="mail.flags.read && { 'background-color': '#F4F4F7' }"
-      (click)="onExpand(mail)"
-      #panel
-    >
-      <mat-expansion-panel-header
-        fxLayout="row"
-        class="aligned-headers"
-        (opened)="panelOpenState = true"
-        (closed)="panelOpenState = false"
-      >
-        <mat-panel-title fxFlex>
-          <div fxFlex="12">
-            <button mat-icon-button class="button-hide">
-              <mat-icon
-                *ngIf="!mail.flags.star && !panel.expanded"
-                appDebounceClick
-                (debounceClick)="onStar(mail, $event, idx)"
-                [debounceTime]="150"
-                class="star-border-btn"
-                >star_border</mat-icon
-              >
-              <mat-icon
-                *ngIf="mail.flags.star && !panel.expanded"
-                appDebounceClick
-                (debounceClick)="onStar(mail, $event, idx)"
-                [debounceTime]="150"
-                [ngStyle]="{ color: 'gold' }"
-                >star</mat-icon
-              >
-            </button>
-          </div>
-
-          <p fxFlex="88">
-            {{ mail.title }}
-          </p>
-        </mat-panel-title>
-
-        <mat-panel-description>
-          {{ mail.description }}
-        </mat-panel-description>
-      </mat-expansion-panel-header>
-
-      <app-image-loading-spinner *ngIf="imageIsLoading"></app-image-loading-spinner>
-      <div *ngIf="!imageIsLoading" class="post-image">
-        <img [src]="imageURLs[mail._id]" [alt]="mail.content" />
-      </div>
-
-      <mat-action-row>
-        <button mat-button color="warn" (click)="onDelete(mail)">DELETE</button>
-        <button mat-button color="primary" (click)="onView(mail)" type="button">
-          VIEW
-        </button>
-      </mat-action-row>
-    </mat-expansion-panel>
+  <!-- loading-progress-bar -->
+  <mat-progress-bar *ngIf="isLoading$ | async" mode="indeterminate"></mat-progress-bar>
+  <!-- expansion-panel display -->
+  <mat-accordion *ngIf="!(isLoading$ | async) && mails$ | async as mails">
+    <div *ngFor="let mail of mails">
+      <app-mail-expansion-list-item
+        [mail]="mail"
+        [imageURL]="(imageURLs$ | async)[mail._id]"
+      ></app-mail-expansion-list-item>
+    </div>
   </mat-accordion>
 </main>
 
 <!-- paginator -->
 <mat-paginator
-  [length]="mailCount"
-  [pageSize]="mailsPerPage"
+  [length]="mailCount$ | async"
+  [pageSize]="mailsPerPage$ | async"
   [pageSizeOptions]="pageSizeOptions"
   (page)="onChangedPage($event)"
 >

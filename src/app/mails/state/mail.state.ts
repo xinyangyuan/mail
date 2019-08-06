@@ -1,7 +1,14 @@
-import { Store, State, Action, StateContext, Actions, ofAction } from '@ngxs/store';
+import {
+  Store,
+  State,
+  Action,
+  StateContext,
+  Actions,
+  Selector,
+  ofActionDispatched
+} from '@ngxs/store';
 import { Observable, forkJoin } from 'rxjs';
 import { SafeUrl, DomSanitizer } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
 
 import { Mail } from '../mail.model';
 import * as MailActions from './mail.action';
@@ -38,7 +45,7 @@ const initialState: MailStateModel = {
   mailList: [],
   mailCount: 0,
   currentPage: 1,
-  mailsPerPage: 15,
+  mailsPerPage: 6,
   isLoading: true,
   imageTaskPool: [],
   currentImageTasks: [],
@@ -55,48 +62,77 @@ export class MailState {
   constructor(
     private sanitizer: DomSanitizer,
     private mailService: MailService,
-    private route: ActivatedRoute,
     private actions$: Actions
   ) {}
 
   /*
-   Helper: store images to URLs
+   Selectors:
   */
-  storeImages(files: { id: string; file: Blob }[]) {
-    let imageURLs: { [key: string]: SafeUrl };
-    const ids = [];
 
-    for (const file of files) {
-      const envelopImage = new Blob([file.file], { type: file.file.type });
-      const imageURL = window.URL.createObjectURL(envelopImage);
+  @Selector()
+  static mailList(state: MailStateModel) {
+    return state.mailList;
+  }
 
-      ids.push(file.id);
-      imageURLs[file.id] = this.sanitizer.bypassSecurityTrustUrl(imageURL);
-    }
+  @Selector()
+  static mailCount(state: MailStateModel) {
+    return state.mailCount;
+  }
 
-    return { imageURLs, ids };
+  @Selector()
+  static currentPage(state: MailStateModel) {
+    return state.currentPage;
+  }
+
+  @Selector()
+  static mailsPerPage(state: MailStateModel) {
+    return state.mailsPerPage;
+  }
+
+  @Selector()
+  static isLoading(state: MailStateModel) {
+    return state.isLoading;
+  }
+
+  @Selector()
+  static currentImageTasks(state: MailStateModel) {
+    return state.currentImageTasks;
+  }
+
+  @Selector()
+  static imageURLs(state: MailStateModel) {
+    return state.imageURLs;
   }
 
   /*
-   Method: get mail list
+   Action: get mail list
   */
 
   @Action(MailActions.GetMails)
-  async getMails(ctx: StateContext<MailStateModel>) {
+  async getMails(ctx: StateContext<MailStateModel>, action: MailActions.GetMails) {
     // get current state and url data info
     const state = ctx.getState();
-    const urlData = this.route.snapshot.data;
+
+    // prepare api call
+    const skip = 0;
+    const limit = state.mailsPerPage;
 
     // async service call
     const result = await this.mailService
-      ._getMailList(state.mailsPerPage, state.currentPage, urlData)
+      ._getMailList(skip, limit, action.payload.urlData)
       .toPromise();
 
+    // prepare new state [enfore no replicated mails]
+    const set = new Set([...state.mailList, ...result.mailList]);
+    const mailList = [...set];
+    if (mailList.length !== [...state.mailList, ...result.mailList].length) {
+      console.error('AssertionError: leak in getMails action');
+    }
+
     // return new state
-    ctx.setState({
-      ...state,
-      mailList: [...state.mailList, ...result.mailList],
-      imageTaskPool: [...state.imageTaskPool, ...result.mailList.map(mail => mail._id)],
+    ctx.patchState({
+      mailList,
+      imageTaskPool: [...state.imageTaskPool, ...mailList.map(mail => mail._id)],
       mailCount: result.mailCount,
       isLoading: false
     });
@@ -106,7 +142,7 @@ export class MailState {
   }
 
   /*
-   Method: generate image tasks
+   Action: generate image tasks
   */
 
   @Action(MailActions.GenerateImageTasks)
@@ -120,8 +156,7 @@ export class MailState {
       currentImageTasks = state.imageTaskPool.slice(0, 5);
 
       // return new state
-      ctx.setState({
-        ...state,
+      ctx.patchState({
         currentImageTasks: [...state.currentImageTasks, ...currentImageTasks]
       });
 
@@ -131,10 +166,10 @@ export class MailState {
   }
 
   /*
-   Method: get envelop images
+   Action: get envelop images
   */
 
-  @Action([MailActions.GetEnvelopImages, MailActions.GetEnvelopImage])
+  @Action(MailActions.GetEnvelopImages)
   getEnvelopImages(ctx: StateContext<MailStateModel>) {
     // get current state
     const state = ctx.getState();
@@ -153,8 +188,7 @@ export class MailState {
         const { imageURLs, ids } = this.storeImages(result);
 
         // return new state
-        ctx.setState({
-          ...state,
+        ctx.patchState({
           imageURLs: { ...state.imageURLs, ...imageURLs },
           imageTaskPool: state.imageTaskPool.filter(id => !ids.includes(id)),
           currentImageTasks: state.currentImageTasks.filter(id => !ids.includes(id))
@@ -164,7 +198,34 @@ export class MailState {
         ctx.dispatch(new MailActions.GenerateImageTasks());
       }),
       // cancellation
-      takeUntil(this.actions$.pipe(ofAction(MailActions.GetEnvelopImage)))
+      takeUntil(this.actions$.pipe(ofActionDispatched(MailActions.GetEnvelopImage)))
+    );
+  }
+
+  /*
+   Action: get envelop image
+  */
+
+  @Action(MailActions.GetEnvelopImage, { cancelUncompleted: true })
+  getEnvelopImage(ctx: StateContext<MailStateModel>, action: MailActions.GetEnvelopImage) {
+    // get current state
+    const state = ctx.getState();
+
+    // async service call
+    return this.mailService.getEnvelop(action.payload._id).pipe(
+      tap(result => {
+        // store images to urls
+        const { imageURLs, ids } = this.storeImages([result]);
+
+        // return new state
+        ctx.patchState({
+          imageURLs: { ...state.imageURLs, ...imageURLs },
+          imageTaskPool: state.imageTaskPool.filter(id => !ids.includes(id))
+        });
+
+        // dispatch action
+        ctx.dispatch(new MailActions.GetEnvelopImages());
+      })
     );
   }
 
@@ -173,25 +234,77 @@ export class MailState {
   */
 
   @Action(MailActions.ChangePage)
-  changePage(ctx: StateContext<MailStateModel>, action: MailActions.ChangePage) {
-    // get current state
+  async changePage(ctx: StateContext<MailStateModel>, action: MailActions.ChangePage) {
+    // change UI state and get current state
+    ctx.patchState({ isLoading: true });
     const state = ctx.getState();
 
-    // return new state
-    ctx.setState({
-      ...state,
-      currentPage: action.payload.currentPage,
-      mailsPerPage: action.payload.mailsPerPage,
-      isLoading: true
-    });
+    // visted page or not && all mails fetched or not
+    if (
+      action.payload.currentPage * action.payload.mailsPerPage > state.mailList.length &&
+      state.mailList.length < state.mailCount
+    ) {
+      // prepare api call
+      const skip = state.mailList.length;
+      const limit = action.payload.mailsPerPage * action.payload.currentPage - skip;
 
-    // visted page or not
-    if (state.currentPage * state.mailsPerPage > state.mailList.length) {
+      // async service call
+      const result = await this.mailService
+        ._getMailList(skip, limit, action.payload.urlData)
+        .toPromise();
+
+      // prepare new state [enfore no replicated mails]
+      const set = new Set([...state.mailList, ...result.mailList]);
+      const mailList = [...set];
+      if (mailList.length !== [...state.mailList, ...result.mailList].length) {
+        console.error('AssertionError: leak in changePage get mails action');
+      }
+
+      // return new state
+      ctx.patchState({
+        mailList,
+        imageTaskPool: [...state.imageTaskPool, ...mailList.map(mail => mail._id)],
+        currentPage: action.payload.currentPage,
+        mailsPerPage: action.payload.mailsPerPage,
+        isLoading: false
+      });
+
       // dispatch action
-      ctx.dispatch(new MailActions.GetMails());
+      ctx.dispatch(new MailActions.GenerateImageTasks());
     } else {
-      // mails already requested
-      ctx.patchState({ isLoading: false });
+      // return new state
+      ctx.patchState({
+        currentPage: action.payload.currentPage,
+        mailsPerPage: action.payload.mailsPerPage,
+        isLoading: false
+      });
     }
+  }
+
+  /*
+   Action: clear store when redirects
+  */
+
+  @Action(MailActions.ResetStore)
+  resetStore(ctx: StateContext<MailStateModel>) {
+    ctx.setState(initialState);
+  }
+
+  /*
+   Helper: store images to URLs
+  */
+  storeImages(files: { id: string; file: Blob }[]) {
+    let imageURLs: { [key: string]: SafeUrl } = {};
+    const ids = [];
+
+    for (const file of files) {
+      const envelopImage = new Blob([file.file], { type: file.file.type });
+      const imageURL = window.URL.createObjectURL(envelopImage);
+
+      ids.push(file.id);
+      imageURLs[file.id] = this.sanitizer.bypassSecurityTrustUrl(imageURL);
+    }
+
+    return { imageURLs, ids };
   }
 }
