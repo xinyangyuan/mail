@@ -39,7 +39,7 @@ export class MailExpansionListItemComponent implements OnChanges {
     event.stopPropagation();
 
     // dispacthc action
-    // this.store.dispatch(new MailActions.StarredMail(this.mail));
+    this.store.dispatch(new MailActions.ToggleMailStarFlag(this.mail));
   }
 
   // Method: user clicked delete-button
@@ -47,4 +47,19 @@ export class MailExpansionListItemComponent implements OnChanges {
 
   // Method: user clicked view-button
   onView() {}
+
+  // Method: view mail content pdf
+  // async onView(mail: Mail) {
+  //   // open new window and display loading message
+  //   const pdfWindow = window.open('', '_blank');
+  //   pdfWindow.document.write('Loading pdf... <br> Please turn off AdBlock to see the pdf file.');
+
+  //   // get content pdf
+  //   const file = await this.mailService.getContentPDF(mail._id).toPromise();
+  //   const pdfURL = window.URL.createObjectURL(file);
+  //   pdfWindow.location.href = pdfURL;
+
+  //   // change read flag
+  //   mail.flags.read = true;
+  // }
 }

@@ -1,3 +1,12 @@
+export enum MailStatus {
+  CREATED = 'CREATED',
+  SCANNING = 'SCANNING',
+  SCANNED = 'SCANNED_ARCHIVED',
+  SCAN_REJECTED = 'UNSCANNED_ARCHIVED',
+  COLLECTED = 'COLLECTED',
+  TRASHED = 'TRASHED'
+}
+
 export interface Mail {
   _id: string;
   title: string;
@@ -10,6 +19,7 @@ export interface Mail {
     star: boolean;
     issue: boolean;
   };
+  status: MailStatus;
   updatedAt: Date;
   createdAt: Date;
 }

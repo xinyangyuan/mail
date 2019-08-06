@@ -1,16 +1,8 @@
-import {
-  Store,
-  State,
-  Action,
-  StateContext,
-  Actions,
-  Selector,
-  ofActionDispatched
-} from '@ngxs/store';
-import { Observable, forkJoin } from 'rxjs';
+import { State, Action, StateContext, Actions, Selector, ofActionDispatched } from '@ngxs/store';
+import { Observable, forkJoin, merge } from 'rxjs';
 import { SafeUrl, DomSanitizer } from '@angular/platform-browser';
 
-import { Mail } from '../mail.model';
+import { Mail, MailStatus } from '../mail.model';
 import * as MailActions from './mail.action';
 import { MailService } from '../mail.service';
 import { takeUntil, tap } from 'rxjs/operators';
@@ -35,6 +27,9 @@ export interface MailStateModel {
   imageTaskPool: string[]; // list of mail id
   currentImageTasks: string[]; // list of mail id list
   imageURLs: { [key: string]: SafeUrl };
+
+  // Content Pdf
+  pdfURL: {};
 }
 
 /*
@@ -49,7 +44,8 @@ const initialState: MailStateModel = {
   isLoading: true,
   imageTaskPool: [],
   currentImageTasks: [],
-  imageURLs: {}
+  imageURLs: {},
+  pdfURL: {}
 };
 
 /*
@@ -157,7 +153,7 @@ export class MailState {
 
       // return new state
       ctx.patchState({
-        currentImageTasks: [...state.currentImageTasks, ...currentImageTasks]
+        currentImageTasks // overwrite state
       });
 
       // dispatch action
@@ -198,7 +194,13 @@ export class MailState {
         ctx.dispatch(new MailActions.GenerateImageTasks());
       }),
       // cancellation
-      takeUntil(this.actions$.pipe(ofActionDispatched(MailActions.GetEnvelopImage)))
+      takeUntil(
+        merge(
+          this.actions$.pipe(ofActionDispatched(MailActions.GetEnvelopImage)),
+          this.actions$.pipe(ofActionDispatched(MailActions.ChangePage)),
+          this.actions$.pipe(ofActionDispatched(MailActions.ResetStore))
+        )
+      )
     );
   }
 
@@ -230,7 +232,353 @@ export class MailState {
   }
 
   /*
-   Method: change page
+   Action: get content pdf
+  */
+
+  @Action(MailActions.GetContentPdf, { cancelUncompleted: true })
+  getContentPdf(ctx: StateContext<MailStateModel>, action: MailActions.GetContentPdf) {
+    // get current state
+    const state = ctx.getState();
+
+    // async service call
+    return this.mailService.getContentPDF(action.payload._id).pipe(
+      tap(result => {
+        // store images to urls
+        const pdfURL = window.URL.createObjectURL(result);
+
+        // update mailList
+        const mailList = state.mailList;
+        mailList.forEach(mail => {
+          if (mail._id === action.payload._id) {
+            mail.flags.read = true;
+          }
+        });
+
+        // return new state
+        ctx.patchState({
+          mailList,
+          pdfURL
+        });
+      })
+    );
+  }
+
+  /*
+   Action: toggle a mail star flag
+  */
+
+  @Action(MailActions.ToggleMailStarFlag)
+  toggleMailStarFlag(ctx: StateContext<MailStateModel>, action: MailActions.ToggleMailStarFlag) {
+    // get current state
+    const state = ctx.getState();
+    const update = { flags: { star: !action.payload.flags.star } };
+
+    // async service call
+    return this.mailService._updateMail(action.payload._id, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+
+        mailList.forEach(mail => {
+          if (mail._id === action.payload._id) {
+            mail.flags.star = !action.payload.flags.star;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: set mail star flags
+  */
+
+  @Action(MailActions.StarredMails)
+  starredMails(ctx: StateContext<MailStateModel>, action: MailActions.StarredMails) {
+    // get current state
+    const state = ctx.getState();
+    const update = { flags: { star: true } };
+
+    // async service call
+    return this.mailService._updateMails(action.payload, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+        const updatedMailIds = action.payload.map(mail => mail._id);
+
+        mailList.forEach(mail => {
+          if (updatedMailIds.includes(mail._id)) {
+            mail.flags.star = true;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: unset mail star flags
+  */
+
+  @Action(MailActions.UnstarredMails)
+  unstarredMails(ctx: StateContext<MailStateModel>, action: MailActions.UnstarredMails) {
+    // get current state
+    const state = ctx.getState();
+    const update = { flags: { star: false } };
+
+    // async service call
+    return this.mailService._updateMails(action.payload, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+        const updatedMailIds = action.payload.map(mail => mail._id);
+
+        mailList.forEach(mail => {
+          if (updatedMailIds.includes(mail._id)) {
+            mail.flags.star = false;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: toggle a mail read flag
+  */
+
+  @Action(MailActions.ToggleMailReadFlag)
+  toggleMailReadFlag(ctx: StateContext<MailStateModel>, action: MailActions.ToggleMailReadFlag) {
+    // get current state
+    const state = ctx.getState();
+    const update = { flags: { star: !action.payload.flags.read } };
+
+    // async service call
+    return this.mailService._updateMail(action.payload._id, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+
+        mailList.forEach(mail => {
+          if (mail._id === action.payload._id) {
+            mail.flags.star = !action.payload.flags.read;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: set mail read flags
+  */
+
+  @Action(MailActions.ReadMails)
+  readMails(ctx: StateContext<MailStateModel>, action: MailActions.ReadMails) {
+    // get current state
+    const state = ctx.getState();
+    const update = { flags: { read: true } };
+
+    // async service call
+    return this.mailService._updateMails(action.payload, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+        const updatedMailIds = action.payload.map(mail => mail._id);
+
+        mailList.forEach(mail => {
+          if (updatedMailIds.includes(mail._id)) {
+            mail.flags.read = true;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: unset mail read flags
+  */
+
+  @Action(MailActions.UnreadMails)
+  unreadMails(ctx: StateContext<MailStateModel>, action: MailActions.UnreadMails) {
+    // get current state
+    const state = ctx.getState();
+    const update = { flags: { read: false } };
+
+    // async service call
+    return this.mailService._updateMails(action.payload, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+        const updatedMailIds = action.payload.map(mail => mail._id);
+
+        mailList.forEach(mail => {
+          if (updatedMailIds.includes(mail._id)) {
+            mail.flags.read = false;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: scan a mail content
+  */
+
+  @Action(MailActions.ScanMail)
+  scanMail(ctx: StateContext<MailStateModel>, action: MailActions.ScanMail) {
+    // get current state
+    const state = ctx.getState();
+    const update = { status: MailStatus.SCANNING };
+
+    // async service call
+    return this.mailService._updateMail(action.payload._id, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+
+        mailList.forEach(mail => {
+          if (mail._id === action.payload._id) {
+            mail.status = MailStatus.SCANNING;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: scan mails content
+  */
+
+  @Action(MailActions.ScanMails)
+  scanMails(ctx: StateContext<MailStateModel>, action: MailActions.ScanMails) {
+    // get current state
+    const state = ctx.getState();
+    const update = { status: MailStatus.SCANNING };
+
+    // async service call
+    return this.mailService._updateMails(action.payload, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+        const updatedMailIds = action.payload.map(mail => mail._id);
+
+        mailList.forEach(mail => {
+          if (updatedMailIds.includes(mail._id)) {
+            mail.status = MailStatus.SCANNING;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: reject scan a mail content
+  */
+
+  @Action(MailActions.UnscanMail)
+  unscanMail(ctx: StateContext<MailStateModel>, action: MailActions.UnscanMail) {
+    // get current state
+    const state = ctx.getState();
+    const update = { status: MailStatus.SCAN_REJECTED };
+
+    // async service call
+    return this.mailService._updateMail(action.payload._id, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+
+        mailList.forEach(mail => {
+          if (mail._id === action.payload._id) {
+            mail.status = MailStatus.SCAN_REJECTED;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: reject scan mails content
+  */
+
+  @Action(MailActions.UnscanMails)
+  unscanMails(ctx: StateContext<MailStateModel>, action: MailActions.UnscanMails) {
+    // get current state
+    const state = ctx.getState();
+    const update = { status: MailStatus.SCAN_REJECTED };
+
+    // async service call
+    return this.mailService._updateMails(action.payload, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+        const updatedMailIds = action.payload.map(mail => mail._id);
+
+        mailList.forEach(mail => {
+          if (updatedMailIds.includes(mail._id)) {
+            mail.status = MailStatus.SCAN_REJECTED;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: report a mail issue
+  */
+
+  @Action(MailActions.IssueMail)
+  issueMail(ctx: StateContext<MailStateModel>, action: MailActions.IssueMail) {
+    // get current state
+    const state = ctx.getState();
+    const update = { flags: { issue: true } };
+
+    // async service call
+    return this.mailService._updateMail(action.payload._id, update).pipe(
+      tap(() => {
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
+
+        mailList.forEach(mail => {
+          if (mail._id === action.payload._id) {
+            mail.flags.issue = true;
+          }
+        });
+
+        // return new state
+        ctx.patchState({ mailList });
+      })
+    );
+  }
+
+  /*
+   Action: change page
   */
 
   @Action(MailActions.ChangePage)
@@ -263,7 +611,7 @@ export class MailState {
       // return new state
       ctx.patchState({
         mailList,
-        imageTaskPool: [...state.imageTaskPool, ...mailList.map(mail => mail._id)],
+        imageTaskPool: [...mailList.map(mail => mail._id), ...state.imageTaskPool], // fetch new page images first
         currentPage: action.payload.currentPage,
         mailsPerPage: action.payload.mailsPerPage,
         isLoading: false

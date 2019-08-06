@@ -91,12 +91,15 @@ exports.updateMails = async (req, res, next) => {
   const searchCriteria = getUserSearchCriteria(req);
   searchCriteria['_id'] = { $in: req.queryData.ids };
 
+  // toggle terminated flag
+  const isTerminated = req.body.status === 'COLLECTED' || req.body.status === 'TRASHED';
+
   // prepare update
   const update = {
     'flags.read': typeof req.body.flags.read === 'boolean' ? req.body.flags.read : undefined,
     'flags.star': typeof req.body.flags.star === 'boolean' ? req.body.flags.star : undefined,
     'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
-    // 'flags.terminated': req.body.status === 'COLLECTED' || 'TRASHED' ? true : undefined, // only triggered by collected || trashed
+    'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
     status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
   };
   update.status = req.body.flags.issue ? 'RE_SCANNING' : undefined;
@@ -137,12 +140,15 @@ exports.updateMail = async (req, res, next) => {
   const searchCriteria = getUserSearchCriteria(req);
   searchCriteria['_id'] = req.params.id;
 
+  // toggle terminated flag
+  const isTerminated = req.body.status === 'COLLECTED' || req.body.status === 'TRASHED';
+
   // prepare update
   const update = {
     'flags.read': typeof req.body.flags.read === 'boolean' ? req.body.flags.read : undefined,
     'flags.star': typeof req.body.flags.star === 'boolean' ? req.body.flags.star : undefined,
     'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
-    // 'flags.terminated': req.body.status === 'COLLECTED' || 'TRASHED' ? true : undefined, // only triggered by collected || trashed
+    'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
     status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
   };
   Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
@@ -168,7 +174,7 @@ exports.updateMail = async (req, res, next) => {
   // send POST request's result to frontend
   res.status(201).json({
     message: 'Mail flag(s) set successfully.',
-    mail: fetchedMail
+    mail: result
   });
 };
 
@@ -287,7 +293,9 @@ exports.getContentPDF = async (req, res, next) => {
   searchCriteria['_id'] = req.params.id;
 
   // async function to get the requested mail from database
-  const { err, data: fetchedMail } = await async_wrapper(Mail.findOne(searchCriteria));
+  const { err, data: fetchedMail } = await async_wrapper(
+    Mail.findOneAndUpdate(searchCriteria, { $set: { 'flags.read': true } })
+  );
   if (err || !fetchedMail) {
     return res.status(500).json({
       message: 'Failed to find the mail!'
@@ -426,6 +434,7 @@ exports.modifyMail = async (req, res, next) => {
     content: req.body.content,
     envelopKey: envelopKey,
     contentPDFKey: contentPDFKey,
+    'flags.issue': false,
     status: contentPDFKey ? 'SCANNED_ARCHIVED' : undefined,
     updatedAt: Date.now()
   };
@@ -434,7 +443,7 @@ exports.modifyMail = async (req, res, next) => {
   // async function to save mail into database
   const { data: result, error } = await async_wrapper(
     Mail.updateOne(
-      { _id: req.params.id, senderId: req.userData.userId },
+      { _id: req.params.id, senderId: req.userData.userId, 'flags.terminated': false },
       { $set: update },
       {
         fields: { envelopKey: 0, contentPDFKey: 0 },

@@ -15,6 +15,11 @@ export class GetEnvelopImage {
   constructor(public payload: Mail) {}
 }
 
+export class GetContentPdf {
+  static readonly type = '[Mail Page] Get Content Pdf';
+  constructor(public payload: Mail) {}
+}
+
 export class GetEnvelopImages {
   static readonly type = '[Mail Background Worker] Get Envelop Images';
 }
@@ -29,11 +34,11 @@ export class ChangePage {
 }
 
 /*
-    Action: star
+    Action: toggle star flag(s)
 */
 
-export class StarredMail {
-  static readonly type = '[Mail Page] Starred Mail';
+export class ToggleMailStarFlag {
+  static readonly type = '[Mail Page] Toggle Mail Star Flag';
   constructor(public payload: Mail) {}
 }
 
@@ -42,14 +47,65 @@ export class StarredMails {
   constructor(public payload: Mail[]) {}
 }
 
-export class UnStarredMail {
-  static readonly type = '[Mail Page] Un-Starred Mail';
+export class UnstarredMails {
+  static readonly type = '[Mail Page] Unstarred Mails';
+  constructor(public payload: Mail[]) {}
+}
+
+/*
+    Action: toggle read flag(s)
+*/
+
+export class ToggleMailReadFlag {
+  static readonly type = '[Mail Page] Toggle Mail Read Flag';
   constructor(public payload: Mail) {}
 }
 
-export class UnStarredMails {
-  static readonly type = '[Mail Page] Un-Starred Mails';
+export class ReadMails {
+  static readonly type = '[Mail Page] Read Mails';
   constructor(public payload: Mail[]) {}
+}
+
+export class UnreadMails {
+  static readonly type = '[Mail Page] Unread Mails';
+  constructor(public payload: Mail[]) {}
+}
+
+/*
+    Action: scan mail(s)
+*/
+
+export class ScanMail {
+  static readonly type = '[Mail Page] Scan Mail';
+  constructor(public payload: Mail) {}
+}
+
+export class ScanMails {
+  static readonly type = '[Mail Page] Scan Mails';
+  constructor(public payload: Mail[]) {}
+}
+
+/*
+    Action: un-scan mail(s)
+*/
+
+export class UnscanMail {
+  static readonly type = '[Mail Page] Scan Mail';
+  constructor(public payload: Mail) {}
+}
+
+export class UnscanMails {
+  static readonly type = '[Mail Page] Scan Mails';
+  constructor(public payload: Mail[]) {}
+}
+
+/*
+    Action: issue mail TODO: find better name for the action
+*/
+
+export class IssueMail {
+  static readonly type = '[Mail Page] Issue a Mail';
+  constructor(public payload: Mail) {}
 }
 
 /*

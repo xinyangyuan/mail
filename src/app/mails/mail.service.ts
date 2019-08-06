@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject, Observable, throwError } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 
-import { Mail } from './mail.model';
+import { Mail, MailStatus } from './mail.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 
@@ -195,23 +195,48 @@ export class MailService {
   }
 
   /*
-    $ Method: update the mail's flag [PATCH]
+    $ Method: update the mail's flag or status [PATCH]
   */
 
   _updateMail(
     id: string,
-    readFlag?: boolean,
-    starFlag?: boolean,
-    issueFlag?: boolean
+    update: { flags?: { star?: boolean; read?: boolean; issue?: boolean }; status?: MailStatus }
   ): Observable<{ message: string; mail: Mail }> {
-    // pack all required post data
-    const mailData = { flags: { read: readFlag, star: starFlag, issue: issueFlag } };
+    // post updated mail data to RESTapi
+    return (
+      this.http
+        // send patch request
+        .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + id, update)
+        .pipe(
+          tap(
+            res => {
+              // this.mailUpdateObservable.next(res.mail);
+            },
+            err => {
+              console.log('Failed to update mail flags!');
+            }
+          )
+        )
+    );
+  }
+
+  /*
+    $ Method: update the mails' flag [PATCH]
+  */
+
+  _updateMails(
+    mails: Mail[],
+    update: { flags?: { star?: boolean; read?: boolean; issue?: boolean }; status?: MailStatus }
+  ): Observable<{ message: string; mail: Mail }> {
+    // query params
+    const ids: string = mails.map(mail => mail._id).join(',');
+    const queryParams = `?ids=${ids}`;
 
     // post updated mail data to RESTapi
     return (
       this.http
         // send patch request
-        .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + id, mailData)
+        .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + queryParams, update)
         .pipe(
           tap(
             res => {
