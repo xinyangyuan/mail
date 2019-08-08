@@ -1,0 +1,77 @@
+/* top tool bar */
+.mail-grid-item-toolbar {
+  height: 3rem;
+  max-width: 350px;
+}
+
+.checkbox {
+  margin: auto;
+}
+
+.mail-grid-item-toolbar button {
+  margin-top: 5px;
+}
+
+/* mail card */
+
+.mail-grid-item-card {
+  padding-top: 0px;
+  max-width: 320px;
+}
+
+/* mail envelop image */
+.image-container {
+  height: 250px;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+/* mail card main content */
+
+.mail-grid-item-card-content {
+  margin-right: -16px;
+  margin-left: -16px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.mail-grid-item-card-text {
+  padding: 16px;
+  color: rgba(0, 0, 0, 0.54);
+  font-weight: 400;
+  letter-spacing: 0.1px;
+}
+
+.mail-grid-item-card-text h2 {
+  margin-bottom: 0;
+  color: black;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.25px;
+  line-height: 32px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mail-grid-item-card-text h4 {
+  margin-top: 0px;
+  margin-bottom: 16px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mail-grid-item-card-content:hover {
+  transition: all 0.3s;
+  background: rgb(245, 245, 245);
+  cursor: pointer;
+}
+
+.mail-grid-item-card-content:hover .image {
+  transition: all 0.3s;
+  -webkit-filter: brightness(98%);
+  filter: brightness(98%);
+}

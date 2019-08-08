@@ -1,16 +1,39 @@
+<!-- multi selection tool bar -->
+<!-- <mat-toolbar style="height: 40px; background: #ffffff">My App</mat-toolbar> -->
+
 <!-- mail-list body -->
 <main>
   <!-- loading-progress-bar -->
   <mat-progress-bar *ngIf="isLoading$ | async" mode="indeterminate"></mat-progress-bar>
+
   <!-- expansion-panel display -->
-  <mat-accordion *ngIf="!(isLoading$ | async) && mails$ | async as mails">
+  <!-- <mat-accordion *ngIf="!(isLoading$ | async) && mails$ | async as mails">
     <div *ngFor="let mail of mails">
       <app-mail-expansion-list-item
         [mail]="mail"
         [imageURL]="(imageURLs$ | async)[mail._id]"
       ></app-mail-expansion-list-item>
     </div>
-  </mat-accordion>
+  </mat-accordion> -->
+
+  <!-- card-grid display -->
+  <div
+    fxLayout="row wrap"
+    fxLayout.lt-sm="column"
+    fxLayoutAlign="flex-start"
+    *ngIf="!(isLoading$ | async) && mails$ | async as mails"
+  >
+    <app-mail-card-grid-item
+      fxFlex="0 1 33.3%"
+      fxFlex.lt-md="0 1 50%"
+      fxFlex.lt-sm="100%"
+      style="padding: 18px;"
+      *ngFor="let mail of mails"
+      [mail]="mail"
+      [imageURL]="(imageURLs$ | async)[mail._id]"
+    >
+    </app-mail-card-grid-item>
+  </div>
 </main>
 
 <!-- paginator -->

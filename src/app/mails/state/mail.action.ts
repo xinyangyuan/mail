@@ -109,7 +109,29 @@ export class IssueMail {
 }
 
 /*
-    Action:
+    Action: select/stage mail
+*/
+
+export class SelectMail {
+  static readonly type = '[Mail Page] Select a Mail';
+  constructor(public payload: Mail) {}
+}
+
+export class UnselectMail {
+  static readonly type = '[Mail Page] Unselect a Mail';
+  constructor(public payload: Mail) {}
+}
+
+export class SelectAllMails {
+  static readonly type = '[Mail Page] Select All Mails';
+}
+
+export class UnselectAllMails {
+  static readonly type = '[Mail Page] Unselect All Mails';
+}
+
+/*
+    Action: delete mail
 */
 
 export class DeleteMail {

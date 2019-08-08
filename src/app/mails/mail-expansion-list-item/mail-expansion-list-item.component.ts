@@ -22,9 +22,9 @@ export class MailExpansionListItemComponent implements OnChanges {
   // Init Method:
   ngOnChanges() {}
 
-  // Method: user clicked on expansion panel
+  // Method:
   onExpand() {
-    // snapshot of store
+    // snapshot of store currrentImageTasks
     const currentImageTasks = this.store.selectSnapshot(MailState.currentImageTasks);
 
     // dipatch action if image (1) is not fetched or (2) background worker is not fething it now
@@ -33,7 +33,7 @@ export class MailExpansionListItemComponent implements OnChanges {
     }
   }
 
-  // Method: user clicked star-button
+  // Method:
   onStar(event: MouseEvent) {
     // disable mat-expansion panel from expanding
     event.stopPropagation();
@@ -42,24 +42,28 @@ export class MailExpansionListItemComponent implements OnChanges {
     this.store.dispatch(new MailActions.ToggleMailStarFlag(this.mail));
   }
 
-  // Method: user clicked delete-button
+  // Method:
+  onScan() {}
+
+  // Method:
+  onRejectScan() {}
+
+  // Method:
+
+  // Method:
   onDelete() {}
 
-  // Method: user clicked view-button
-  onView() {}
+  // Method:
+  onView() {
+    // open new window and display loading message
+    const pdfWindow = window.open('', '_blank');
+    pdfWindow.document.write('Loading pdf... <br> Please turn off AdBlock to see the pdf file.');
 
-  // Method: view mail content pdf
-  // async onView(mail: Mail) {
-  //   // open new window and display loading message
-  //   const pdfWindow = window.open('', '_blank');
-  //   pdfWindow.document.write('Loading pdf... <br> Please turn off AdBlock to see the pdf file.');
-
-  //   // get content pdf
-  //   const file = await this.mailService.getContentPDF(mail._id).toPromise();
-  //   const pdfURL = window.URL.createObjectURL(file);
-  //   pdfWindow.location.href = pdfURL;
-
-  //   // change read flag
-  //   mail.flags.read = true;
-  // }
+    // load pdf in window
+    this.store.dispatch(new MailActions.GetContentPdf(this.mail)).subscribe(() => {
+      const pdfURL = this.store.selectSnapshot(MailState.pdfURL);
+      console.log(pdfURL);
+      pdfWindow.location.href = pdfURL;
+    });
+  }
 }

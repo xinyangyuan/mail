@@ -288,6 +288,7 @@ exports.getEnvelop = async (req, res, next) => {
   Function: get one mail's content PDF [GET]
 */
 exports.getContentPDF = async (req, res, next) => {
+  console.log('getContentPDF is called');
   // get search criteria
   const searchCriteria = getUserSearchCriteria(req);
   searchCriteria['_id'] = req.params.id;

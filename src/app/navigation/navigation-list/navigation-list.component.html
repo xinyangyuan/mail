@@ -1,6 +1,11 @@
-<mat-nav-list>
-  <title matSubheader class="mat-typography">MAIL</title>
+<!-- user info -->
+<div class="user-info">
+  <h3>My Mail</h3>
+  <h6>sender1@first.com</h6>
+</div>
 
+<!-- navigation list -->
+<mat-nav-list>
   <!-- mail navigation link -->
   <a mat-list-item routerLink="/create" routerLinkActive="active">
     <mat-icon matListIcon class="app-nav-list-icon">add_box</mat-icon>
@@ -8,29 +13,38 @@
   </a>
   <a mat-list-item routerLink="/mails" routerLinkActive="active">
     <mat-icon matListIcon class="app-nav-list-icon">inbox</mat-icon>
-    <span class="nav-caption">Mail</span>
+    <span class="nav-caption">Inbox</span>
   </a>
   <a mat-list-item routerLink="/stared" routerLinkActive="active">
     <mat-icon matListIcon class="app-nav-list-icon">star_border</mat-icon>
-    <span class="nav-caption">Stared</span>
+    <span class="nav-caption">Starred</span>
   </a>
-  <a mat-list-item routerLink="/unread" routerLinkActive="active">
-    <mat-icon matListIcon class="app-nav-list-icon material-icons-outlined">scatter_plot</mat-icon>
-    <span class="nav-caption">Unread</span>
-  </a>
-  <!-- <a mat-list-item routerLink="/users" routerLinkActive="active">
-    <mat-icon matListIcon class="app-nav-list-icon">contacts</mat-icon>
-    <span class="nav-caption">Recipient</span>
-  </a> -->
 
   <mat-divider></mat-divider>
 
-  <title matSubheader class="mat-typography">SETTINGS</title>
+  <title matSubheader class="mat-typography">PROCESSING</title>
   <a mat-list-item routerLinkActive="active">
     <mat-icon matListIcon class="app-nav-list-icon">account_box</mat-icon>
-    <span class="nav-caption">Account</span>
+    <span class="nav-caption">Scanning</span>
+  </a>
+
+  <mat-divider></mat-divider>
+
+  <title matSubheader class="mat-typography">PROCESSED</title>
+  <a mat-list-item routerLinkActive="active">
+    <mat-icon matListIcon class="app-nav-list-icon">account_box</mat-icon>
+    <span class="nav-caption">Scanned</span>
+  </a>
+  <a mat-list-item routerLinkActive="active">
+    <mat-icon matListIcon class="app-nav-list-icon">account_box</mat-icon>
+    <span class="nav-caption">Scan Rejected</span>
   </a>
 </mat-nav-list>
+
+<!-- <a mat-list-item routerLink="/users" routerLinkActive="active">
+        <mat-icon matListIcon class="app-nav-list-icon">contacts</mat-icon>
+        <span class="nav-caption">Recipient</span>
+      </a> -->
 
 <!-- <mat-list-item>
   <button mat-icon-button (click)="onClose()">

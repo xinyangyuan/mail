@@ -11,16 +11,19 @@
 </mat-toolbar> -->
 
 <mat-toolbar>
-  <mat-toolbar-row>
+  <mat-toolbar-row *ngIf="!(isSelectMode$ | async)">
     <!-- button: side navigation toggle -->
     <button mat-icon-button (click)="onToggleSidenav()">
       <mat-icon>menu</mat-icon>
     </button>
 
     <!-- side logo: Mail -->
-    <span>
+    <!-- <span>
       <a routerLink="/mails"> Mail </a>
-    </span>
+    </span> -->
+
+    <!-- flex spacer -->
+    <!-- <span class="mat-spacer"></span> -->
 
     <!-- header buttons -->
     <div fxFlex fxLayout fxLayoutAlign="flex-end">
@@ -34,10 +37,10 @@
 
         <!-- button: helps -->
         <!-- <li fxHide.xs>
-          <button mat-icon-button>
-            <mat-icon>help_outline</mat-icon>
-          </button>
-        </li> -->
+              <button mat-icon-button>
+                <mat-icon>help_outline</mat-icon>
+              </button>
+            </li> -->
 
         <!-- button: log out -->
         <li>
@@ -57,5 +60,15 @@
         </li>
       </ul>
     </div>
+  </mat-toolbar-row>
+
+  <mat-toolbar-row *ngIf="isSelectMode$ | async">
+    <button mat-icon-button style="margin-top: -3px;" (click)="onUnSelectAll()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <button mat-button (click)="onSelectAll()">SELECT ALL</button>
+    <div fxFlex></div>
+    <button mat-button (click)="onScanAll()">SCAN</button>
+    <button mat-button (click)="onSkipScanAll()">SKIP SCAN</button>
   </mat-toolbar-row>
 </mat-toolbar>

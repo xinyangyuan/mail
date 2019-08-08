@@ -8,17 +8,18 @@ ul {
 /* site logo style */
 a {
   text-decoration: none;
-  color: white;
+  color: #ffffff;
   padding-left: 1rem;
 }
 
 mat-toolbar {
   background-color: rgb(114, 138, 248);
-  color: white;
+  /* background-color: #ffffff; */
+  color: #ffffff;
+  height: 55px;
+  z-index: -1;
 }
 
-/* mat-toolbar {
-  position: fixed;
-  top: 0;
-  margin-bottom: 2rem;
-} */
+.mat-toolbar-multiple-rows {
+  min-height: 55px;
+}

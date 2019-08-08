@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
@@ -36,6 +36,7 @@ import { ngxsConfig } from './state/ngxs.config';
 import { MailExpansionListItemComponent } from './mails/mail-expansion-list-item/mail-expansion-list-item.component';
 import { MailCardListItemComponent } from './mails/mail-card-list-item/mail-card-list-item.component';
 import { MailCardGridItemComponent } from './mails/mail-card-grid-item/mail-card-grid-item.component';
+import { MailItemToolbarComponent } from './mails/mail-item-toolbar/mail-item-toolbar.component';
 
 @NgModule({
   declarations: [
@@ -60,13 +61,15 @@ import { MailCardGridItemComponent } from './mails/mail-card-grid-item/mail-card
     ImageLoadingSpinnerComponent,
     MailExpansionListItemComponent,
     MailCardListItemComponent,
-    MailCardGridItemComponent
+    MailCardGridItemComponent,
+    MailItemToolbarComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     AngularMaterialModule,
+    FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     FlexLayoutModule,

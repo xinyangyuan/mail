@@ -14,6 +14,7 @@ import { takeUntil, tap } from 'rxjs/operators';
 export interface MailStateModel {
   // Mail
   mailList: Mail[];
+  selectedMails: Mail[];
   mailCount: number;
 
   // Pagination
@@ -29,7 +30,7 @@ export interface MailStateModel {
   imageURLs: { [key: string]: SafeUrl };
 
   // Content Pdf
-  pdfURL: {};
+  pdfURL: string;
 }
 
 /*
@@ -38,6 +39,7 @@ export interface MailStateModel {
 
 const initialState: MailStateModel = {
   mailList: [],
+  selectedMails: [],
   mailCount: 0,
   currentPage: 1,
   mailsPerPage: 6,
@@ -45,7 +47,7 @@ const initialState: MailStateModel = {
   imageTaskPool: [],
   currentImageTasks: [],
   imageURLs: {},
-  pdfURL: {}
+  pdfURL: ''
 };
 
 /*
@@ -68,6 +70,11 @@ export class MailState {
   @Selector()
   static mailList(state: MailStateModel) {
     return state.mailList;
+  }
+
+  @Selector()
+  static selectedMails(state: MailStateModel) {
+    return state.selectedMails;
   }
 
   @Selector()
@@ -98,6 +105,16 @@ export class MailState {
   @Selector()
   static imageURLs(state: MailStateModel) {
     return state.imageURLs;
+  }
+
+  @Selector()
+  static pdfURL(state: MailStateModel) {
+    return state.pdfURL;
+  }
+
+  @Selector()
+  static selectMode(state: MailStateModel): boolean {
+    return state.selectedMails.length >= 1;
   }
 
   /*
@@ -246,8 +263,8 @@ export class MailState {
         // store images to urls
         const pdfURL = window.URL.createObjectURL(result);
 
-        // update mailList
-        const mailList = state.mailList;
+        // update mailList (deepcopy mailList)
+        const mailList = JSON.parse(JSON.stringify(state.mailList));
         mailList.forEach(mail => {
           if (mail._id === action.payload._id) {
             mail.flags.read = true;
@@ -575,6 +592,66 @@ export class MailState {
         ctx.patchState({ mailList });
       })
     );
+  }
+
+  /*
+   Action: select a mail
+  */
+
+  @Action(MailActions.SelectMail)
+  selectMail(ctx: StateContext<MailStateModel>, action: MailActions.SelectMail) {
+    // get current state
+    const state = ctx.getState();
+
+    // return new state
+    ctx.patchState({
+      selectedMails: [...state.selectedMails, action.payload]
+    });
+  }
+
+  /*
+   Action: select all mails
+  */
+
+  @Action(MailActions.SelectAllMails)
+  selectAllMails(ctx: StateContext<MailStateModel>) {
+    // get current state
+    const state = ctx.getState();
+
+    // get all mails on current page
+    const startIndex = (state.currentPage - 1) * state.mailsPerPage;
+    const stopIndex = state.currentPage * state.mailsPerPage;
+    const mailsOnCurrentPage = state.mailList.slice(startIndex, stopIndex);
+
+    // return new state
+    ctx.patchState({
+      selectedMails: mailsOnCurrentPage
+    });
+  }
+
+  /*
+   Action: un-select a mail
+  */
+
+  @Action(MailActions.UnselectMail)
+  unselectMail(ctx: StateContext<MailStateModel>, action: MailActions.UnselectMail) {
+    // get current state
+    const state = ctx.getState();
+
+    // return new state
+    ctx.patchState({
+      selectedMails: state.selectedMails.filter(mail => mail._id !== action.payload._id)
+    });
+  }
+
+  /*
+   Action: un-select all mails
+  */
+
+  @Action(MailActions.UnselectAllMails)
+  unselectAllMails(ctx: StateContext<MailStateModel>) {
+    // return new state
+    ctx.patchState({ selectedMails: [] });
   }
 
   /*

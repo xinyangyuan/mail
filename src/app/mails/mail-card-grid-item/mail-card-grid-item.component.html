@@ -1,1 +1,70 @@
-<p>mail-card-grid-item works!</p>
+<div (mouseenter)="showToolbar = true" (mouseleave)="showToolbar = false">
+  <div
+    class="mail-grid-item-toolbar"
+    [style.visibility]="showToolbar || (isSelectMode$ | async) ? 'visible' : 'hidden'"
+  >
+    <mat-checkbox
+      [(ngModel)]="isSelected"
+      class="checkbox"
+      (change)="onCheckbox($event)"
+    ></mat-checkbox>
+    <div fxFlex></div>
+    <button mat-icon-button>
+      <mat-icon>more_horiz</mat-icon>
+    </button>
+  </div>
+
+  <mat-card
+    class="mail-grid-item-card"
+    [ngStyle]="
+      isSelected && {
+        'box-shadow': '0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)'
+      }
+    "
+  >
+    <!-- card content -->
+    <div matRipple class="mail-grid-item-card-content" (click)="onView()">
+      <app-image-loading-spinner *ngIf="!imageURL"></app-image-loading-spinner>
+      <div *ngIf="imageURL" class="image-container">
+        <img [src]="imageURL" [alt]="mail.content" class="image" />
+      </div>
+
+      <mat-card-content class="mail-grid-item-card-text">
+        <h2>
+          {{ mail.title }}
+        </h2>
+
+        <h4>
+          {{ mail.updatedAt | date: 'mediumDate' }}
+        </h4>
+      </mat-card-content>
+    </div>
+
+    <!-- card action row -->
+    <mat-card-actions>
+      <button mat-button color="primary">SCAN</button>
+      <button mat-button color="primary">ARCHIVE</button>
+
+      <div fxFlex></div>
+
+      <button mat-icon-button class="button-hide">
+        <mat-icon
+          *ngIf="!mail.flags.star"
+          appDebounceClick
+          (debounceClick)="onStar()"
+          [debounceTime]="150"
+          class="star-border-btn"
+          >star_border
+        </mat-icon>
+        <mat-icon
+          *ngIf="mail.flags.star"
+          appDebounceClick
+          (debounceClick)="onStar()"
+          [debounceTime]="150"
+          [ngStyle]="{ color: 'gold' }"
+          >star
+        </mat-icon>
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

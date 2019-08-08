@@ -1,20 +1,56 @@
 <main>
-  <ng-container *ngFor="let number of [0, 1, 2, 3, 4, 5, 6, 7, 8]">
-    <mat-card class="user-list-card">
-      <img
-        mat-card-image
-        src="https://material-components.github.io/material-components-web-catalog/static/media/photos/3x2/2.jpg"
-        alt="Photo of a Shiba Inu"
-      />
-      <mat-card-content>
-        <p>
-          The Shiba Inu is the smallest of the six original and distinc
-        </p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-button>LIKE</button>
-        <button mat-button>SHARE</button>
-      </mat-card-actions>
-    </mat-card>
-  </ng-container>
+  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+    <ng-container *ngFor="let number of [0, 1, 2, 3, 4, 5, 6, 7, 8]">
+      <div
+        fxFlex="0 1 33.3%"
+        fxFlex.lt-md="0 1 50%"
+        fxFlex.lt-sm="100%"
+        class="user-card-container"
+      >
+        <div style="height: 3rem;">
+          <mat-checkbox class="checkbox"></mat-checkbox>
+          <div fxFlex></div>
+          <button mat-icon-button style="margin: auto 0;">
+            <mat-icon>more_horiz</mat-icon>
+          </button>
+        </div>
+        <mat-card class="user-list-card">
+          <!-- card main body -->
+          <div matRipple class="content">
+            <img
+              mat-card-image
+              src="https://material-components.github.io/material-components-web-catalog/static/media/photos/3x2/2.jpg"
+              alt="Photo of a Shiba Inu"
+              mat-ripple
+              class="image"
+            />
+
+            <mat-card-content>
+              <p>
+                The Shiba Inu is the smallest of the six original and distinc
+              </p>
+            </mat-card-content>
+          </div>
+
+          <!-- card action row -->
+          <mat-card-actions>
+            <button mat-button color="primary">READ</button>
+            <button mat-button color="primary">BOOKMARK</button>
+
+            <div fxFlex></div>
+
+            <button mat-icon-button style="margin-top:-4px">
+              <mat-icon>favorite_border</mat-icon>
+            </button>
+            <button mat-icon-button style="margin-top:-4px">
+              <mat-icon>star_border</mat-icon>
+            </button>
+            <button mat-icon-button style="margin-top:-4px">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </ng-container>
+  </div>
 </main>
