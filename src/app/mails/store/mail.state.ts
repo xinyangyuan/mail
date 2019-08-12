@@ -127,8 +127,8 @@ export class MailState {
     const state = ctx.getState();
 
     // prepare api call
-    const skip = 0;
-    const limit = state.mailsPerPage;
+    const skip = state.mailList.length;
+    const limit = state.mailsPerPage * state.currentPage - state.mailList.length;
 
     // async service call
     const result = await this.mailService

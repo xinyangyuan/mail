@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
 
 import { AuthService } from '../../auth/auth.service';
-import { MailState } from 'src/app/mails/state/mail.state';
-import * as MailActions from 'src/app/mails/state/mail.action';
+import { MailState } from 'src/app/mails/store/mail.state';
+import * as MailActions from 'src/app/mails/store/mail.action';
 
 @Component({
   selector: 'app-header',

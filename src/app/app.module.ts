@@ -31,7 +31,7 @@ import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { DebounceClickDirective } from './core/directives/debounce-click.directive';
 import { ImageLoadingSpinnerComponent } from './ui/image-loading-spinner/image-loading-spinner.component';
-import { MailState } from './mails/state/mail.state';
+import { MailState } from './mails/store/mail.state';
 import { ngxsConfig } from './state/ngxs.config';
 import { MailExpansionListItemComponent } from './mails/mail-expansion-list-item/mail-expansion-list-item.component';
 import { MailCardListItemComponent } from './mails/mail-card-list-item/mail-card-list-item.component';

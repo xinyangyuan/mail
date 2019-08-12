@@ -1,19 +1,36 @@
 <div (mouseenter)="showToolbar = true" (mouseleave)="showToolbar = false">
+  <!-- Mail Action: -->
   <div
     class="mail-grid-item-toolbar"
-    [style.visibility]="showToolbar || (isSelectMode$ | async) ? 'visible' : 'hidden'"
+    [style.visibility]="
+      showToolbar || (isSelectMode$ | async) || !menu.close ? 'visible' : 'hidden'
+    "
   >
     <mat-checkbox
       [(ngModel)]="isSelected"
       class="checkbox"
       (change)="onCheckbox($event)"
     ></mat-checkbox>
+
     <div fxFlex></div>
-    <button mat-icon-button>
+
+    <button mat-icon-button [matMenuTriggerFor]="menu">
       <mat-icon>more_horiz</mat-icon>
     </button>
+
+    <mat-menu #menu xPosition="before">
+      <button mat-menu-item>
+        <mat-icon>flag</mat-icon>
+        <span>Report Issue</span>
+      </button>
+      <button mat-menu-item>
+        <mat-icon>delete_forever</mat-icon>
+        <span>Delete Mail</span>
+      </button>
+    </mat-menu>
   </div>
 
+  <!-- Mail Card: -->
   <mat-card
     class="mail-grid-item-card"
     [ngStyle]="

@@ -3,8 +3,8 @@ import { Store } from '@ngxs/store';
 import { SafeUrl } from '@angular/platform-browser';
 
 import { Mail } from '../mail.model';
-import { MailState } from '../state/mail.state';
-import * as MailActions from '../state/mail.action';
+import { MailState } from '../store/mail.state';
+import * as MailActions from '../store/mail.action';
 
 @Component({
   selector: 'app-mail-expansion-list-item',

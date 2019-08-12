@@ -5,8 +5,8 @@ import { Store, Select, Actions, ofActionDispatched } from '@ngxs/store';
 import { SafeUrl } from '@angular/platform-browser';
 
 import { Mail } from '../mail.model';
-import { MailState } from '../state/mail.state';
-import * as MailActions from '../state/mail.action';
+import { MailState } from '../store/mail.state';
+import * as MailActions from '../store/mail.action';
 
 @Component({
   selector: 'app-mail-card-grid-item',
@@ -28,10 +28,15 @@ export class MailCardGridItemComponent implements OnChanges, OnDestroy {
 
   // Init Method:
   ngOnChanges() {
+    // unselect all mails if user call other actions on a specific mail (e.g. star a mail)
+    this.store.dispatch(MailActions.UnselectAllMails);
+
+    // listen on unSelectAllMails action -> uncheck selected checkbox
     this.actions$
       .pipe(ofActionDispatched(MailActions.UnselectAllMails))
       .subscribe(() => (this.isSelected = false));
 
+    // listen on selectAllMails action -> check selected checkbox
     this.actions$
       .pipe(ofActionDispatched(MailActions.SelectAllMails))
       .subscribe(() => (this.isSelected = true));
@@ -54,8 +59,6 @@ export class MailCardGridItemComponent implements OnChanges, OnDestroy {
     // dispacthc action: skip scan mail
     this.store.dispatch(new MailActions.UnscanMail(this.mail));
   }
-
-  // Method:
 
   // Method:
   onDelete() {}

@@ -2,6 +2,7 @@ var AWS = require('aws-sdk');
 
 // const s3FileURL = process.env.AWS_Uploaded_File_URL_LINK;
 
+//  AWS S3 Setup
 let s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,

@@ -1,7 +1,7 @@
 const express = require('express');
 
-const sendGreeting = require('../hooks/send-greeting');
 const UserController = require('../controllers/user');
+const sendGreeting = require('../hooks/send-greeting');
 
 const router = express.Router();
 

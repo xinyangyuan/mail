@@ -9,7 +9,7 @@ const mailRoutes = require('./routes/mail');
 const app = express();
 
 /*
- setup and connect to mongoDB Atlas databse
+ setup and connect to MongoDB Atlas databse
 */
 
 mongoose

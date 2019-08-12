@@ -161,7 +161,7 @@ module.exports = (req, res, next) => {
   // status:
   if (typeof req.query.status !== 'undefined') {
     const statusQ = req.query.status;
-    const validStatusList = Mail.schema.path('status').enumValues;
+    const validStatusList = Mail.schema.path('status').enumValues; // access allowed status string from Mail schema
 
     if (validStatusList.includes(statusQ)) {
       filterBy = { ...filterBy, status: statusQ };

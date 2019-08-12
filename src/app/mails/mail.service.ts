@@ -13,34 +13,8 @@ export class MailService {
   // Attributes
   private BACKEND_URL = environment.apiURL + '/mail/';
 
-  // Attributes: observerables
-  private mailsListObservable = new Subject<Mail[]>();
-  private mailCreateObservable = new Subject<Mail>();
-  private mailUpdateObservable = new Subject<Mail>();
-  private mailDeletionObservable = new Subject<boolean>();
-
   // Constructor
   constructor(private http: HttpClient) {}
-
-  /*
-    Method: get a list of all user/sender's mails [GET]
-  */
-
-  getMailList() {
-    // fetch mail list from the RESTapi
-    this.http
-      // send get request
-      .get<{ message: string; mailList: Mail[] }>(this.BACKEND_URL)
-      .subscribe(
-        res => {
-          this.mailsListObservable.next(res.mailList); // Todo: unpack needed?
-          return res.mailList;
-        },
-        err => {
-          console.log('Failed to fetch mail list!');
-        }
-      );
-  }
 
   /*
     $ Method: get a list of all user/sender's mails [GET]
@@ -49,28 +23,16 @@ export class MailService {
   _getMailList(
     skip: number,
     limit: number,
-    flags?: { readFlag?: boolean; starFlag?: boolean; issueFlag?: boolean }
+    filterBy?: { read?: boolean; star?: boolean; issue?: boolean; status?: MailStatus }
   ): Observable<{ message: string; mailList: Mail[]; mailCount: number }> {
     // retrieve flags query
-    let readFlagParam = '';
-    let starFlagParam = '';
-    let issueFlagParam = '';
-
-    if (typeof flags !== 'undefined') {
-      if (flags.hasOwnProperty('readFlag')) {
-        readFlagParam = `&read=${flags.readFlag.toString()}`;
-      }
-      if (flags.hasOwnProperty('starFlag')) {
-        starFlagParam = `&star=${flags.starFlag.toString()}`;
-      }
-      if (flags.hasOwnProperty('issueFlag')) {
-        issueFlagParam = `&issue=${flags.issueFlag.toString()}`;
-      }
+    let filterByString = '';
+    for (const [filterName, filterValue] of Object.entries(filterBy)) {
+      filterByString += '&' + filterName.toString() + '=' + filterValue.toString();
     }
 
     // set querParams
-    const queryParams =
-      `?skip=${skip}&limit=${limit}` + readFlagParam + starFlagParam + issueFlagParam;
+    const queryParams = `?skip=${skip}&limit=${limit}` + filterByString;
 
     // fetch mail list from the RESTapi
     return (
@@ -82,7 +44,6 @@ export class MailService {
         .pipe(
           tap(
             res => {
-              this.mailsListObservable.next(res.mailList);
               console.log(res.message);
             },
             err => {
@@ -92,42 +53,6 @@ export class MailService {
           catchError(error => throwError(error))
         )
     );
-  }
-
-  /*
-    Method: create new mail [POST]
-  */
-
-  createMail(
-    receiverId: string,
-    title: string,
-    description: string,
-    content: string,
-    envelop: File,
-    contentPDF: File
-  ) {
-    // pack all required post data
-    const mailData = new FormData();
-    mailData.append('receiverId', receiverId);
-    mailData.append('title', title);
-    mailData.append('description', description);
-    mailData.append('content', content);
-    mailData.append('envelop', envelop);
-    mailData.append('contentPDF', contentPDF);
-
-    // post mailData to RESTapi
-    this.http
-      // send get request
-      .post<{ message: string; mail: Mail }>(this.BACKEND_URL, mailData)
-      .subscribe(
-        res => {
-          this.mailCreateObservable.next(res.mail);
-          return res.mail;
-        },
-        err => {
-          console.log('Failed to send the mail!');
-        }
-      );
   }
 
   /*
@@ -159,7 +84,6 @@ export class MailService {
         .pipe(
           tap(
             res => {
-              this.mailCreateObservable.next(res.mail);
               console.log(res.message);
             },
             err => {
@@ -169,29 +93,6 @@ export class MailService {
           catchError(error => throwError(error))
         )
     );
-  }
-
-  /*
-    Method: update the mail's flag [PATCH]
-  */
-
-  updateMail(id: string, read_flag: boolean, star_flag: boolean) {
-    // pack all required post data
-    const mailData = { id, read_flag, star_flag };
-
-    // post updated mail data to RESTapi
-    this.http
-      // send get request
-      .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + id, mailData)
-      .subscribe(
-        res => {
-          this.mailUpdateObservable.next(res.mail);
-          return res.mail;
-        },
-        err => {
-          console.log('Failed to update mail flags!');
-        }
-      );
   }
 
   /*
@@ -239,34 +140,13 @@ export class MailService {
         .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + queryParams, update)
         .pipe(
           tap(
-            res => {
-              this.mailUpdateObservable.next(res.mail);
-            },
+            res => {},
             err => {
               console.log('Failed to update mail flags!');
             }
           )
         )
     );
-  }
-
-  /*
-    Method: delete a mail  [DELETE]
-  */
-  deleteMail(id: string) {
-    // post updated mail data to RESTapi
-    this.http
-      // send delete request
-      .delete<{ message: string; mail: Mail }>(this.BACKEND_URL + id)
-      .subscribe(
-        res => {
-          this.mailDeletionObservable.next(true);
-          return res.mail;
-        },
-        err => {
-          console.log('Failed to update mail flags!');
-        }
-      );
   }
 
   /*
@@ -281,9 +161,7 @@ export class MailService {
         .delete<{ message: string; mail: Mail }>(this.BACKEND_URL + id)
         .pipe(
           tap(
-            res => {
-              this.mailDeletionObservable.next(true);
-            },
+            res => {},
             err => {
               console.log('Failed to update mail flags!');
             }

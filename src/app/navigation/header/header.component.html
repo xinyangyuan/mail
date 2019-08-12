@@ -1,16 +1,5 @@
-<!-- <mat-toolbar color="primary">
-  <span>
-    <a routerLink="/mails"> Mail </a>
-  </span>
-  <span class="spacer"></span>
-  <ul>
-    <li>
-      <a mat-button *ngIf="isSender" routerLink="/create" routerLinkActive="mat-accent">New Mail</a>
-    </li>
-  </ul>
-</mat-toolbar> -->
-
 <mat-toolbar>
+  <!-- Normal Header View: -->
   <mat-toolbar-row *ngIf="!(isSelectMode$ | async)">
     <!-- button: side navigation toggle -->
     <button mat-icon-button (click)="onToggleSidenav()">
@@ -62,6 +51,7 @@
     </div>
   </mat-toolbar-row>
 
+  <!-- Mail Action Header View: -->
   <mat-toolbar-row *ngIf="isSelectMode$ | async">
     <button mat-icon-button style="margin-top: -3px;" (click)="onUnSelectAll()">
       <mat-icon>arrow_back</mat-icon>
@@ -69,6 +59,6 @@
     <button mat-button (click)="onSelectAll()">SELECT ALL</button>
     <div fxFlex></div>
     <button mat-button (click)="onScanAll()">SCAN</button>
-    <button mat-button (click)="onSkipScanAll()">SKIP SCAN</button>
+    <button mat-button (click)="onSkipScanAll()" color="warn">SKIP SCAN</button>
   </mat-toolbar-row>
 </mat-toolbar>

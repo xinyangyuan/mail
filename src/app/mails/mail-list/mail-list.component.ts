@@ -4,12 +4,12 @@ import { ActivatedRoute, Data } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Select, Store } from '@ngxs/store';
 
-import * as MailActions from '../state/mail.action';
-import { MailState } from '../state/mail.state';
+import * as MailActions from '../store/mail.action';
+import { MailState } from '../store/mail.state';
 import { Mail } from '../mail.model';
 import { PageEvent } from '@angular/material';
 import { AuthService } from 'src/app/auth/auth.service';
-import { MailQuery } from '../state/mail.query';
+import { MailQuery } from '../store/mail.query';
 
 @Component({
   selector: 'app-mail-list',

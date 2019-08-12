@@ -15,6 +15,8 @@ import { SignUpConfirmationComponent } from './auth/sign-up-confirmation/sign-up
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 
+import { MailStatus } from './mails/mail.model';
+
 const routes: Routes = [
   {
     path: '',
@@ -35,8 +37,15 @@ const routes: Routes = [
     component: DashboardPageComponent,
     children: [
       { path: 'mails', component: MailListComponent }, // MailListComponent
-      { path: 'stared', component: MailListComponent, data: { starFlag: true } },
-      { path: 'unread', component: MailListComponent, data: { readFlag: false } },
+      { path: 'stared', component: MailListComponent, data: { star: true } },
+      { path: 'unread', component: MailListComponent, data: { read: false } },
+      { path: 'scanning', component: MailListComponent, data: { status: MailStatus.SCANNING } },
+      { path: 'scanned', component: MailListComponent, data: { status: MailStatus.SCANNED } },
+      {
+        path: 'skip-scanned',
+        component: MailListComponent,
+        data: { status: MailStatus.SCAN_REJECTED }
+      },
       { path: 'users', component: UserListComponent },
       { path: 'create', component: MailCreateComponent }
     ]

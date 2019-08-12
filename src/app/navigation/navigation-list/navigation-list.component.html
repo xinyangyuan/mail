@@ -8,36 +8,36 @@
 <mat-nav-list>
   <!-- mail navigation link -->
   <a mat-list-item routerLink="/create" routerLinkActive="active">
-    <mat-icon matListIcon class="app-nav-list-icon">add_box</mat-icon>
-    <span class="nav-caption">New</span>
+    <mat-icon matListIcon>add_box</mat-icon>
+    <span>New</span>
   </a>
   <a mat-list-item routerLink="/mails" routerLinkActive="active">
-    <mat-icon matListIcon class="app-nav-list-icon">inbox</mat-icon>
-    <span class="nav-caption">Inbox</span>
+    <mat-icon matListIcon>inbox</mat-icon>
+    <span>Inbox</span>
   </a>
   <a mat-list-item routerLink="/stared" routerLinkActive="active">
-    <mat-icon matListIcon class="app-nav-list-icon">star_border</mat-icon>
-    <span class="nav-caption">Starred</span>
+    <mat-icon matListIcon>star_border</mat-icon>
+    <span>Starred</span>
   </a>
 
   <mat-divider></mat-divider>
+  <title matSubheader>PROCESSING</title>
 
-  <title matSubheader class="mat-typography">PROCESSING</title>
-  <a mat-list-item routerLinkActive="active">
-    <mat-icon matListIcon class="app-nav-list-icon">account_box</mat-icon>
-    <span class="nav-caption">Scanning</span>
+  <a mat-list-item routerLink="/scanning" routerLinkActive="active">
+    <mat-icon matListIcon class="app-nav-list-icon">directions_run</mat-icon>
+    <span>Scanning</span>
   </a>
 
   <mat-divider></mat-divider>
+  <title matSubheader>PROCESSED</title>
 
-  <title matSubheader class="mat-typography">PROCESSED</title>
-  <a mat-list-item routerLinkActive="active">
-    <mat-icon matListIcon class="app-nav-list-icon">account_box</mat-icon>
-    <span class="nav-caption">Scanned</span>
+  <a mat-list-item routerLink="/scanned" routerLinkActive="active">
+    <mat-icon matListIcon>drafts</mat-icon>
+    <span>Scanned</span>
   </a>
-  <a mat-list-item routerLinkActive="active">
-    <mat-icon matListIcon class="app-nav-list-icon">account_box</mat-icon>
-    <span class="nav-caption">Scan Rejected</span>
+  <a mat-list-item routerLink="/skip-scanned" routerLinkActive="active">
+    <mat-icon matListIcon>mail</mat-icon>
+    <span>Scan Rejected</span>
   </a>
 </mat-nav-list>
 
