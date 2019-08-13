@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MailItemToolbarComponent } from './mail-item-toolbar.component';
+import { MailUpdateComponent } from './mail-update.component';
 
-describe('MailItemToolbarComponent', () => {
-  let component: MailItemToolbarComponent;
-  let fixture: ComponentFixture<MailItemToolbarComponent>;
+describe('MailUpdateComponent', () => {
+  let component: MailUpdateComponent;
+  let fixture: ComponentFixture<MailUpdateComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MailItemToolbarComponent ]
+      declarations: [ MailUpdateComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(MailItemToolbarComponent);
+    fixture = TestBed.createComponent(MailUpdateComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

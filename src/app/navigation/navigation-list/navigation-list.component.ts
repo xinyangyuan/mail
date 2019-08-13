@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../../auth/auth.service';
+import { Select } from '@ngxs/store';
+import { AuthState } from 'src/app/auth/store/auth.state';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-navigation-list',
@@ -7,11 +9,10 @@ import { AuthService } from '../../auth/auth.service';
   styleUrls: ['./navigation-list.component.css']
 })
 export class NavigationListComponent implements OnInit {
-  senderStatus: boolean;
+  @Select(AuthState.isSender) isSender$: Observable<boolean>;
+  @Select(AuthState.email) email$: Observable<string>;
 
-  constructor(private authService: AuthService) {}
+  constructor() {}
 
-  ngOnInit() {
-    this.senderStatus = this.authService.getSenderStatus();
-  }
+  ngOnInit() {}
 }

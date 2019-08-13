@@ -64,12 +64,49 @@ export class MailService {
     title: string,
     description: string,
     content: string,
+    envelop: File
+  ): Observable<{ message: string; mail: Mail }> {
+    // pack all required post data
+    const mailData = new FormData();
+    mailData.append('receiverId', receiverId);
+    mailData.append('title', title);
+    mailData.append('description', description);
+    mailData.append('content', content);
+    mailData.append('envelop', envelop);
+
+    // call createMail method
+    return (
+      this.http
+        // send get request
+        .post<{ message: string; mail: Mail }>(this.BACKEND_URL, mailData)
+        .pipe(
+          tap(
+            res => {
+              console.log(res.message);
+            },
+            err => {
+              console.log('Failed to send the mail!');
+            }
+          ),
+          catchError(error => throwError(error))
+        )
+    );
+  }
+
+  /*
+    $ Method: modify mail content [PUT]
+  */
+
+  _modifyMail(
+    id: string,
+    title: string,
+    description: string,
+    content: string,
     envelop: File,
     contentPDF: File
   ): Observable<{ message: string; mail: Mail }> {
     // pack all required post data
     const mailData = new FormData();
-    mailData.append('receiverId', receiverId);
     mailData.append('title', title);
     mailData.append('description', description);
     mailData.append('content', content);
@@ -80,7 +117,7 @@ export class MailService {
     return (
       this.http
         // send get request
-        .post<{ message: string; mail: Mail }>(this.BACKEND_URL, mailData)
+        .put<{ message: string; mail: Mail }>(this.BACKEND_URL + id, mailData)
         .pipe(
           tap(
             res => {
@@ -122,7 +159,7 @@ export class MailService {
   }
 
   /*
-    $ Method: update the mails' flag [PATCH]
+    $ Method: update the mails' flag or status [PATCH]
   */
 
   _updateMails(

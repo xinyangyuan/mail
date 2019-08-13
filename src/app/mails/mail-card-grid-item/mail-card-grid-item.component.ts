@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnDestroy } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MatCheckboxChange } from '@angular/material';
 import { Store, Select, Actions, ofActionDispatched } from '@ngxs/store';
@@ -13,7 +13,7 @@ import * as MailActions from '../store/mail.action';
   templateUrl: './mail-card-grid-item.component.html',
   styleUrls: ['./mail-card-grid-item.component.css']
 })
-export class MailCardGridItemComponent implements OnChanges, OnDestroy {
+export class MailCardGridItemComponent implements OnInit, OnChanges {
   // Attributes:
   @Input() mail: Mail;
   @Input() imageURL: SafeUrl;
@@ -22,12 +22,13 @@ export class MailCardGridItemComponent implements OnChanges, OnDestroy {
   @Select(MailState.selectMode) isSelectMode$: Observable<boolean>;
   isSelected = false;
   showToolbar = false; // show toolbar on hover
+  menuOpen = false;
 
   // Constructor:
   constructor(private store: Store, private actions$: Actions) {}
 
   // Init Method:
-  ngOnChanges() {
+  ngOnInit() {
     // unselect all mails if user call other actions on a specific mail (e.g. star a mail)
     this.store.dispatch(MailActions.UnselectAllMails);
 
@@ -42,26 +43,8 @@ export class MailCardGridItemComponent implements OnChanges, OnDestroy {
       .subscribe(() => (this.isSelected = true));
   }
 
-  // Method:
-  onStar() {
-    // dispacthc action: togller mail star
-    this.store.dispatch(new MailActions.ToggleMailStarFlag(this.mail));
-  }
-
-  // Method:
-  onScan() {
-    // dispacthc action: scan mail
-    this.store.dispatch(new MailActions.ScanMail(this.mail));
-  }
-
-  // Method:
-  onSkipScan() {
-    // dispacthc action: skip scan mail
-    this.store.dispatch(new MailActions.UnscanMail(this.mail));
-  }
-
-  // Method:
-  onDelete() {}
+  // Change Method:
+  ngOnChanges() {}
 
   // Mehtod:
   onCheckbox(event: MatCheckboxChange) {
@@ -70,6 +53,12 @@ export class MailCardGridItemComponent implements OnChanges, OnDestroy {
     } else if (!event.checked) {
       this.store.dispatch(new MailActions.UnselectMail(this.mail));
     }
+  }
+
+  // Method:
+  onStar() {
+    // dispacthc action: togller mail star
+    this.store.dispatch(new MailActions.ToggleMailStarFlag(this.mail));
   }
 
   // Method:
@@ -84,12 +73,4 @@ export class MailCardGridItemComponent implements OnChanges, OnDestroy {
       pdfWindow.location.href = pdfURL;
     });
   }
-
-  // Method:
-  onClick() {
-    console.log('it works!');
-  }
-
-  // Destroy Method
-  ngOnDestroy() {}
 }

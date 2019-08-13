@@ -1,14 +1,5 @@
 <mat-card>
-  <form [formGroup]="form" (submit)="onAddMail()">
-    <!-- recipient -->
-    <mat-form-field appearance="outline">
-      <mat-select formControlName="recipient" placeholder="Recipient">
-        <mat-option *ngFor="let reciever of receiverList" [value]="reciever._id">
-          {{ reciever.name.first + ' ' + reciever.name.last }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
+  <form [formGroup]="form" (submit)="onUpdate()">
     <!-- mail title -->
     <mat-form-field appearance="outline">
       <mat-label>Mail Title</mat-label>
@@ -37,35 +28,31 @@
     </mat-form-field>
 
     <!-- mail envelop image -->
-    <div>
-      <button mat-stroked-button type="button" (click)="imagePicker.click()">
-        Pick Envelop Image
+    <div *ngIf="editMode">
+      <button mat-stroked-button type="button" (click)="imagePicker.click()" style="width: 100%">
+        Change Envelop Image
       </button>
       <input type="file" #imagePicker (change)="onImagePicked($event)" />
     </div>
 
-    <!-- submit button -->
-    <button
-      *ngIf="!isLoading"
-      mat-raised-button
-      color="primary"
-      [disabled]="form.invalid"
-      type="submit"
-    >
-      SEND
-    </button>
+    <!-- mail content pdf -->
+    <div *ngIf="!editMode">
+      <button mat-stroked-button type="button" (click)="pdfPicker.click()" style="width: 100%">
+        Upload Mail PDF
+      </button>
+      <input type="file" #pdfPicker (change)="onPDFPicked($event)" />
+    </div>
 
-    <!-- loading spinner in button -->
-    <button
-      *ngIf="isLoading"
-      mat-raised-button
-      color="primary"
-      [disabled]="form.invalid"
-      type="button"
-    >
-      <mat-icon>
-        <mat-spinner color="primary" diameter="20"> </mat-spinner>
-      </mat-icon>
-    </button>
+    <mat-card-actions style="text-align: center">
+      <!-- cancel button -->
+      <button mat-button color="warn" type="button" (click)="onCancel()">
+        CANCEL
+      </button>
+
+      <!-- submit button -->
+      <button *ngIf="!isLoading" mat-button color="primary" [disabled]="form.invalid" type="submit">
+        UPDATE
+      </button>
+    </mat-card-actions>
   </form>
 </mat-card>

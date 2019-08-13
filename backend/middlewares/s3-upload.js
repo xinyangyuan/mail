@@ -32,37 +32,40 @@ const generateFilename = (req, file) => {
 */
 
 module.exports = async (req, res, next) => {
+  // req.files: undefined prototype
+  // Object.entries(req.files) => []
   // req.files: {envelop: [Object], contentPDF: [Object]}
-  // Object.values(req.files) => [[Object], [Object]]
-  // .flat() => [Object, Object]
-  const files = Object.values(req.files).flat(); // not compatible with node.js 10.X
-  const filenames = [];
+  // Object.entries(req.files) => [ [ 'envelop', [Object] ], [ 'contentPDF', [Object] ] ]
+  const files = Object.entries(req.files);
+  const filenames = {};
 
-  for (let file of files) {
+  for (const [fieldname, file] of files) {
     // generate distinct filename
-    filename = generateFilename(req, file);
-    filenames.push(filename);
+    filename = generateFilename(req, file[0]); // [Object] => Object
+    filenames[fieldname] = filename;
 
     // s3 bucket to store the static file
     var params = {
       Bucket: process.env.AWS_BUCKET,
       Key: filename,
-      Body: file.buffer,
-      ContentType: file.mimetype
+      Body: file[0].buffer,
+      ContentType: file[0].mimetype
     };
 
     // async: upload file to s3 bucket
     const { error, data: uploadedFile } = await async_wrapper(s3.upload(params).promise());
 
     if (error) {
-      return res.status(500).json({ message: error });
+      return res.status(500).json({
+        message: error
+      });
     }
   }
 
   // store filename (the key to access file in S3) into req
   req.fileData = {
-    envelopKey: filenames[0], // will be undefined type when filenames undefined
-    contentPDFKey: filenames[1] // will be undefined type when filenames || filenames[1] undefined
+    envelopKey: filenames.envelop, // will be undefined type when res.files undefined
+    contentPDFKey: filenames.contentPDF // will be undefined type when res.files undefined
   };
   next();
 };

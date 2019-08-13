@@ -1,7 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
+import { Store, Select } from '@ngxs/store';
+
+import { AuthState } from '../store/auth.state';
+import * as AuthAction from '../store/auth.action';
+import { AuthService } from '../auth.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-sign-in',
@@ -11,14 +16,10 @@ import { Router } from '@angular/router';
 export class SignInComponent implements OnInit {
   // Attributes
   form: FormGroup;
-  needConfirmation = false;
+  @Select(AuthState.needConfirmation) needConfirmation$: Observable<boolean>;
 
   // Constructor
-  constructor(
-    private fb: FormBuilder,
-    private routerService: Router,
-    public authService: AuthService
-  ) {}
+  constructor(private fb: FormBuilder, private routerService: Router, private store: Store) {}
 
   // Init Method
   ngOnInit() {
@@ -31,22 +32,14 @@ export class SignInComponent implements OnInit {
 
   // Method: call signUp serivce
   onSignIn() {
-    this.authService._signIn(this.email.value, this.password.value).subscribe(
-      // redirect user to dashboard
-      () => this.routerService.navigate(['mails']),
-      // error occured
-      error => {
-        if (error.error.message === 'Please verify your email address!') {
-          this.needConfirmation = true;
-        }
-      }
-    );
+    this.store
+      .dispatch(new AuthAction.SignIn({ email: this.email.value, password: this.password.value }))
+      .subscribe(() => this.routerService.navigate(['mails']));
   }
 
   // Method: call send email verification service
   onResend() {
-    this.needConfirmation = false;
-    this.authService._sendEmailConfirmation(this.email.value).subscribe();
+    this.store.dispatch(new AuthAction.ResendEmailConfirmation(this.email.value));
   }
 
   // Method: call forgot password

@@ -48,5 +48,3 @@ Thumbs.db
 # env variables
 nodemon.json
 
-# data files
-/backend/data

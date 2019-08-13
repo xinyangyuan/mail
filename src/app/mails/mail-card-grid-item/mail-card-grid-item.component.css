@@ -77,3 +77,8 @@
   -webkit-filter: brightness(98%);
   filter: brightness(98%);
 }
+
+/* mail card action row */
+.mail-grid-item-card button {
+  margin-top: -5px;
+}

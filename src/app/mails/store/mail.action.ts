@@ -1,5 +1,7 @@
-import { Mail } from '../mail.model';
 import { Data } from '@angular/router';
+import { FormGroup } from '@angular/forms';
+
+import { Mail } from '../mail.model';
 
 /*
     Action: get mail list from API
@@ -7,7 +9,7 @@ import { Data } from '@angular/router';
 
 export class GetMails {
   static readonly type = '[Mail Page] Get Mails';
-  constructor(public payload: { urlData: Data }) {}
+  constructor(public payload: Data) {} // url data
 }
 
 export class GetEnvelopImage {
@@ -109,6 +111,37 @@ export class IssueMail {
 }
 
 /*
+    Action: edit a mail
+*/
+
+export class EditMail {
+  static readonly type = '[Mail Page] Edit a Mail';
+  constructor(public payload: Mail) {}
+}
+
+export class UneditMail {
+  static readonly type = '[Mail Edit Page] Unedit a Mail';
+}
+
+/*
+    Action: create new mail
+*/
+
+export class SendMail {
+  static readonly type = '[Mail Create Page] Send new Mail';
+  constructor(public payload: FormGroup) {}
+}
+
+/*
+    Action: modify a mail
+*/
+
+export class ModifyMail {
+  static readonly type = '[Mail Edit Page] Modify Mail Contents';
+  constructor(public payload: { mail: Mail; update: FormGroup }) {}
+}
+
+/*
     Action: select/stage mail
 */
 
@@ -147,6 +180,10 @@ export class DeleteMails {
 /*
     Action:
 */
+
+export class ResetMailList {
+  static readonly type = '[Mail Page] Reset Mail List';
+}
 
 export class ResetStore {
   static readonly type = '[Mail Page] Reset Store';

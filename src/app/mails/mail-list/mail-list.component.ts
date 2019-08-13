@@ -43,7 +43,7 @@ export class MailListComponent implements OnInit, OnDestroy {
 
     // fetch mails from api
     this.urlData = this.route.snapshot.data;
-    this.store.dispatch(new MailActions.GetMails({ urlData: this.urlData }));
+    this.store.dispatch(new MailActions.GetMails(this.urlData));
   }
 
   // Method: call change page in paginator
@@ -61,6 +61,6 @@ export class MailListComponent implements OnInit, OnDestroy {
   // Destroy Method:
   ngOnDestroy() {
     // abort mailList request when changes page
-    this.store.dispatch(MailActions.ResetStore);
+    this.store.dispatch(MailActions.ResetMailList);
   }
 }

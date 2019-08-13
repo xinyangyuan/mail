@@ -7,7 +7,6 @@ export const ngxsConfig: NgxsModuleOptions = {
   selectorOptions: {
     // These Selector Settings are recommended in preparation for NGXS v4
     // (See above for their effects)
-    // suppressErrors: false,
     injectContainerState: false
   }
 };

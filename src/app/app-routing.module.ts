@@ -16,6 +16,7 @@ import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 
 import { MailStatus } from './mails/mail.model';
+import { MailUpdateComponent } from './mails/mail-update/mail-update.component';
 
 const routes: Routes = [
   {
@@ -47,7 +48,9 @@ const routes: Routes = [
         data: { status: MailStatus.SCAN_REJECTED }
       },
       { path: 'users', component: UserListComponent },
-      { path: 'create', component: MailCreateComponent }
+      { path: 'create', component: MailCreateComponent },
+      { path: 'edit', component: MailUpdateComponent },
+      { path: 'uploadPdf', component: MailUpdateComponent }
     ]
   }
 ];

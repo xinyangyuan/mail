@@ -14,6 +14,7 @@ import { takeUntil, tap } from 'rxjs/operators';
 export interface MailStateModel {
   // Mail
   mailList: Mail[];
+  editedMail: Mail;
   selectedMails: Mail[];
   mailCount: number;
 
@@ -39,8 +40,9 @@ export interface MailStateModel {
 
 const initialState: MailStateModel = {
   mailList: [],
+  editedMail: null,
   selectedMails: [],
-  mailCount: 0,
+  mailCount: null,
   currentPage: 1,
   mailsPerPage: 6,
   isLoading: true,
@@ -70,6 +72,11 @@ export class MailState {
   @Selector()
   static mailList(state: MailStateModel) {
     return state.mailList;
+  }
+
+  @Selector()
+  static editedMail(state: MailStateModel) {
+    return state.editedMail;
   }
 
   @Selector()
@@ -131,9 +138,7 @@ export class MailState {
     const limit = state.mailsPerPage * state.currentPage - state.mailList.length;
 
     // async service call
-    const result = await this.mailService
-      ._getMailList(skip, limit, action.payload.urlData)
-      .toPromise();
+    const result = await this.mailService._getMailList(skip, limit, action.payload).toPromise();
 
     // prepare new state [enfore no replicated mails]
     const set = new Set([...state.mailList, ...result.mailList]);
@@ -145,13 +150,55 @@ export class MailState {
     // return new state
     ctx.patchState({
       mailList,
-      imageTaskPool: [...state.imageTaskPool, ...mailList.map(mail => mail._id)],
+      imageTaskPool: mailList
+        .map(mail => mail._id)
+        .filter(mailId => !Object.keys(state.imageURLs).includes(mailId)),
       mailCount: result.mailCount,
       isLoading: false
     });
 
     // dispatch action
     ctx.dispatch(new MailActions.GenerateImageTasks());
+  }
+
+  /*
+   Action: send new mail
+  */
+
+  // @Action(MailActions.SendMail)
+  // sendMail(ctx: StateContext<MailStateModel>, action: MailActions.SendMail) {
+  //   return this.mailService._createMail(action.payload.controls.)
+  // }
+
+  /*
+   Action: put update a mail
+  */
+
+  @Action(MailActions.ModifyMail)
+  modifyMail(ctx: StateContext<MailStateModel>, action: MailActions.ModifyMail) {
+    // get current state
+    const state = ctx.getState();
+
+    const id = action.payload.mail._id;
+    const title = action.payload.update.controls.title.value;
+    const description = action.payload.update.controls.description.value;
+    const content = action.payload.update.controls.content.value;
+    const envelop = action.payload.update.controls.envelop.value;
+    const contentPDF = action.payload.update.controls.contentPDF.value;
+
+    return this.mailService._modifyMail(id, title, description, content, envelop, contentPDF).pipe(
+      tap(
+        result => {
+          ctx.patchState({
+            editedMail: null,
+            imageURLs: { ...state.imageURLs, id: null }
+          });
+        },
+        error => {
+          ctx.patchState({ editedMail: null });
+        }
+      )
+    );
   }
 
   /*
@@ -186,7 +233,7 @@ export class MailState {
   getEnvelopImages(ctx: StateContext<MailStateModel>) {
     // get current state
     const state = ctx.getState();
-    const imageTasks = [];
+    const imageTasks: Observable<{ id: string; file: Blob }>[] = [];
 
     // prepare api requests
     for (const image of state.currentImageTasks) {
@@ -595,6 +642,26 @@ export class MailState {
   }
 
   /*
+   Action: edit a mail
+  */
+
+  @Action(MailActions.EditMail)
+  editMail(ctx: StateContext<MailStateModel>, action: MailActions.EditMail) {
+    // return new state
+    ctx.patchState({ editedMail: action.payload });
+  }
+
+  /*
+   Action: un-edit a mail
+  */
+
+  @Action(MailActions.UneditMail)
+  uneditMail(ctx: StateContext<MailStateModel>) {
+    // return new state
+    ctx.patchState({ editedMail: null });
+  }
+
+  /*
    Action: select a mail
   */
 
@@ -688,7 +755,12 @@ export class MailState {
       // return new state
       ctx.patchState({
         mailList,
-        imageTaskPool: [...mailList.map(mail => mail._id), ...state.imageTaskPool], // fetch new page images first
+        imageTaskPool: [
+          ...mailList
+            .map(mail => mail._id)
+            .filter(mailId => !Object.keys(state.imageURLs).includes(mailId)),
+          ...state.imageTaskPool
+        ], // fetch new page images first
         currentPage: action.payload.currentPage,
         mailsPerPage: action.payload.mailsPerPage,
         isLoading: false
@@ -707,12 +779,24 @@ export class MailState {
   }
 
   /*
-   Action: clear store when redirects
+   Action: clear store except imageURLs when redirect
   */
+
+  @Action(MailActions.ResetMailList)
+  resetMailList(ctx: StateContext<MailStateModel>) {
+    const state = ctx.getState();
+    ctx.setState({
+      ...initialState,
+      editedMail: state.editedMail, // keep current editing mail
+      imageURLs: state.imageURLs // keep images
+    });
+  }
 
   @Action(MailActions.ResetStore)
   resetStore(ctx: StateContext<MailStateModel>) {
-    ctx.setState(initialState);
+    ctx.setState({
+      ...initialState
+    });
   }
 
   /*

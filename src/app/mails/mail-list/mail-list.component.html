@@ -1,12 +1,9 @@
-<!-- multi selection tool bar -->
-<!-- <mat-toolbar style="height: 40px; background: #ffffff">My App</mat-toolbar> -->
+<!-- loading-progress-bar -->
+<mat-progress-bar *ngIf="isLoading$ | async" mode="indeterminate"></mat-progress-bar>
 
 <!-- mail-list body -->
 <main>
-  <!-- loading-progress-bar -->
-  <mat-progress-bar *ngIf="isLoading$ | async" mode="indeterminate"></mat-progress-bar>
-
-  <!-- expansion-panel display -->
+  <!-- expansion-panel display: -->
   <!-- <mat-accordion *ngIf="!(isLoading$ | async) && mails$ | async as mails">
     <div *ngFor="let mail of mails">
       <app-mail-expansion-list-item
@@ -16,7 +13,7 @@
     </div>
   </mat-accordion> -->
 
-  <!-- card-grid display -->
+  <!-- card-grid display: -->
   <div
     fxLayout="row wrap"
     fxLayout.lt-sm="column"

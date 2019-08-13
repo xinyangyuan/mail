@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from './auth/auth.service';
 import { Router } from '@angular/router';
+import { Store } from '@ngxs/store';
+
+import * as AuthAction from './auth/store/auth.action';
+import { AuthService } from './auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -9,10 +12,12 @@ import { Router } from '@angular/router';
 })
 export class AppComponent implements OnInit {
   // Constructor:
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private store: Store, private router: Router, private authService: AuthService) {}
 
   // OnInit:
   ngOnInit() {
+    this.store.dispatch(new AuthAction.AutoSignIn());
+
     if (this.authService.autoSignIn()) {
       this.router.navigate(['mails']);
     }

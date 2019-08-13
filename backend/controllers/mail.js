@@ -82,6 +82,35 @@ exports.getMailList = async (req, res, next) => {
 };
 
 /*
+  Function: fetch single mail by id [GET]
+*/
+
+exports.getMail = async (req, res, next) => {
+  console.log('getMail is called');
+
+  // get search criteria and prepare db request template
+  const searchCriteria = getUserSearchCriteria(req);
+  searchCriteria['_id'] = req.param.id;
+
+  // async query:get mails from database
+  const { error: error, data: fetchedMail } = await async_wrapper(
+    Mail.findOne(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
+  );
+
+  if (error || !fetchedMail) {
+    return res.status(500).json({
+      message: 'Failed to fetch mail!'
+    });
+  }
+
+  // send fetched mails to frontend
+  res.status(200).json({
+    message: 'Mail fetched successfully.',
+    mail: fetchedMail
+  });
+};
+
+/*
   Function: update flags OR status associated with mails [PATCH]
 */
 
@@ -413,6 +442,7 @@ exports.createMail = async (req, res, next) => {
   Function: modify a mail (change mail text content, envelop image, upload content pdf) [PUT]
 */
 exports.modifyMail = async (req, res, next) => {
+  console.log('modifyMail is called');
   // check is there error in file type outputed by multer
   if (req.fileTypeError) {
     return res.status(401).json(req.error);
@@ -428,6 +458,9 @@ exports.modifyMail = async (req, res, next) => {
       ? crypto.encrypt(req.fileData.contentPDFKey)
       : undefined;
 
+  console.log(req.fileData.envelopKey);
+  console.log(req.fileData.contentPDFKey);
+
   // prepare the mail contents
   const update = {
     title: req.body.title,
@@ -435,6 +468,7 @@ exports.modifyMail = async (req, res, next) => {
     content: req.body.content,
     envelopKey: envelopKey,
     contentPDFKey: contentPDFKey,
+    'flags.read': false,
     'flags.issue': false,
     status: contentPDFKey ? 'SCANNED_ARCHIVED' : undefined,
     updatedAt: Date.now()

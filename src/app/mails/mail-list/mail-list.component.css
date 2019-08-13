@@ -3,10 +3,6 @@ main {
   margin: 0rem auto;
 }
 
-/* main {
-  margin: 10px 10px;
-} */
-
 /* restrict title moving upwards when adding button to panel title */
 .aligned-headers .mat-expansion-panel-header-title,
 .aligned-headers .mat-expansion-panel-header-description {
@@ -46,7 +42,8 @@ mat-expansion-panel:hover {
   /*
   -webkit-box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75);
   -moz-box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75);
-  box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75); */
+  box-shadow: 0px 2px 4px 0px rgba(50, 50, 50, 0.75);
+  */
 }
 
 .post-image img {

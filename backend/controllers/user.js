@@ -215,6 +215,7 @@ exports.verifyConfirmation = async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '1h' });
 
     res.status(200).json({
+      email: updatedUser.email,
       token: token,
       expiresDuration: 3600, // unit: second
       userId: updatedUser._id,
@@ -319,6 +320,7 @@ exports.verifyReset = async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '1h' });
 
     res.status(200).json({
+      email: fetchedUser.email,
       token: token,
       expiresDuration: 3600, // unit: second
       userId: fetchedUser._id,

@@ -29,7 +29,7 @@
 </mat-card>
 
 <!-- Basic Error Message -->
-<div *ngIf="needConfirmation" class="error-message">
+<div *ngIf="needConfirmation$ | async" class="error-message">
   <p class="error-text">
     Please verify your email address <br />
     Click to resend verification email

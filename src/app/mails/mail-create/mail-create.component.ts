@@ -37,9 +37,7 @@ export class MailCreateComponent implements OnInit {
       title: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', [Validators.required, Validators.maxLength(50)]],
       content: ['', [Validators.required]],
-      envelop: ['', [Validators.required]],
-      // contentPDF: ['', [Validators.required]]
-      contentPDF: ''
+      envelop: ['', [Validators.required]]
     });
   }
 
@@ -52,8 +50,7 @@ export class MailCreateComponent implements OnInit {
         this.title.value,
         this.description.value,
         this.content.value,
-        this.envelop.value,
-        this.contentPDF.value
+        this.envelop.value
       )
       .subscribe(() => {
         this.isLoading = false;
@@ -67,14 +64,6 @@ export class MailCreateComponent implements OnInit {
     this.envelop.setValue(file);
     // notice form of the update
     this.envelop.updateValueAndValidity();
-  }
-
-  // add mail content to the form-controll
-  onPDFPicked(event: Event) {
-    const file = (event.target as HTMLInputElement).files[0];
-    this.contentPDF.setValue(file);
-    // notice form of the update
-    this.contentPDF.updateValueAndValidity();
   }
 
   // Getters
@@ -96,9 +85,5 @@ export class MailCreateComponent implements OnInit {
 
   get envelop() {
     return this.form.get('envelop');
-  }
-
-  get contentPDF() {
-    return this.form.get('contentPDF');
   }
 }

@@ -32,11 +32,13 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password.com
 import { DebounceClickDirective } from './core/directives/debounce-click.directive';
 import { ImageLoadingSpinnerComponent } from './ui/image-loading-spinner/image-loading-spinner.component';
 import { MailState } from './mails/store/mail.state';
-import { ngxsConfig } from './state/ngxs.config';
+import { ngxsConfig } from './store/ngxs.config';
 import { MailExpansionListItemComponent } from './mails/mail-expansion-list-item/mail-expansion-list-item.component';
 import { MailCardListItemComponent } from './mails/mail-card-list-item/mail-card-list-item.component';
 import { MailCardGridItemComponent } from './mails/mail-card-grid-item/mail-card-grid-item.component';
-import { MailItemToolbarComponent } from './mails/mail-item-toolbar/mail-item-toolbar.component';
+import { AuthState } from './auth/store/auth.state';
+import { MailUpdateComponent } from './mails/mail-update/mail-update.component';
+import { MailItemActionBarComponent } from './mails/mail-item-action-bar/mail-item-action-bar.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +64,8 @@ import { MailItemToolbarComponent } from './mails/mail-item-toolbar/mail-item-to
     MailExpansionListItemComponent,
     MailCardListItemComponent,
     MailCardGridItemComponent,
-    MailItemToolbarComponent
+    MailUpdateComponent,
+    MailItemActionBarComponent
   ],
   imports: [
     BrowserModule,
@@ -73,7 +76,7 @@ import { MailItemToolbarComponent } from './mails/mail-item-toolbar/mail-item-to
     ReactiveFormsModule,
     HttpClientModule,
     FlexLayoutModule,
-    NgxsModule.forRoot([MailState], ngxsConfig),
+    NgxsModule.forRoot([MailState, AuthState], ngxsConfig),
     NgxsLoggerPluginModule.forRoot()
   ],
   providers: [

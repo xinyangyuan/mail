@@ -1,16 +1,11 @@
 <!-- user info -->
 <div class="user-info">
   <h3>My Mail</h3>
-  <h6>sender1@first.com</h6>
+  <h6>{{ email$ | async }}</h6>
 </div>
 
-<!-- navigation list -->
-<mat-nav-list>
-  <!-- mail navigation link -->
-  <a mat-list-item routerLink="/create" routerLinkActive="active">
-    <mat-icon matListIcon>add_box</mat-icon>
-    <span>New</span>
-  </a>
+<!-- user navigation list -->
+<mat-nav-list *ngIf="!(isSender$ | async)">
   <a mat-list-item routerLink="/mails" routerLinkActive="active">
     <mat-icon matListIcon>inbox</mat-icon>
     <span>Inbox</span>
@@ -26,6 +21,39 @@
   <a mat-list-item routerLink="/scanning" routerLinkActive="active">
     <mat-icon matListIcon class="app-nav-list-icon">directions_run</mat-icon>
     <span>Scanning</span>
+  </a>
+
+  <mat-divider></mat-divider>
+  <title matSubheader>PROCESSED</title>
+
+  <a mat-list-item routerLink="/scanned" routerLinkActive="active">
+    <mat-icon matListIcon>drafts</mat-icon>
+    <span>Scanned</span>
+  </a>
+  <a mat-list-item routerLink="/skip-scanned" routerLinkActive="active">
+    <mat-icon matListIcon>mail</mat-icon>
+    <span>Scan Rejected</span>
+  </a>
+</mat-nav-list>
+
+<!-- sender navigation list -->
+<mat-nav-list *ngIf="isSender$ | async">
+  <!-- mail navigation link -->
+  <a mat-list-item routerLink="/create" routerLinkActive="active">
+    <mat-icon matListIcon>add_box</mat-icon>
+    <span>New</span>
+  </a>
+  <a mat-list-item routerLink="/mails" routerLinkActive="active">
+    <mat-icon matListIcon>send</mat-icon>
+    <span>Send</span>
+  </a>
+
+  <mat-divider></mat-divider>
+  <title matSubheader>PROCESSING</title>
+
+  <a mat-list-item routerLink="/scanning" routerLinkActive="active">
+    <mat-icon matListIcon class="app-nav-list-icon">directions_run</mat-icon>
+    <span>Waiting For Scan</span>
   </a>
 
   <mat-divider></mat-divider>
