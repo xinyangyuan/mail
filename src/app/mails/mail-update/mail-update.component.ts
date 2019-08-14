@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Validators, FormGroup, FormBuilder } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { MatSnackBar } from '@angular/material';
+import { finalize } from 'rxjs/operators';
 import { Store } from '@ngxs/store';
+import { MatProgressButtonOptions } from 'mat-progress-buttons';
 
 import { MailState } from '../store/mail.state';
 import * as MailAction from '../store/mail.action';
@@ -18,12 +21,25 @@ export class MailUpdateComponent implements OnInit {
   form: FormGroup;
   editMode: boolean;
 
+  // Mat-Progress Button Option:
+  updateBtn: MatProgressButtonOptions = {
+    text: 'UPDATE',
+    spinnerSize: 18,
+    buttonColor: 'primary',
+    spinnerColor: 'primary',
+    mode: 'indeterminate',
+    active: false,
+    disabled: false
+  };
+  updateBtnDisabled: MatProgressButtonOptions = { ...this.updateBtn, disabled: true };
+
   // Constructor Method
   constructor(
     private store: Store,
     private fb: FormBuilder,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private snackbar: MatSnackBar
   ) {}
 
   // Init Method
@@ -42,9 +58,14 @@ export class MailUpdateComponent implements OnInit {
         [Validators.required, Validators.maxLength(50)]
       ],
       content: [{ value: this.mail.content, disabled: !this.editMode }, [Validators.required]],
-      envelop: '',
-      contentPDF: ['']
+      envelop: [null],
+      contentPDF: [null]
     });
+
+    // pdf required
+    if (this.route.snapshot.url[0].path === 'uploadPdf') {
+      this.contentPDF.setValidators(Validators.required);
+    }
   }
 
   // add envelop image to the form-controll
@@ -65,14 +86,26 @@ export class MailUpdateComponent implements OnInit {
 
   // Method:
   onUpdate() {
-    this.store.dispatch(new MailAction.ModifyMail({ mail: this.mail, update: this.form }));
-    this.router.navigate(['mails']); // unwait redirect
+    this.updateBtn.active = true;
+    this.store
+      .dispatch(new MailAction.ModifyMail({ mail: this.mail, update: this.form }))
+      .pipe(
+        finalize(() => {
+          this.updateBtn.active = false;
+          this.router.navigate(['mails']);
+        })
+      )
+      .subscribe(
+        () => this.snackbar.open('Mail is Updated', 'CLOSE', { panelClass: ['info-snackbar'] }),
+        () => this.snackbar.open('Mail Update Fail', 'CLOSE', { panelClass: ['warning-snackbar'] })
+      );
   }
 
   // Method:
   onCancel() {
-    this.store.dispatch(new MailAction.UneditMail());
-    this.router.navigate(['/mails']); // unwait redirect
+    this.store
+      .dispatch(new MailAction.UneditMail())
+      .subscribe(() => this.router.navigate(['/mails']));
   }
 
   // Getters

@@ -50,9 +50,10 @@
       </button>
 
       <!-- submit button -->
-      <button *ngIf="!isLoading" mat-button color="primary" [disabled]="form.invalid" type="submit">
-        UPDATE
-      </button>
+      <mat-spinner-button
+        type="submit"
+        [options]="form.invalid ? updateBtnDisabled : updateBtn"
+      ></mat-spinner-button>
     </mat-card-actions>
   </form>
 </mat-card>

@@ -125,8 +125,8 @@ exports.updateMails = async (req, res, next) => {
 
   // prepare update
   const update = {
-    'flags.read': typeof req.body.flags.read === 'boolean' ? req.body.flags.read : undefined,
-    'flags.star': typeof req.body.flags.star === 'boolean' ? req.body.flags.star : undefined,
+    'flags.read': typeof req.body.flags !== 'undefined' ? req.body.flags.read : undefined,
+    'flags.star': typeof req.body.flags !== 'undefined' ? req.body.flags.star : undefined,
     'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
     'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
     status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
@@ -174,8 +174,8 @@ exports.updateMail = async (req, res, next) => {
 
   // prepare update
   const update = {
-    'flags.read': typeof req.body.flags.read === 'boolean' ? req.body.flags.read : undefined,
-    'flags.star': typeof req.body.flags.star === 'boolean' ? req.body.flags.star : undefined,
+    'flags.read': typeof req.body.flags !== 'undefined' ? req.body.flags.read : undefined,
+    'flags.star': typeof req.body.flags !== 'undefined' ? req.body.flags.star : undefined,
     'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
     'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
     status: typeof req.body.status !== 'undefined' ? req.body.status : undefined

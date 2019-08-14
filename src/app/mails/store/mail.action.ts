@@ -92,12 +92,12 @@ export class ScanMails {
 */
 
 export class UnscanMail {
-  static readonly type = '[Mail Page] Scan Mail';
+  static readonly type = '[Mail Page] Skip Scan Mail';
   constructor(public payload: Mail) {}
 }
 
 export class UnscanMails {
-  static readonly type = '[Mail Page] Scan Mails';
+  static readonly type = '[Mail Page] Skip Scan Mails';
   constructor(public payload: Mail[]) {}
 }
 

@@ -15,8 +15,7 @@ const sendGreeting = async (req, res) => {
     content: 'Hope you have a great time using it!',
     senderId: mongoose.Types.ObjectId(req.fetchedUser._id),
     receiverId: mongoose.Types.ObjectId(req.fetchedUser._id),
-    read_flag: false,
-    star_flag: false,
+    status: 'SCANNED_ARCHIVED',
     envelopKey: crypto.encrypt('hello.jpg'),
     contentPDFKey: crypto.encrypt('hello.pdf')
   });

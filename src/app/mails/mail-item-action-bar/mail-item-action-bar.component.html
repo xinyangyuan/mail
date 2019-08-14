@@ -1,5 +1,5 @@
 <div>
-  <button *ngIf="scan" color="primary" (click)="onScan()">SCAN</button>
+  <button *ngIf="scan" mat-button color="primary" (click)="onScan()">SCAN</button>
   <button *ngIf="pullbackScan" mat-button color="primary" (click)="onScan()">PULLBACK-SCAN</button>
   <button *ngIf="skipScan" mat-button color="warn" (click)="onSkipScan()">SKIP-SCAN</button>
   <button *ngIf="uploadPdf" mat-button color="primary" (click)="onUploadScan()">UPLOAD-PDF</button>

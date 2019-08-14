@@ -23,10 +23,9 @@ export class ErrorInterceptor implements HttpInterceptor {
           !(error.error instanceof Blob)
         ) {
           this.snackBar.open(
-            error.error.message ? error.error.message : 'Unknow error occured',
+            error.error.message ? error.error.message : 'Lost Connection',
             'CLOSE',
             {
-              duration: 2200,
               verticalPosition: 'bottom',
               horizontalPosition: 'left'
               // panelClass: ['red-snackbar']

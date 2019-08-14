@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MailService } from '../mail.service';
 import { AddressService } from 'src/app/addresses/address.service';
 import { Router } from '@angular/router';
+import { MatProgressButtonOptions } from 'mat-progress-buttons';
 
 @Component({
   selector: 'app-mail-create',
@@ -14,7 +15,19 @@ export class MailCreateComponent implements OnInit {
   // Attributes
   public form: FormGroup;
   public receiverList: [{ _id: string; name: { first: string; last: string } }];
-  public isLoading = false;
+
+  // Mat-Progress Button Option:
+  sendBtn: MatProgressButtonOptions = {
+    text: 'SEND',
+    stroked: true,
+    spinnerSize: 18,
+    buttonColor: 'primary',
+    spinnerColor: 'primary',
+    mode: 'indeterminate',
+    active: false,
+    disabled: false
+  };
+  sendBtnDisabled: MatProgressButtonOptions = { ...this.sendBtn, disabled: true };
 
   // Constructor Method
   constructor(
@@ -43,7 +56,7 @@ export class MailCreateComponent implements OnInit {
 
   // Call mail-service to create new mail
   onAddMail() {
-    this.isLoading = true;
+    this.sendBtn.active = true;
     this.mailService
       ._createMail(
         this.recipient.value,
@@ -53,7 +66,7 @@ export class MailCreateComponent implements OnInit {
         this.envelop.value
       )
       .subscribe(() => {
-        this.isLoading = false;
+        this.sendBtn.active = false;
         this.routerService.navigate(['mails']);
       });
   }

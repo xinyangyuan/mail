@@ -5,6 +5,7 @@ import { Store } from '@ngxs/store';
 import { MailStatus, Mail } from '../mail.model';
 import * as MailActions from '../store/mail.action';
 import { AuthState } from 'src/app/auth/store/auth.state';
+import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'app-mail-item-action-bar',
@@ -25,7 +26,7 @@ export class MailItemActionBarComponent implements OnInit {
   delete = false;
 
   // Constructor:
-  constructor(private store: Store, private router: Router) {}
+  constructor(private store: Store, private router: Router, private snackbar: MatSnackBar) {}
 
   // Init Method:
   ngOnInit() {
@@ -35,19 +36,23 @@ export class MailItemActionBarComponent implements OnInit {
 
   // Method:
   onScan() {
-    // dispacthc action: scan mail
-    this.store.dispatch(new MailActions.ScanMail(this.mail));
+    // dispatch action: scan mail
+    this.store.dispatch(new MailActions.ScanMail(this.mail)).subscribe(() => {
+      this.snackbar.open('Mail Added to Scanning', 'CLOSE', { panelClass: ['info-snackbar'] });
+    });
   }
 
   // Method:
   onSkipScan() {
-    // dispacthc action: skip scan mail
-    this.store.dispatch(new MailActions.UnscanMail(this.mail));
+    // dispatch action: skip scan mail
+    this.store.dispatch(new MailActions.UnscanMail(this.mail)).subscribe(() => {
+      this.snackbar.open('Mail is Archived', 'CLOSE', { panelClass: ['info-snackbar'] });
+    });
   }
 
   // Method:
   onEdit() {
-    // dispacthc action: edit a mail
+    // dispatch action: edit a mail
     this.store.dispatch(new MailActions.EditMail(this.mail)).subscribe(() => {
       this.router.navigate(['/edit']);
     });
@@ -55,14 +60,19 @@ export class MailItemActionBarComponent implements OnInit {
 
   // Method:
   onUploadScan() {
-    // dispacthc action: upload scan
+    // dispatch action: upload scan
     this.store.dispatch(new MailActions.EditMail(this.mail)).subscribe(() => {
       this.router.navigate(['/uploadPdf']);
     });
   }
 
   // Method:
-  onDelete() {}
+  onDelete() {
+    // dispatch action: delete mail
+    this.store.dispatch(new MailActions.DeleteMail(this.mail)).subscribe(() => {
+      this.snackbar.open('Mail is Deleted', 'CLOSE', { panelClass: ['warning-snackbar'] });
+    });
+  }
 
   // Method:
   generateView() {

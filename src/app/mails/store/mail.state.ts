@@ -642,6 +642,23 @@ export class MailState {
   }
 
   /*
+   Action: delete a mail
+  */
+  @Action(MailActions.DeleteMail)
+  deleteMail(ctx: StateContext<MailStateModel>, action: MailActions.DeleteMail) {
+    const state = ctx.getState();
+    return this.mailService._deleteMail(action.payload._id).pipe(
+      tap(() => {
+        // return new state
+        ctx.patchState({
+          mailList: state.mailList.filter(mail => mail._id !== action.payload._id),
+          mailCount: state.mailCount - 1
+        });
+      })
+    );
+  }
+
+  /*
    Action: edit a mail
   */
 

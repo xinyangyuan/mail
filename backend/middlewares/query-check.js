@@ -12,7 +12,7 @@ module.exports = (req, res, next) => {
   let skip = 0;
   let limit = Infinity;
   let filterBy = {};
-  let sortBy = { sort: { createdAt: -1 } };
+  let sortBy = { sort: { updatedAt: -1 } };
   let ids = [];
 
   // error?
@@ -95,11 +95,22 @@ module.exports = (req, res, next) => {
   // sortBy: 'title' || '-title' || 'createdAt' || '-createdAt' || 'content' ||'-content'
   if (typeof req.query.sortBy !== 'undefined') {
     const sortByQ = req.query.sortBy;
-    if (!['title', '-title', 'createdAt', '-createdAt', 'content', '-content'].includes(sortByQ)) {
+    if (
+      ![
+        'title',
+        '-title',
+        'createdAt',
+        '-createdAt',
+        'updatedAt',
+        '-updatedAt',
+        'content',
+        '-content'
+      ].includes(sortByQ)
+    ) {
       errorFlag = true;
       message =
         message +
-        "- 'sortBy' should be 'title' || '-title' || 'createdAt' || '-createdAt' || 'content' ||'-content'. \n";
+        "- 'sortBy' should be 'title' || '-title' || 'createdAt' || '-createdAt' || 'updatedAt' || '-updatedAt' || 'content' ||'-content'. \n";
     } else {
       // valid sortBy query
       sortBy = { sort: sortByQ };

@@ -38,34 +38,18 @@
 
     <!-- mail envelop image -->
     <div>
-      <button mat-stroked-button type="button" (click)="imagePicker.click()">
+      <button mat-stroked-button type="button" (click)="imagePicker.click()" style="width: 100%">
         Pick Envelop Image
       </button>
       <input type="file" #imagePicker (change)="onImagePicked($event)" />
     </div>
 
     <!-- submit button -->
-    <button
-      *ngIf="!isLoading"
-      mat-raised-button
-      color="primary"
-      [disabled]="form.invalid"
-      type="submit"
-    >
-      SEND
-    </button>
-
-    <!-- loading spinner in button -->
-    <button
-      *ngIf="isLoading"
-      mat-raised-button
-      color="primary"
-      [disabled]="form.invalid"
-      type="button"
-    >
-      <mat-icon>
-        <mat-spinner color="primary" diameter="20"> </mat-spinner>
-      </mat-icon>
-    </button>
+    <mat-card-actions style="text-align: center">
+      <mat-spinner-button
+        type="submit"
+        [options]="form.invalid ? sendBtnDisabled : sendBtn"
+      ></mat-spinner-button>
+    </mat-card-actions>
   </form>
 </mat-card>
