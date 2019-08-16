@@ -1,10 +1,10 @@
 import { Data } from '@angular/router';
 import { FormGroup } from '@angular/forms';
 
-import { Mail } from '../mail.model';
+import { Mail, MailStatus } from '../mail.model';
 
 /*
-    Action: get mail list from API
+    Action: get mail or mail resource from API [GET]
 */
 
 export class GetMails {
@@ -33,6 +33,46 @@ export class GenerateImageTasks {
 export class ChangePage {
   static readonly type = '[Mail Page] Change Page';
   constructor(public payload: { currentPage: number; mailsPerPage: number; urlData: Data }) {}
+}
+
+// service dispatched action
+export class UpdateMail {
+  static readonly type = '[Mail Service] Update Mail';
+  constructor(
+    public payload: {
+      mail: Mail;
+      update: { flags?: { star?: boolean; read?: boolean; issue?: boolean }; status?: MailStatus };
+    }
+  ) {}
+}
+
+// service dispatched action
+export class UpdateMails {
+  static readonly type = '[Mail Service] Update Mails';
+  constructor(
+    public payload: {
+      mails: Mail[];
+      update: { flags?: { star?: boolean; read?: boolean; issue?: boolean }; status?: MailStatus };
+    }
+  ) {}
+}
+
+/*
+    Action: create new mail [POST]
+*/
+
+export class SendMail {
+  static readonly type = '[Mail Create Page] Send new Mail';
+  constructor(public payload: FormGroup) {}
+}
+
+/*
+    Action: modify a mail [PUT]
+*/
+
+export class ModifyMail {
+  static readonly type = '[Mail Edit Page] Modify Mail Contents';
+  constructor(public payload: { mail: Mail; update: FormGroup }) {}
 }
 
 /*
@@ -121,24 +161,6 @@ export class EditMail {
 
 export class UneditMail {
   static readonly type = '[Mail Edit Page] Unedit a Mail';
-}
-
-/*
-    Action: create new mail
-*/
-
-export class SendMail {
-  static readonly type = '[Mail Create Page] Send new Mail';
-  constructor(public payload: FormGroup) {}
-}
-
-/*
-    Action: modify a mail
-*/
-
-export class ModifyMail {
-  static readonly type = '[Mail Edit Page] Modify Mail Contents';
-  constructor(public payload: { mail: Mail; update: FormGroup }) {}
 }
 
 /*

@@ -1,6 +1,7 @@
 import { State, Selector, Action, StateContext } from '@ngxs/store';
 
 import * as AuthAction from './auth.action';
+import { AutoSignIn } from './auth.action';
 import { AuthData } from '../auth-data.model';
 import { AuthService } from '../auth.service';
 import { tap } from 'rxjs/operators';
@@ -96,7 +97,7 @@ export class AuthState {
   /*
    Action: auto sign-in using credentials stored in cookies
   */
-  @Action(AuthAction.AutoSignIn)
+  @Action(AutoSignIn)
   autoSignIn(ctx: StateContext<AuthStateModel>) {
     ctx.patchState({ isLoading: true });
 

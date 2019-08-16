@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable, throwError } from 'rxjs';
-import { catchError, tap, map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap, map, mergeMap, concatMap, flatMap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Store } from '@ngxs/store';
 
 import { Mail, MailStatus } from './mail.model';
-import { HttpClient } from '@angular/common/http';
+import * as MailActions from './store/mail.action';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -14,7 +16,7 @@ export class MailService {
   private BACKEND_URL = environment.apiURL + '/mail/';
 
   // Constructor
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private store: Store) {}
 
   /*
     $ Method: get a list of all user/sender's mails [GET]
@@ -98,26 +100,26 @@ export class MailService {
   */
 
   _modifyMail(
-    id: string,
-    title: string,
-    description: string,
-    content: string,
-    envelop: File,
-    contentPDF: File
+    mail: Mail,
+    modfiedTitle: string,
+    modifiedDescription: string,
+    modifiedContent: string,
+    modifiedEnvelop: File,
+    modifiedContentPDF: File
   ): Observable<{ message: string; mail: Mail }> {
     // pack all required post data
     const mailData = new FormData();
-    mailData.append('title', title);
-    mailData.append('description', description);
-    mailData.append('content', content);
-    mailData.append('envelop', envelop);
-    mailData.append('contentPDF', contentPDF);
+    mailData.append('title', modfiedTitle);
+    mailData.append('description', modifiedDescription);
+    mailData.append('content', modifiedContent);
+    mailData.append('envelop', modifiedEnvelop);
+    mailData.append('contentPDF', modifiedContentPDF);
 
     // call createMail method
     return (
       this.http
         // send get request
-        .put<{ message: string; mail: Mail }>(this.BACKEND_URL + id, mailData)
+        .put<{ message: string; mail: Mail }>(this.BACKEND_URL + mail._id, mailData)
         .pipe(
           tap(
             res => {
@@ -137,18 +139,18 @@ export class MailService {
   */
 
   _updateMail(
-    id: string,
+    mail: Mail,
     update: { flags?: { star?: boolean; read?: boolean; issue?: boolean }; status?: MailStatus }
   ): Observable<{ message: string; mail: Mail }> {
     // post updated mail data to RESTapi
     return (
       this.http
         // send patch request
-        .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + id, update)
+        .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + mail._id, update)
         .pipe(
           tap(
             res => {
-              // this.mailUpdateObservable.next(res.mail);
+              this.store.dispatch(new MailActions.UpdateMail({ mail, update }));
             },
             err => {
               console.log('Failed to update mail flags!');
@@ -177,7 +179,9 @@ export class MailService {
         .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + queryParams, update)
         .pipe(
           tap(
-            res => {},
+            res => {
+              this.store.dispatch(new MailActions.UpdateMails({ mails, update }));
+            },
             err => {
               console.log('Failed to update mail flags!');
             }
@@ -190,12 +194,12 @@ export class MailService {
     $ Method: delete a mail  [DELETE]
   */
 
-  _deleteMail(id: string): Observable<{ message: string; mail: Mail }> {
+  _deleteMail(mail: Mail): Observable<{ message: string; mail: Mail }> {
     // post updated mail data to RESTapi
     return (
       this.http
         // send delete request
-        .delete<{ message: string; mail: Mail }>(this.BACKEND_URL + id)
+        .delete<{ message: string; mail: Mail }>(this.BACKEND_URL + mail._id)
         .pipe(
           tap(
             res => {},
@@ -209,12 +213,9 @@ export class MailService {
   }
 
   /*
-    Method: get mail conten pdf  [GET]
+    $ Method: get mail conten pdf  [GET]
   */
-  getEnvelop(id: string): Observable<{ id: string; file: Blob }> {
-    // let headers = new HttpHeaders(); header already set by RESTapi
-    // headers = headers.set('Accept', 'application/pdf');
-
+  _getEnvelop(id: string): Observable<{ id: string; file: Blob }> {
     return (
       this.http
         // send get request
@@ -228,16 +229,13 @@ export class MailService {
   }
 
   /*
-    Method: get mail content pdf  [GET]
+    $ Method: get mail content pdf  [GET]
   */
-  getContentPDF(id: string) {
-    // let headers = new HttpHeaders(); header already set by RESTapi
-    // headers = headers.set('Accept', 'application/pdf');
-
+  _getContentPDF(mail: Mail) {
     return (
       this.http
         // send get request
-        .get(this.BACKEND_URL + id + '/contentPDF/', { responseType: 'blob' })
+        .get(this.BACKEND_URL + mail._id + '/contentPDF/', { responseType: 'blob' })
         .pipe(
           tap(
             res => {

@@ -5,7 +5,7 @@
     [style.visibility]="showToolbar || (isSelectMode$ | async) || menuOpen ? 'visible' : 'hidden'"
   >
     <mat-checkbox
-      [(ngModel)]="isSelected"
+      [checked]="isSelected$ | async"
       class="checkbox"
       (change)="onCheckbox($event)"
     ></mat-checkbox>
@@ -32,7 +32,7 @@
   <mat-card
     class="mail-grid-item-card"
     [ngStyle]="
-      isSelected && {
+      (isSelected$ | async) && {
         'box-shadow': '0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)'
       }
     "

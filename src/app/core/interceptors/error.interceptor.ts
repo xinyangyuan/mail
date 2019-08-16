@@ -23,12 +23,12 @@ export class ErrorInterceptor implements HttpInterceptor {
           !(error.error instanceof Blob)
         ) {
           this.snackBar.open(
-            error.error.message ? error.error.message : 'Lost Connection',
+            error.error.message ? error.error.message : 'Lost Connection 🚧',
             'CLOSE',
             {
               verticalPosition: 'bottom',
-              horizontalPosition: 'left'
-              // panelClass: ['red-snackbar']
+              horizontalPosition: 'left',
+              panelClass: ['warning-snackbar']
             }
           );
         }

@@ -1,11 +1,20 @@
-import { State, Action, StateContext, Actions, Selector, ofActionDispatched } from '@ngxs/store';
+import {
+  State,
+  Action,
+  StateContext,
+  Actions,
+  Selector,
+  ofActionDispatched,
+  createSelector
+} from '@ngxs/store';
 import { Observable, forkJoin, merge } from 'rxjs';
+import { takeUntil, tap } from 'rxjs/operators';
+import { Data } from '@angular/router';
 import { SafeUrl, DomSanitizer } from '@angular/platform-browser';
 
 import { Mail, MailStatus } from '../mail.model';
 import * as MailActions from './mail.action';
 import { MailService } from '../mail.service';
-import { takeUntil, tap } from 'rxjs/operators';
 
 /*
    Mail State
@@ -32,6 +41,9 @@ export interface MailStateModel {
 
   // Content Pdf
   pdfURL: string;
+
+  // URL Data
+  urlData: Data;
 }
 
 /*
@@ -44,12 +56,13 @@ const initialState: MailStateModel = {
   selectedMails: [],
   mailCount: null,
   currentPage: 1,
-  mailsPerPage: 6,
+  mailsPerPage: 15,
   isLoading: true,
   imageTaskPool: [],
   currentImageTasks: [],
   imageURLs: {},
-  pdfURL: ''
+  pdfURL: '',
+  urlData: null
 };
 
 /*
@@ -124,6 +137,21 @@ export class MailState {
     return state.selectedMails.length >= 1;
   }
 
+  // Selector dynamic
+  static isSelected(mail: Mail) {
+    return createSelector(
+      [MailState],
+      (state: MailStateModel) => {
+        return state.selectedMails.map(selectedMail => selectedMail._id).includes(mail._id);
+      }
+    );
+  }
+
+  @Selector()
+  static urlData(state: MailStateModel) {
+    return state.urlData;
+  }
+
   /*
    Action: get mail list
   */
@@ -134,27 +162,21 @@ export class MailState {
     const state = ctx.getState();
 
     // prepare api call
-    const skip = state.mailList.length;
-    const limit = state.mailsPerPage * state.currentPage - state.mailList.length;
+    const skip = 0;
+    const limit = state.mailsPerPage;
 
     // async service call
     const result = await this.mailService._getMailList(skip, limit, action.payload).toPromise();
 
-    // prepare new state [enfore no replicated mails]
-    const set = new Set([...state.mailList, ...result.mailList]);
-    const mailList = [...set];
-    if (mailList.length !== [...state.mailList, ...result.mailList].length) {
-      console.error('AssertionError: leak in getMails action');
-    }
-
     // return new state
     ctx.patchState({
-      mailList,
-      imageTaskPool: mailList
+      mailList: result.mailList,
+      imageTaskPool: result.mailList
         .map(mail => mail._id)
         .filter(mailId => !Object.keys(state.imageURLs).includes(mailId)),
       mailCount: result.mailCount,
-      isLoading: false
+      isLoading: false,
+      urlData: action.payload
     });
 
     // dispatch action
@@ -179,26 +201,28 @@ export class MailState {
     // get current state
     const state = ctx.getState();
 
-    const id = action.payload.mail._id;
+    // modified mail contents
     const title = action.payload.update.controls.title.value;
     const description = action.payload.update.controls.description.value;
     const content = action.payload.update.controls.content.value;
     const envelop = action.payload.update.controls.envelop.value;
     const contentPDF = action.payload.update.controls.contentPDF.value;
 
-    return this.mailService._modifyMail(id, title, description, content, envelop, contentPDF).pipe(
-      tap(
-        result => {
-          ctx.patchState({
-            editedMail: null,
-            imageURLs: { ...state.imageURLs, id: null }
-          });
-        },
-        error => {
-          ctx.patchState({ editedMail: null });
-        }
-      )
-    );
+    return this.mailService
+      ._modifyMail(action.payload.mail, title, description, content, envelop, contentPDF)
+      .pipe(
+        tap(
+          result => {
+            ctx.patchState({
+              editedMail: null,
+              imageURLs: { ...state.imageURLs, id: null }
+            });
+          },
+          error => {
+            ctx.patchState({ editedMail: null });
+          }
+        )
+      );
   }
 
   /*
@@ -237,7 +261,7 @@ export class MailState {
 
     // prepare api requests
     for (const image of state.currentImageTasks) {
-      imageTasks.push(this.mailService.getEnvelop(image));
+      imageTasks.push(this.mailService._getEnvelop(image));
     }
     const currentImageTasks$: Observable<{ id: string; file: Blob }[]> = forkJoin(imageTasks);
 
@@ -278,7 +302,7 @@ export class MailState {
     const state = ctx.getState();
 
     // async service call
-    return this.mailService.getEnvelop(action.payload._id).pipe(
+    return this.mailService._getEnvelop(action.payload._id).pipe(
       tap(result => {
         // store images to urls
         const { imageURLs, ids } = this.storeImages([result]);
@@ -305,7 +329,7 @@ export class MailState {
     const state = ctx.getState();
 
     // async service call
-    return this.mailService.getContentPDF(action.payload._id).pipe(
+    return this.mailService._getContentPDF(action.payload).pipe(
       tap(result => {
         // store images to urls
         const pdfURL = window.URL.createObjectURL(result);
@@ -328,7 +352,69 @@ export class MailState {
   }
 
   /*
-   Action: toggle a mail star flag
+   Action: get more mails when empty slots in view
+  */
+  @Action([MailActions.UpdateMail, MailActions.UpdateMails])
+  getMailsOnUpdate(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.UpdateMail | MailActions.UpdateMails
+  ) {
+    // get current state
+    const state = ctx.getState();
+    const urlData = state.urlData;
+
+    // Object flatten: {flags: {read: bool, star: bool, issue: bool}, status: string}
+    // => {read: bool, star: bool, issue: bool, status: string}
+    const update = Object.assign(
+      {},
+      ...(function _flatten(object) {
+        return [].concat(
+          ...Object.keys(object).map(k =>
+            typeof object[k] === 'object' ? _flatten(object[k]) : { [k]: object[k] }
+          )
+        );
+      })(action.payload.update)
+    );
+
+    // find whether update conflict with page filter
+    let conflict = false;
+    const overlaps: string[] = Object.keys(update).filter(key =>
+      Object.keys(urlData).includes(key)
+    );
+    for (const overlap of overlaps) {
+      if (update[overlap] !== urlData[overlap]) {
+        conflict = true;
+      }
+    }
+
+    // number of new mails to fetch
+    let numberOfMails = 0;
+    if (conflict && state.mailList.length < state.mailCount) {
+      numberOfMails = action instanceof MailActions.UpdateMails ? action.payload.mails.length : 1;
+    }
+    // async service call
+    const skip = state.mailList.length - numberOfMails;
+    const limit = numberOfMails;
+
+    if (numberOfMails) {
+      return this.mailService._getMailList(skip, limit, urlData).pipe(
+        tap(result => {
+          // return new state
+          ctx.patchState({
+            mailList: [...state.mailList, ...result.mailList],
+            imageTaskPool: result.mailList
+              .map(mail => mail._id)
+              .filter(mailId => !Object.keys(state.imageURLs).includes(mailId))
+          });
+          // dispatch action
+          ctx.dispatch(new MailActions.GenerateImageTasks());
+        })
+      );
+    }
+  }
+
+  /*
+   Action: toggle a mail star flag [optimistic update]
   */
 
   @Action(MailActions.ToggleMailStarFlag)
@@ -337,21 +423,26 @@ export class MailState {
     const state = ctx.getState();
     const update = { flags: { star: !action.payload.flags.star } };
 
+    // updated maillist
+    const mailList = JSON.parse(JSON.stringify(state.mailList));
+    mailList.forEach(mail => {
+      if (mail._id === action.payload._id) {
+        mail.flags.star = !action.payload.flags.star;
+      }
+    });
+
+    // optimistic update
+    ctx.patchState({ mailList });
+
     // async service call
-    return this.mailService._updateMail(action.payload._id, update).pipe(
-      tap(() => {
-        // update mailList (deepcopy mailList)
-        const mailList = JSON.parse(JSON.stringify(state.mailList));
-
-        mailList.forEach(mail => {
-          if (mail._id === action.payload._id) {
-            mail.flags.star = !action.payload.flags.star;
-          }
-        });
-
-        // return new state
-        ctx.patchState({ mailList });
-      })
+    return this.mailService._updateMail(action.payload, update).pipe(
+      tap(
+        result => {},
+        error => {
+          // fallback to previous state
+          ctx.patchState({ mailList: state.mailList });
+        }
+      )
     );
   }
 
@@ -424,7 +515,7 @@ export class MailState {
     const update = { flags: { star: !action.payload.flags.read } };
 
     // async service call
-    return this.mailService._updateMail(action.payload._id, update).pipe(
+    return this.mailService._updateMail(action.payload, update).pipe(
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
@@ -510,7 +601,7 @@ export class MailState {
     const update = { status: MailStatus.SCANNING };
 
     // async service call
-    return this.mailService._updateMail(action.payload._id, update).pipe(
+    return this.mailService._updateMail(action.payload, update).pipe(
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
@@ -567,7 +658,7 @@ export class MailState {
     const update = { status: MailStatus.SCAN_REJECTED };
 
     // async service call
-    return this.mailService._updateMail(action.payload._id, update).pipe(
+    return this.mailService._updateMail(action.payload, update).pipe(
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
@@ -624,7 +715,7 @@ export class MailState {
     const update = { flags: { issue: true } };
 
     // async service call
-    return this.mailService._updateMail(action.payload._id, update).pipe(
+    return this.mailService._updateMail(action.payload, update).pipe(
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
@@ -647,7 +738,7 @@ export class MailState {
   @Action(MailActions.DeleteMail)
   deleteMail(ctx: StateContext<MailStateModel>, action: MailActions.DeleteMail) {
     const state = ctx.getState();
-    return this.mailService._deleteMail(action.payload._id).pipe(
+    return this.mailService._deleteMail(action.payload).pipe(
       tap(() => {
         // return new state
         ctx.patchState({
@@ -729,10 +820,21 @@ export class MailState {
   }
 
   /*
-   Action: un-select all mails
+   Action: un-select all mails | also fire when single mail state is updated
   */
 
-  @Action(MailActions.UnselectAllMails)
+  @Action([
+    MailActions.UnselectAllMails,
+    MailActions.ToggleMailStarFlag,
+    MailActions.ToggleMailReadFlag,
+    MailActions.IssueMail,
+    MailActions.DeleteMail,
+    MailActions.ScanMail,
+    MailActions.UnscanMail,
+    MailActions.GetEnvelopImage,
+    MailActions.GetContentPdf,
+    MailActions.ChangePage
+  ])
   unselectAllMails(ctx: StateContext<MailStateModel>) {
     // return new state
     ctx.patchState({ selectedMails: [] });
@@ -748,32 +850,40 @@ export class MailState {
     ctx.patchState({ isLoading: true });
     const state = ctx.getState();
 
+    // adjusted mailList
+    const mailList: Mail[] = state.mailList.filter(
+      mail =>
+        Object.entries(state.urlData).length === 0 ||
+        mail.flags.star === state.urlData.star ||
+        mail.flags.read === state.urlData.read ||
+        mail.flags.issue === state.urlData.issue ||
+        mail.status === state.urlData.status
+    );
+
+    // adjusted mailCount
+    const adjustment: number = mailList.length - mailList.length;
+    const mailCount: number = state.mailCount + adjustment;
+
     // visted page or not && all mails fetched or not
     if (
-      action.payload.currentPage * action.payload.mailsPerPage > state.mailList.length &&
-      state.mailList.length < state.mailCount
+      action.payload.currentPage * action.payload.mailsPerPage > mailList.length &&
+      mailList.length < mailCount
     ) {
       // prepare api call
-      const skip = state.mailList.length;
-      const limit = action.payload.mailsPerPage * action.payload.currentPage - skip;
+      const skip: number = mailList.length;
+      const limit: number = action.payload.mailsPerPage * action.payload.currentPage - skip;
 
       // async service call
       const result = await this.mailService
         ._getMailList(skip, limit, action.payload.urlData)
         .toPromise();
 
-      // prepare new state [enfore no replicated mails]
-      const set = new Set([...state.mailList, ...result.mailList]);
-      const mailList = [...set];
-      if (mailList.length !== [...state.mailList, ...result.mailList].length) {
-        console.error('AssertionError: leak in changePage get mails action');
-      }
-
       // return new state
       ctx.patchState({
-        mailList,
+        mailList: [...mailList, ...result.mailList],
+        mailCount: result.mailCount,
         imageTaskPool: [
-          ...mailList
+          ...result.mailList
             .map(mail => mail._id)
             .filter(mailId => !Object.keys(state.imageURLs).includes(mailId)),
           ...state.imageTaskPool
@@ -788,6 +898,8 @@ export class MailState {
     } else {
       // return new state
       ctx.patchState({
+        mailList,
+        mailCount,
         currentPage: action.payload.currentPage,
         mailsPerPage: action.payload.mailsPerPage,
         isLoading: false
@@ -808,6 +920,10 @@ export class MailState {
       imageURLs: state.imageURLs // keep images
     });
   }
+
+  /*
+   Action: clear store
+  */
 
   @Action(MailActions.ResetStore)
   resetStore(ctx: StateContext<MailStateModel>) {

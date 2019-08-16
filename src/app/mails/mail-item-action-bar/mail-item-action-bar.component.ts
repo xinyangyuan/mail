@@ -38,7 +38,9 @@ export class MailItemActionBarComponent implements OnInit {
   onScan() {
     // dispatch action: scan mail
     this.store.dispatch(new MailActions.ScanMail(this.mail)).subscribe(() => {
-      this.snackbar.open('Mail Added to Scanning', 'CLOSE', { panelClass: ['info-snackbar'] });
+      this.snackbar.open('Mail Added to Scanning 🏃', 'CLOSE', {
+        panelClass: ['info-snackbar']
+      });
     });
   }
 
@@ -46,7 +48,9 @@ export class MailItemActionBarComponent implements OnInit {
   onSkipScan() {
     // dispatch action: skip scan mail
     this.store.dispatch(new MailActions.UnscanMail(this.mail)).subscribe(() => {
-      this.snackbar.open('Mail is Archived', 'CLOSE', { panelClass: ['info-snackbar'] });
+      this.snackbar.open('Mail is Archived', 'CLOSE', {
+        panelClass: ['info-snackbar']
+      });
     });
   }
 

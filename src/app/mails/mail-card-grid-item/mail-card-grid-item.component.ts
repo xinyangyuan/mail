@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MatCheckboxChange } from '@angular/material';
-import { Store, Select, Actions, ofActionDispatched } from '@ngxs/store';
+import { Store, Select } from '@ngxs/store';
 import { SafeUrl } from '@angular/platform-browser';
 
 import { Mail } from '../mail.model';
@@ -19,28 +19,18 @@ export class MailCardGridItemComponent implements OnInit, OnChanges {
   @Input() imageURL: SafeUrl;
 
   // Checkbox & UI
-  @Select(MailState.selectMode) isSelectMode$: Observable<boolean>;
-  isSelected = false;
-  showToolbar = false; // show toolbar on hover
   menuOpen = false;
+  showToolbar = false; // show toolbar on hover
+  isSelected$: Observable<boolean>;
+  @Select(MailState.selectMode) isSelectMode$: Observable<boolean>;
 
   // Constructor:
-  constructor(private store: Store, private actions$: Actions) {}
+  constructor(private store: Store) {}
 
   // Init Method:
   ngOnInit() {
-    // unselect all mails if user call other actions on a specific mail (e.g. star a mail)
-    this.store.dispatch(MailActions.UnselectAllMails);
-
-    // listen on unSelectAllMails action -> uncheck selected checkbox
-    this.actions$
-      .pipe(ofActionDispatched(MailActions.UnselectAllMails))
-      .subscribe(() => (this.isSelected = false));
-
-    // listen on selectAllMails action -> check selected checkbox
-    this.actions$
-      .pipe(ofActionDispatched(MailActions.SelectAllMails))
-      .subscribe(() => (this.isSelected = true));
+    // mail property is undefined before initialization
+    this.isSelected$ = this.store.select(MailState.isSelected(this.mail));
   }
 
   // Change Method:

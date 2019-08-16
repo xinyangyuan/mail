@@ -18,7 +18,7 @@
     fxLayout="row wrap"
     fxLayout.lt-sm="column"
     fxLayoutAlign="flex-start"
-    *ngIf="!(isLoading$ | async) && mails$ | async as mails"
+    *ngIf="!(isLoading$ | async) && (mails$ | async) as mails"
   >
     <app-mail-card-grid-item
       fxFlex="0 1 33.3%"

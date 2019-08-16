@@ -8,7 +8,6 @@ import * as MailActions from '../store/mail.action';
 import { MailState } from '../store/mail.state';
 import { Mail } from '../mail.model';
 import { PageEvent } from '@angular/material';
-import { AuthService } from 'src/app/auth/auth.service';
 import { MailQuery } from '../store/mail.query';
 
 @Component({
@@ -19,28 +18,21 @@ import { MailQuery } from '../store/mail.query';
 export class MailListComponent implements OnInit, OnDestroy {
   // Attributes
   public urlData: Data;
-  public senderStatus: boolean;
   @Select(MailQuery.mails) mails$: Observable<Mail[]>;
   @Select(MailState.isLoading) isLoading$: Observable<boolean>;
   @Select(MailState.imageURLs) imageURLs$: Observable<{ [key: string]: SafeUrl }>;
 
   // Pagination
-  public pageSizeOptions = [6, 15, 20, 25];
-  @Select(MailState.mailCount) mailCount$: Observable<number>;
+  public pageSizeOptions = [15, 30, 45, 6];
+  @Select(MailQuery.mailCount) mailCount$: Observable<number>;
   @Select(MailState.currentPage) currentPage$: Observable<number>;
   @Select(MailState.mailsPerPage) mailsPerPage$: Observable<number>;
 
   // Constructor:
-  constructor(
-    private authService: AuthService,
-    private route: ActivatedRoute,
-    private store: Store
-  ) {}
+  constructor(private route: ActivatedRoute, private store: Store) {}
 
   // Init Method:
-  async ngOnInit() {
-    this.senderStatus = this.authService.getSenderStatus();
-
+  ngOnInit() {
     // fetch mails from api
     this.urlData = this.route.snapshot.data;
     this.store.dispatch(new MailActions.GetMails(this.urlData));

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+
 import { Store } from '@ngxs/store';
 
 import * as AuthAction from './auth/store/auth.action';
