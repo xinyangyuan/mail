@@ -390,6 +390,9 @@ exports.createMail = async (req, res, next) => {
       // ISSUE: if receiver is empty always true!!!!
       // Although mail cannot be save due to required schema
       receiverIds: req.body.receiverId
+    }).populate({
+      path: 'receiverIds',
+      match: { _id: mongoose.Types.ObjectId(req.body.receiverId) }
     })
   );
 
@@ -436,6 +439,14 @@ exports.createMail = async (req, res, next) => {
     message: 'Mail sent successfully.',
     mail: fetchedMail
   });
+
+  // email data
+  const receiver = senderReceiverValid.receiverIds[0]; // user model
+  req.emailData = {
+    name: receiver.fullName,
+    email: receiver.email
+  };
+  next();
 };
 
 /*
@@ -443,6 +454,7 @@ exports.createMail = async (req, res, next) => {
 */
 exports.modifyMail = async (req, res, next) => {
   console.log('modifyMail is called');
+
   // check is there error in file type outputed by multer
   if (req.fileTypeError) {
     return res.status(401).json(req.error);
@@ -477,14 +489,14 @@ exports.modifyMail = async (req, res, next) => {
 
   // async function to save mail into database
   const { data: result, error } = await async_wrapper(
-    Mail.updateOne(
+    Mail.findOneAndUpdate(
       { _id: req.params.id, senderId: req.userData.userId, 'flags.terminated': false },
       { $set: update },
       {
         fields: { envelopKey: 0, contentPDFKey: 0 },
         runValidators: true // run mongoose validators to check updated field type
       }
-    )
+    ).populate({ path: 'receiverId' })
   );
 
   if (error || result.n === 0) {
@@ -495,7 +507,14 @@ exports.modifyMail = async (req, res, next) => {
 
   // send PUT request's result to frontend
   res.status(201).json({
-    message: 'Mail updated successfully.',
-    mail: result
+    message: 'Mail updated successfully.'
   });
+
+  // email data
+  const receiver = result.receiverId; // user model
+  req.emailData = {
+    name: receiver.fullName,
+    email: receiver.email
+  };
+  if (contentPDFKey) next();
 };

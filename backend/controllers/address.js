@@ -70,9 +70,9 @@ exports.getAddressInfo = async (req, res) => {
   console.log('getAddressInfo is called');
   // async funtion: find user with matched email in db
   const { error, data: fetchedAddress } = await async_wrapper(
-    Address.findOne({ senderId: req.userData.userId }).populate('receiverIds', {
-      _id: 1,
-      name: 1
+    Address.findOne({ senderId: req.userData.userId }).populate({
+      path: 'receiverIds',
+      select: '_id name'
     })
   );
 
@@ -92,7 +92,7 @@ exports.getAddressInfo = async (req, res) => {
       zipCode: fetchedAddress.zipCode,
       country: fetchedAddress.country,
       senderId: fetchedAddress.senderId,
-      receiverIds: fetchedAddress.receiverIds // an object {_id: string, name: {first: string, last: string}}
+      receiverIds: fetchedAddress.receiverIds // an object array [{_id: string, name: {first: string, last: string}}]
     }
   });
 };

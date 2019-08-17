@@ -66,3 +66,19 @@ module.exports = multer({
   storage: MEMORY_STORAGE ? multer.memoryStorage() : storage,
   fileFilter: fileFilter
 }).fields([{ name: 'contentPDF', maxCount: 1 }, { name: 'envelop', maxCount: 1 }]);
+
+/*
+{
+  [Object: null prototype]
+  envelop: [
+    {
+      fieldname: 'envelop',
+      originalname: '下载.jpg',
+      encoding: '7bit',
+      mimetype: 'image/jpeg',
+      buffer: <Buffer 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 01 90 00 00 01 2c 08 06 00 00 00 ed b7 e5 c2 00 00 20 00 49 44 41 54 78 5e ec 9d 05 98 15 57 9a ... 77840 more bytes>,
+      size: 77890
+    }
+  ]
+}
+*/

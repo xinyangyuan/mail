@@ -1,8 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const transporter = require('../utils/nodemailer');
-const mailgen = require('../utils/mailgen');
 const User = require('../models/user');
 
 /*
@@ -46,22 +44,14 @@ exports.userSignUp = async (req, res, next) => {
   };
   const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
 
-  // send email verification to user
-  // generate email from template
-  const email = mailgen.generateVerifyEmail(req, emailToken);
-
-  transporter.sendMail(email, (err, info) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({ message: 'Failed to send email verification!' });
-    } else {
-      console.log('Message sent: ' + info.response); // TODO
-      res.status(201).json({ message: 'Message sent:' + info.response });
-      // send first gretting mail to user
-      req.fetchedUser = fetchedUser;
-      next();
-    }
-  });
+  // user data & email data
+  req.fetchedUser = fetchedUser;
+  req.emailData = {
+    name: fetchedUser.fullName,
+    email: req.body.email,
+    emailToken
+  };
+  next();
 };
 
 /*
@@ -113,7 +103,7 @@ exports.userSignIn = async (req, res) => {
   Function: (re)-send email verification
 */
 
-exports.sendConfirmation = async (req, res) => {
+exports.sendConfirmation = async (req, res, next) => {
   console.log('sendConfirmation is called');
 
   // async funtion: find user with matched email in db
@@ -139,27 +129,14 @@ exports.sendConfirmation = async (req, res) => {
   };
   const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
 
-  // add required email required filds
-  req.body = {
+  // email data
+  req.fetchedUser = fetchedUser;
+  req.emailData = {
+    name: fetchedUser.fullName,
     email: req.params.email,
-    firstName: fetchedUser.name.first,
-    lastName: fetchedUser.name.last,
-    isSender: fetchedUser.isSender
+    emailToken
   };
-
-  // send verification email to user
-  // generate email from template
-  const email = mailgen.generateVerifyEmail(req, emailToken);
-
-  transporter.sendMail(email, (err, info) => {
-    if (err) {
-      console.log(err);
-      res.status(201).json({ message: 'Failed to send email verification!' });
-    } else {
-      console.log('Message sent: ' + info.response); // TODO
-      res.status(201).json({ message: 'Message sent:' + info.response });
-    }
-  });
+  next();
 };
 
 /*
@@ -233,7 +210,7 @@ exports.verifyConfirmation = async (req, res) => {
   Function: send password reset request to requested email
 */
 
-exports.resetPassword = async (req, res) => {
+exports.resetPassword = async (req, res, next) => {
   console.log('resetPassword is called');
 
   // async funtion: find user with matched email in db
@@ -259,27 +236,13 @@ exports.resetPassword = async (req, res) => {
   };
   const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
 
-  // add required email required filds
-  req.body = {
+  // email data
+  req.emailData = {
+    name: fetchedUser.fullName,
     email: req.params.email,
-    firstName: fetchedUser.name.first,
-    lastName: fetchedUser.name.last,
-    isSender: fetchedUser.isSender
+    emailToken
   };
-
-  // send verification email to user
-  // generate email from template
-  const email = mailgen.generatePasswordResetEmail(req, emailToken);
-
-  transporter.sendMail(email, (err, info) => {
-    if (err) {
-      console.log(err);
-      res.status(201).json({ message: 'Failed to send password reset email!' });
-    } else {
-      console.log('Message sent: ' + info.response); // TODO
-      res.status(201).json({ message: 'Message sent:' + info.response });
-    }
-  });
+  next();
 };
 
 /*
