@@ -1,12 +1,23 @@
+/* Mat Cards */
 mat-card {
-  /* width: 50%; */
-  margin: auto;
+  width: 450px;
   min-width: 350px;
-  max-width: 350px;
+  height: 600px;
+  padding: 0px;
 }
 
-.signin-form-title {
-  text-align: center;
+/* Image Card */
+.image {
+  background-image: url('https://images.unsplash.com/photo-1541253058872-dba3d6bb6d97?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1534&q=80');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* Sign In Form */
+.signin-form {
+  margin: auto;
+  width: 80%;
 }
 
 mat-form-field,
@@ -14,17 +25,13 @@ textarea {
   width: 100%;
 }
 
-/* message: need email confirmation */
+/* Error Message: need email confirmation */
 .error-message {
-  width: 340px;
-  margin: 1rem auto;
-  color: white;
-  text-align: center;
-  background-color: rgb(0, 152, 242, 0.9);
+  width: 80%;
+  margin: 2rem auto;
   border-radius: 3px;
-  padding: 5px 20px;
-}
-
-.send-confirmation-btn {
-  color: salmon;
+  color: white;
+  background-color: rgba(0, 153, 244, 0.9);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
 }

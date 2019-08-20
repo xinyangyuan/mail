@@ -1,38 +1,62 @@
-<mat-card>
-  <form [formGroup]="form" (submit)="onSignIn()" class="signin-form">
-    <!-- email form control -->
-    <mat-form-field appearance="outline">
-      <mat-label>E-mail</mat-label>
-      <input matInput formControlName="email" />
-      <mat-error *ngIf="email.invalid && email.touched">
-        Please enter a valid email
-      </mat-error>
-    </mat-form-field>
-
-    <!-- password form control -->
-    <mat-form-field appearance="outline">
-      <mat-label>Password</mat-label>
-      <input matInput type="password" formControlName="password" />
-      <mat-error *ngIf="password.invalid && password.touched">
-        Please enter a valid password
-      </mat-error>
-    </mat-form-field>
-
-    <!-- button to submit -->
-    <div fxLayout="row" fxLayoutAlign="space-between center">
-      <button mat-button color="primary" type="button" (click)="onForgot()">Forgot Password</button>
-      <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">
-        SIGN IN
-      </button>
+<div fxLayout="row" fxLayoutAlign="center center" style="height: 100%">
+  <mat-card class="image" fxHide.lt-md> </mat-card>
+  <mat-card fxLayout="column" fxLayoutAlign="space-between center">
+    <!-- Logo -->
+    <div fxFlex></div>
+    <div>
+      <img src="../../../assets/img/logo.svg" alt="Logo" style="height:100px" />
     </div>
-  </form>
-</mat-card>
 
-<!-- Basic Error Message -->
-<div *ngIf="needConfirmation$ | async" class="error-message">
-  <p class="error-text">
-    Please verify your email address <br />
-    Click to resend verification email
-  </p>
-  <button class="send-confirmation-btn" mat-button (click)="onResend()">RESEND</button>
+    <!-- Sign-In Form -->
+    <form [formGroup]="form" (submit)="onSignIn()" class="signin-form">
+      <!-- email form control -->
+      <mat-form-field appearance="standard">
+        <mat-label>E-mail</mat-label>
+        <input matInput formControlName="email" />
+        <mat-error *ngIf="email.invalid && email.touched">
+          Please enter a valid email
+        </mat-error>
+      </mat-form-field>
+
+      <!-- password form control -->
+      <mat-form-field appearance="standard">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" />
+        <mat-error *ngIf="password.invalid && password.touched">
+          Please enter a valid password
+        </mat-error>
+      </mat-form-field>
+
+      <!-- button to submit -->
+      <div fxLayout="row" fxLayoutAlign="space-between center">
+        <button mat-button color="primary" type="button" (click)="onForgot()">
+          Forgot password?
+        </button>
+        <button mat-stroked-button color="primary" [disabled]="form.invalid" type="submit">
+          SIGN IN
+        </button>
+      </div>
+    </form>
+
+    <!-- Basic Error Message -->
+    <div
+      *ngIf="needConfirmation$ | async"
+      class="error-message"
+      fxLayout="row"
+      fxLayoutAlign="space-around center"
+    >
+      <p>
+        please verify your email address
+      </p>
+      <button class="send-confirmation-btn" mat-button (click)="onResend()">RESEND</button>
+    </div>
+
+    <!-- Go-to Sign-Up Button -->
+    <div fxFlex></div>
+    <a style="padding: 1rem" [routerLink]="['/signup']">
+      <button mat-button color="primary" style="font-size: 12px">
+        SIGN UP
+      </button>
+    </a>
+  </mat-card>
 </div>

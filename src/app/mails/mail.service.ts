@@ -142,22 +142,19 @@ export class MailService {
     mail: Mail,
     update: { flags?: { star?: boolean; read?: boolean; issue?: boolean }; status?: MailStatus }
   ): Observable<{ message: string; mail: Mail }> {
-    // post updated mail data to RESTapi
-    return (
-      this.http
-        // send patch request
-        .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + mail._id, update)
-        .pipe(
-          tap(
-            res => {
-              this.store.dispatch(new MailActions.UpdateMail({ mail, update }));
-            },
-            err => {
-              console.log('Failed to update mail flags!');
-            }
-          )
+    // patch request
+    return this.http
+      .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + mail._id, update)
+      .pipe(
+        tap(
+          res => {
+            this.store.dispatch(new MailActions.UpdateMail({ mail, update }));
+          },
+          err => {
+            console.log('Failed to update mail flags!');
+          }
         )
-    );
+      );
   }
 
   /*

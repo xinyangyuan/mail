@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, Output } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { SafeUrl } from '@angular/platform-browser';
 
@@ -15,6 +15,7 @@ export class MailExpansionListItemComponent implements OnChanges {
   // Attributes:
   @Input() mail: Mail;
   @Input() imageURL: SafeUrl;
+  // @Output() AUTOCOMPLETE_PANEL_HEIGHT;
 
   // Constructor:
   constructor(private store: Store) {}

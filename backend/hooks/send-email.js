@@ -4,10 +4,24 @@ const transporter = require('../utils/nodemailer');
 const EmailTemplate = require('../utils/email-template');
 
 /*
+  Helper: send  email
+*/
+
+const sendEmail = email => {
+  transporter.sendMail(email, (err, info) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log('Message sent: ' + info.response);
+    }
+  });
+};
+
+/*
   Hook: send sign up email
 */
 
-exports.signUpNotification = (req, res, next) => {
+exports.signUpNotification = (req, res) => {
   const email = EmailTemplate.generateConfirmationEmail(
     req.emailData.name,
     req.emailData.email,
@@ -22,7 +36,6 @@ exports.signUpNotification = (req, res, next) => {
     } else {
       console.log('Message sent: ' + info.response);
       res.status(201).json({ message: 'Message sent:' + info.response });
-      next();
     }
   });
 };
@@ -77,7 +90,13 @@ exports.passwordReset = (req, res) => {
 */
 
 exports.mailReceivedNotification = req => {
-  const email = EmailTemplate.generateMailReceivedEmail(req.emailData.name, req.emailData.email);
+  const email = EmailTemplate.generateMailReceivedEmail(
+    req.emailData.name,
+    req.emailData.email,
+    req.emailData.id,
+    req.emailData.emailToken
+  );
+
   email.attachments = [
     {
       filename:
@@ -87,15 +106,7 @@ exports.mailReceivedNotification = req => {
     }
   ];
 
-  transporter.sendMail(email, (err, info) => {
-    if (err) {
-      console.log(err);
-      // return res.status(500).json({ message: 'Failed to send password reset email!' });
-    } else {
-      console.log('Message sent: ' + info.response);
-      // res.status(201).json({ message: 'Password reset email sent successfully' });
-    }
-  });
+  sendEmail(email);
 };
 
 /*
@@ -104,6 +115,7 @@ exports.mailReceivedNotification = req => {
 
 exports.mailScannedNotification = req => {
   const email = EmailTemplate.generateMailScannedEmail(req.emailData.name, req.emailData.email);
+
   email.attachments = [
     {
       filename:
@@ -115,13 +127,5 @@ exports.mailScannedNotification = req => {
     }
   ];
 
-  transporter.sendMail(email, (err, info) => {
-    if (err) {
-      console.log(err);
-      // return res.status(500).json({ message: 'Failed to send password reset email!' });
-    } else {
-      console.log('Message sent: ' + info.response);
-      // res.status(201).json({ message: 'Password reset email sent successfully' });
-    }
-  });
+  sendEmail(email);
 };

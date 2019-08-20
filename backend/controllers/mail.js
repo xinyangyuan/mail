@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+
 const crypto = require('../utils/encrypt');
 const s3 = require('../utils/aws');
 
@@ -49,7 +51,7 @@ const getUserSearchCriteria = req => {
   Function: fetch mails belongs to the user or sent by the sender [GET]
 */
 
-exports.getMailList = async (req, res, next) => {
+exports.getMailList = async (req, res) => {
   console.log('getMailList is called');
 
   // get search criteria and prepare db request template
@@ -85,7 +87,7 @@ exports.getMailList = async (req, res, next) => {
   Function: fetch single mail by id [GET]
 */
 
-exports.getMail = async (req, res, next) => {
+exports.getMail = async (req, res) => {
   console.log('getMail is called');
 
   // get search criteria and prepare db request template
@@ -114,7 +116,7 @@ exports.getMail = async (req, res, next) => {
   Function: update flags OR status associated with mails [PATCH]
 */
 
-exports.updateMails = async (req, res, next) => {
+exports.updateMails = async (req, res) => {
   console.log('updateMails is called');
   // define search criteria :: make sure the request from mail's sender/user
   const searchCriteria = getUserSearchCriteria(req);
@@ -163,7 +165,7 @@ exports.updateMails = async (req, res, next) => {
   Function: update flags OR status associated with the mail [PATCH]
 */
 
-exports.updateMail = async (req, res, next) => {
+exports.updateMail = async (req, res) => {
   console.log('updateMail is called');
   // define search criteria :: make sure the request from mail's sender/user
   const searchCriteria = getUserSearchCriteria(req);
@@ -196,21 +198,20 @@ exports.updateMail = async (req, res, next) => {
 
   if (error || result.n === 0) {
     return res.status(500).json({
-      message: 'Failed to toggle mail flag(s)!'
+      message: 'Failed to update mail!'
     });
   }
 
   // send POST request's result to frontend
   res.status(201).json({
-    message: 'Mail flag(s) set successfully.',
-    mail: result
+    message: 'Mail updated successfully'
   });
 };
 
 /*
   Function: delete mails [DELETE]
 */
-exports.deleteMails = async (req, res, next) => {
+exports.deleteMails = async (req, res) => {
   // define search criteria
   const searchCriteria = getUserSearchCriteria(req);
   searchCriteria['_id'] = { $in: req.queryData.ids };
@@ -235,7 +236,7 @@ exports.deleteMails = async (req, res, next) => {
 /*
   Function: delete a mail [DELETE]
 */
-exports.deleteMail = async (req, res, next) => {
+exports.deleteMail = async (req, res) => {
   // define search criteria
   const searchCriteria = getUserSearchCriteria(req);
   searchCriteria['_id'] = req.params.id;
@@ -264,7 +265,7 @@ exports.deleteMail = async (req, res, next) => {
   Function: get envelop image of one mail [GET]
 */
 
-exports.getEnvelop = async (req, res, next) => {
+exports.getEnvelop = async (req, res) => {
   // get search criteria
   const searchCriteria = getUserSearchCriteria(req);
   searchCriteria['_id'] = req.params.id;
@@ -316,7 +317,7 @@ exports.getEnvelop = async (req, res, next) => {
 /*
   Function: get one mail's content PDF [GET]
 */
-exports.getContentPDF = async (req, res, next) => {
+exports.getContentPDF = async (req, res) => {
   console.log('getContentPDF is called');
   // get search criteria
   const searchCriteria = getUserSearchCriteria(req);
@@ -440,11 +441,26 @@ exports.createMail = async (req, res, next) => {
     mail: fetchedMail
   });
 
+  // magic link token
+  const scanToken = jwt.sign(
+    { receiverId: req.body.receiverId, status: 'SCANNING' },
+    process.env.EMAIL_JWT_KEY,
+    { expiresIn: '24h' }
+  );
+  const skipScanToken = jwt.sign(
+    { receiverId: req.body.receiverId, status: 'UNSCANNED_ARCHIVED' },
+    process.env.EMAIL_JWT_KEY,
+    { expiresIn: '24h' }
+  );
+  const emailToken = { scan: scanToken, skipScan: skipScanToken };
+
   // email data
   const receiver = senderReceiverValid.receiverIds[0]; // user model
   req.emailData = {
     name: receiver.fullName,
-    email: receiver.email
+    email: receiver.email,
+    id: fetchedMail._id,
+    emailToken
   };
   next();
 };

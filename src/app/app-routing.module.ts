@@ -14,14 +14,15 @@ import { SignUpComponent } from './auth/sign-up/sign-up.component';
 import { SignUpConfirmationComponent } from './auth/sign-up-confirmation/sign-up-confirmation.component';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
+import { MailUpdateComponent } from './mails/mail-update/mail-update.component';
+import { PasswordlessMailUpdateComponent } from './passwordless/passwordless-mail-update/passwordless-mail-update.component';
 
 import { MailStatus } from './mails/mail.model';
-import { MailUpdateComponent } from './mails/mail-update/mail-update.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: SignupPageComponent,
+    // component: SignupPageComponent,
     children: [
       { path: '', redirectTo: 'signin', pathMatch: 'full' },
       { path: 'signin', component: SignInComponent },
@@ -32,6 +33,10 @@ const routes: Routes = [
       { path: 'forgot-password', component: ForgotPasswordComponent },
       { path: 'reset-password/:emailToken', component: ResetPasswordComponent }
     ]
+  },
+  {
+    path: '',
+    children: [{ path: 'update-mail/:id/:emailToken', component: PasswordlessMailUpdateComponent }]
   },
   {
     path: '',
@@ -50,7 +55,7 @@ const routes: Routes = [
       { path: 'users', component: UserListComponent },
       { path: 'create', component: MailCreateComponent },
       { path: 'edit', component: MailUpdateComponent },
-      { path: 'uploadPdf', component: MailUpdateComponent }
+      { path: 'upload-pdf', component: MailUpdateComponent }
     ]
   }
 ];

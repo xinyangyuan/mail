@@ -39,6 +39,8 @@ import { MailCardGridItemComponent } from './mails/mail-card-grid-item/mail-card
 import { AuthState } from './auth/store/auth.state';
 import { MailUpdateComponent } from './mails/mail-update/mail-update.component';
 import { MailItemActionBarComponent } from './mails/mail-item-action-bar/mail-item-action-bar.component';
+import { PasswordlessMailUpdateComponent } from './passwordless/passwordless-mail-update/passwordless-mail-update.component';
+import { PasswordlessSate } from './passwordless/store/passwordless.state';
 
 @NgModule({
   declarations: [
@@ -65,7 +67,8 @@ import { MailItemActionBarComponent } from './mails/mail-item-action-bar/mail-it
     MailCardListItemComponent,
     MailCardGridItemComponent,
     MailUpdateComponent,
-    MailItemActionBarComponent
+    MailItemActionBarComponent,
+    PasswordlessMailUpdateComponent
   ],
   imports: [
     BrowserModule,
@@ -76,7 +79,7 @@ import { MailItemActionBarComponent } from './mails/mail-item-action-bar/mail-it
     ReactiveFormsModule,
     HttpClientModule,
     FlexLayoutModule,
-    NgxsModule.forRoot([MailState, AuthState], ngxsConfig),
+    NgxsModule.forRoot([MailState, AuthState, PasswordlessSate], ngxsConfig),
     NgxsLoggerPluginModule.forRoot()
   ],
   providers: [

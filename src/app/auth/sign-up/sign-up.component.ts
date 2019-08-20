@@ -9,17 +9,19 @@ import { Router } from '@angular/router';
   templateUrl: './sign-up.component.html',
   styleUrls: ['./sign-up.component.css']
 })
-export class SignUpComponent implements OnInit {
+export class SignUpComponent implements OnInit, OnDestroy {
   // Attributes
   accountTypes = ['user', 'sender'];
+  hide = true;
   form: FormGroup;
-  authServiceStatusSub: Subscription;
+  firstNameSub: Subscription;
+  lastNameSub: Subscription;
 
   // Constructor
   constructor(
     private fb: FormBuilder,
     private routerService: Router,
-    private authService: AuthService // need to be public ?
+    private authService: AuthService
   ) {}
 
   // Static method
@@ -33,18 +35,29 @@ export class SignUpComponent implements OnInit {
   ngOnInit() {
     // initialize the reactive form
     this.form = this.fb.group({
-      firstName: ['', [Validators.required, Validators.pattern('^[a-zA-Zs]*$')]],
-      lastName: ['', [Validators.required, Validators.pattern('^[a-zA-Zs]*$')]],
+      firstName: ['', [Validators.required, Validators.pattern('^[a-zA-Zs\\-]*$')]],
+      lastName: ['', [Validators.required, Validators.pattern('^[a-zA-Zs\\-]*$')]],
       email: ['', [Validators.required, Validators.email]],
       password: [
         '',
         [
           Validators.required,
-          Validators.minLength(5),
+          Validators.minLength(6),
           Validators.pattern('^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$')
         ]
       ],
-      accountType: ['user', Validators.required]
+      accountType: ['user', Validators.required],
+      isAgreed: [false, Validators.requiredTrue]
+    });
+
+    // auto captilize firstName's first letter
+    this.firstNameSub = this.firstName.valueChanges.subscribe(val => {
+      this.firstName.setValue(this.transformToUpperCase(val, ['-']), { emitEvent: false });
+    });
+
+    // auto capitalize lastName's first letter
+    this.lastNameSub = this.lastName.valueChanges.subscribe(val => {
+      this.lastName.setValue(this.transformToUpperCase(val, ['-']), { emitEvent: false });
     });
   }
 
@@ -63,6 +76,12 @@ export class SignUpComponent implements OnInit {
 
     // immediately re-direct the user to sign-in page without listening to the server cb
     this.routerService.navigate(['']);
+  }
+
+  // Destroy Method
+  ngOnDestroy() {
+    this.firstNameSub.unsubscribe();
+    this.lastNameSub.unsubscribe();
   }
 
   // Getters
@@ -84,5 +103,18 @@ export class SignUpComponent implements OnInit {
 
   get accountType() {
     return this.form.get('accountType');
+  }
+
+  get isAgreed() {
+    return this.form.get('isAgreed');
+  }
+
+  // Helper:
+  transformToUpperCase(str, separators) {
+    separators = separators || [' '];
+    const regex = new RegExp('(^|[' + separators.join('') + '])(\\w)', 'g');
+    return str.replace(regex, x => {
+      return x.toUpperCase();
+    });
   }
 }

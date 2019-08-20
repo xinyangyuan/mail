@@ -1,43 +1,58 @@
-<!-- loading-progress-bar -->
-<mat-progress-bar *ngIf="isLoading$ | async" mode="indeterminate"></mat-progress-bar>
+<ng-container
+  *ngIf="{
+    isLoading: isLoading$ | async,
+    mails: mails$ | async
+  } as data"
+>
+  <!-- Loading Progress Bar -->
+  <mat-progress-bar *ngIf="data.isLoading" mode="indeterminate"></mat-progress-bar>
 
-<!-- mail-list body -->
-<main>
-  <!-- expansion-panel display: -->
-  <!-- <mat-accordion *ngIf="!(isLoading$ | async) && mails$ | async as mails">
-    <div *ngFor="let mail of mails">
-      <app-mail-expansion-list-item
+  <!-- Mail List View-->
+  <div class="mail-list">
+    <!-- expansion-panel display: -->
+    <!-- <div *ngIf="!data.isLoading">
+    <mat-accordion>
+      <ng-container *ngFor="let mail of mails">
+        <app-mail-expansion-list-item
+          [mail]="mail"
+          [imageURL]="(imageURLs$ | async)[mail._id]"
+        ></app-mail-expansion-list-item>
+      </ng-container>
+    </mat-accordion>
+  </div> -->
+
+    <!-- card-grid display: -->
+    <div
+      fxLayout="row wrap"
+      fxLayout.lt-sm="column"
+      fxLayoutAlign="flex-start"
+      *ngIf="!data.isLoading"
+    >
+      <app-mail-card-grid-item
+        fxFlex="0 1 33.3%"
+        fxFlex.lt-md="0 1 50%"
+        fxFlex.lt-sm="100%"
+        style="padding: 18px;"
+        *ngFor="let mail of data.mails"
         [mail]="mail"
         [imageURL]="(imageURLs$ | async)[mail._id]"
-      ></app-mail-expansion-list-item>
+      >
+      </app-mail-card-grid-item>
     </div>
-  </mat-accordion> -->
 
-  <!-- card-grid display: -->
-  <div
-    fxLayout="row wrap"
-    fxLayout.lt-sm="column"
-    fxLayoutAlign="flex-start"
-    *ngIf="!(isLoading$ | async) && (mails$ | async) as mails"
-  >
-    <app-mail-card-grid-item
-      fxFlex="0 1 33.3%"
-      fxFlex.lt-md="0 1 50%"
-      fxFlex.lt-sm="100%"
-      style="padding: 18px;"
-      *ngFor="let mail of mails"
-      [mail]="mail"
-      [imageURL]="(imageURLs$ | async)[mail._id]"
-    >
-    </app-mail-card-grid-item>
+    <!-- empty maillist placeholder -->
+    <div *ngIf="!data.isLoading && !data.mails.length">
+      <p style="text-align: center">Empty Mail List</p>
+    </div>
   </div>
-</main>
 
-<!-- paginator -->
-<mat-paginator
-  [length]="mailCount$ | async"
-  [pageSize]="mailsPerPage$ | async"
-  [pageSizeOptions]="pageSizeOptions"
-  (page)="onChangedPage($event)"
->
-</mat-paginator>
+  <!-- Paginator -->
+  <mat-paginator
+    *ngIf="data.mails.length"
+    [length]="mailCount$ | async"
+    [pageSize]="mailsPerPage$ | async"
+    [pageSizeOptions]="pageSizeOptions"
+    (page)="onChangedPage($event)"
+  >
+  </mat-paginator>
+</ng-container>

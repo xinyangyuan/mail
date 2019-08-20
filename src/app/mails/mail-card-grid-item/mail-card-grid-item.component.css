@@ -23,7 +23,7 @@
 
 /* mail envelop image */
 .image-container {
-  height: 250px;
+  height: 200px;
 }
 
 .image {
@@ -74,8 +74,8 @@
 
 .mail-grid-item-card-content:hover .image {
   transition: all 0.3s;
-  -webkit-filter: brightness(98%);
-  filter: brightness(98%);
+  -webkit-filter: brightness(96%);
+  filter: brightness(96%);
 }
 
 /* mail card action row */

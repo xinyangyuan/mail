@@ -66,7 +66,7 @@ export class MailItemActionBarComponent implements OnInit {
   onUploadScan() {
     // dispatch action: upload scan
     this.store.dispatch(new MailActions.EditMail(this.mail)).subscribe(() => {
-      this.router.navigate(['/uploadPdf']);
+      this.router.navigate(['/upload-pdf']);
     });
   }
 

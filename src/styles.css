@@ -8,7 +8,6 @@ body {
 }
 body {
   margin: 0;
-  /* font-family: Roboto, 'Helvetica Neue', sans-serif; */
 }
 
 /* Snackbar Global Setting */
@@ -25,26 +24,3 @@ body {
   color: #f1f1f1;
   -webkit-font-smoothing: antialiased;
 }
-
-/* .blue-snackbar {
-  background: #2196f3;
-  color: #f1f1f1;
-}
-.green-snackbar {
-  background: #1de9b6;
-  color: #f1f1f1;
-}
-.red-snackbar {
-  background: #b00020;
-  color: #f1f1f1;
-} */
-
-/* Icon Button Global Setting */
-/* button.mat-button .mat-icon,
-a.mat-button .mat-icon,
-a.mat-raised-button .mat-icon,
-a.mat-flat-button .mat-icon,
-a.mat-stroked-button .mat-icon {
-  vertical-align: top;
-  font-size: 1.25em;
-} */

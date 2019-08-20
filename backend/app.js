@@ -12,6 +12,10 @@ const app = express();
  setup and connect to MongoDB Atlas databse
 */
 
+mongoose.set('useNewUrlParser', true); // deprecation
+mongoose.set('useFindAndModify', false); // deprecation
+mongoose.set('useCreateIndex', true); // deprecation
+
 mongoose
   .connect(process.env.MONGO_ATLAS)
   .then(() => {
@@ -20,8 +24,6 @@ mongoose
   .catch(() => {
     console.log('Connection to database failed!');
   });
-
-mongoose.set('useFindAndModify', false);
 
 /*
  parse data stream to data object

@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const diffHistory = require('mongoose-diff-history/diffHistory');
+
 const timestampPlugin = require('./plugins/timestamp');
 
 // Schema
@@ -41,6 +43,9 @@ const mailSchema = mongoose.Schema({
 
 // use timestamp plugin/middleware
 mailSchema.plugin(timestampPlugin);
+
+// diff history plugin/middleware
+// mailSchema.plugin(diffHistory.plugin, { omit: ['flags'] });
 
 // Export mongoose model
 module.exports = mongoose.model('Mail', mailSchema, 'mails');

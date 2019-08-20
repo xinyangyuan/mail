@@ -112,9 +112,10 @@ exports.generatePasswordResetEmail = (name, email, emailToken) => {
   Email template: new mail received
 */
 
-exports.generateMailReceivedEmail = (name, email) => {
+exports.generateMailReceivedEmail = (name, email, mailId, emailToken) => {
   //  // token information
-  // const confimationURL = HOMPAGE_URL + `/reset-password/${emailToken}`;
+  const scanURL = HOMPAGE_URL + `/update-mail/${mailId}/${emailToken.scan}#scan`;
+  const skipScanURL = HOMPAGE_URL + `/update-mail/${mailId}/${emailToken.skipScan}#skip-scan`;
 
   // prepare email html template
   const emailContent = {
@@ -123,18 +124,19 @@ exports.generateMailReceivedEmail = (name, email) => {
       intro: 'We have just received a new mail for you!',
       action: [
         {
-          instructions: '🧙 Click a magic button below to update your mail status:',
+          instructions:
+            '🧙 Click a magic button below to update your mail status (link is valid for 24-hour):',
           button: {
             color: '#64C4ED',
             text: 'SCAN MAIL',
-            link: HOMPAGE_URL
+            link: scanURL
           }
         },
         {
           button: {
             color: '#DC4D2F',
             text: 'SKIP SCAN',
-            link: HOMPAGE_URL
+            link: skipScanURL
           }
         }
       ],
