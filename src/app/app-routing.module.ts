@@ -16,6 +16,7 @@ import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { MailUpdateComponent } from './mails/mail-update/mail-update.component';
 import { PasswordlessMailUpdateComponent } from './passwordless/passwordless-mail-update/passwordless-mail-update.component';
+import { PaymentRequestComponent } from './payment/payment-request/payment-request.component';
 
 import { MailStatus } from './mails/mail.model';
 

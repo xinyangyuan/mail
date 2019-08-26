@@ -286,6 +286,7 @@ export class MailState {
         merge(
           this.actions$.pipe(ofActionDispatched(MailActions.GetEnvelopImage)),
           this.actions$.pipe(ofActionDispatched(MailActions.ChangePage)),
+          this.actions$.pipe(ofActionDispatched(MailActions.ResetMailList)),
           this.actions$.pipe(ofActionDispatched(MailActions.ResetStore))
         )
       )
@@ -352,8 +353,9 @@ export class MailState {
   }
 
   /*
-   Action: get more mails when empty slots in view
+   Action: get more mails when empty slots in view due to mail update(s)
   */
+
   @Action([MailActions.UpdateMail, MailActions.UpdateMails])
   getMailsOnUpdate(
     ctx: StateContext<MailStateModel>,
@@ -935,6 +937,7 @@ export class MailState {
   /*
    Helper: store images to URLs
   */
+
   storeImages(files: { id: string; file: Blob }[]) {
     let imageURLs: { [key: string]: SafeUrl } = {};
     const ids = [];

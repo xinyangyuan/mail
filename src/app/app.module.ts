@@ -41,6 +41,8 @@ import { MailUpdateComponent } from './mails/mail-update/mail-update.component';
 import { MailItemActionBarComponent } from './mails/mail-item-action-bar/mail-item-action-bar.component';
 import { PasswordlessMailUpdateComponent } from './passwordless/passwordless-mail-update/passwordless-mail-update.component';
 import { PasswordlessSate } from './passwordless/store/passwordless.state';
+import { PaymentRequestComponent } from './payment/payment-request/payment-request.component';
+import { PaymentCheckoutComponent } from './payment/payment-checkout/payment-checkout.component';
 
 @NgModule({
   declarations: [
@@ -68,7 +70,9 @@ import { PasswordlessSate } from './passwordless/store/passwordless.state';
     MailCardGridItemComponent,
     MailUpdateComponent,
     MailItemActionBarComponent,
-    PasswordlessMailUpdateComponent
+    PasswordlessMailUpdateComponent,
+    PaymentRequestComponent,
+    PaymentCheckoutComponent
   ],
   imports: [
     BrowserModule,

@@ -1,12 +1,7 @@
-const Address = require('../models/address');
 const mongoose = require('mongoose');
 
-/*
-  Helper Function: Go-lang style async wrapper
-*/
-
-const async_wrapper = promise =>
-  promise.then(data => ({ data, error: null })).catch(error => ({ error, data: null }));
+const Address = require('../models/address');
+const User = require('../models/user');
 
 /*
 Function: get list of all addresses [GET]
@@ -14,22 +9,19 @@ Function: get list of all addresses [GET]
 
 exports.getAddressList = async (req, res) => {
   console.log('getAddressList is called');
+  try {
+    // projection:
+    const projection = { senderId: 0, receiverIds: 0, __v: 0 };
 
-  // async funtion: find user with matched email in db
-  const { error, data: fetchedAddresses } = await async_wrapper(
-    Address.find({}, { senderId: 0, receiverIds: 0, __v: 0 }).lean()
-  );
+    // $1: get address list
+    const addresses = await Address.find({}, projection).lean();
 
-  if (error || !fetchedAddresses || !fetchedAddresses.length) {
-    return res.status(401).json({
-      message: 'Failed to find your address!'
-    });
+    // success respons
+    res.status(200).json({ message: 'success', addressList: addresses });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Failed to get address list' });
   }
-
-  // send the response to frontend
-  res.status(200).json({
-    addressList: fetchedAddresses
-  });
 };
 
 /*
@@ -38,28 +30,28 @@ exports.getAddressList = async (req, res) => {
 
 exports.getAddress = async (req, res) => {
   console.log('getAddress is called');
-  // async funtion: find user with matched email in db
-  const { error, data: fetchedAddress } = await async_wrapper(
-    Address.findOne({ _id: req.params._id })
-  );
-
-  if (error || !fetchedAddress) {
-    return res.status(401).json({
-      message: 'Failed to find your address!'
-    });
-  }
-
-  // send the response to frontend
-  res.status(200).json({
-    address: {
-      _id: fetchedAddress._id,
-      address: fetchedAddress.address,
-      address2: fetchedAddress.address2,
-      city: fetchedAddress.city,
-      zipCode: fetchedAddress.zipCode,
-      country: fetchedAddress.country
+  try {
+    // $1: get address
+    const address = await Address.findById(req.params.id).lean();
+    if (!address) {
+      return res.status(400).json({ message: 'Cannot find the address' });
     }
-  });
+
+    // success response
+    res.status(200).json({
+      address: {
+        _id: address._id,
+        address: address.address,
+        address2: address.address2,
+        city: address.city,
+        zipCode: address.zipCode,
+        country: address.country
+      }
+    });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Failed to find the address' });
+  }
 };
 
 /*
@@ -68,33 +60,32 @@ exports.getAddress = async (req, res) => {
 
 exports.getAddressInfo = async (req, res) => {
   console.log('getAddressInfo is called');
-  // async funtion: find user with matched email in db
-  const { error, data: fetchedAddress } = await async_wrapper(
-    Address.findOne({ senderId: req.userData.userId }).populate({
-      path: 'receiverIds',
-      select: '_id name'
-    })
-  );
+  try {
+    // optionsPop
+    const optionsPop = { path: 'receiverIds', select: '_id name' };
 
-  if (error || !fetchedAddress) {
-    return res.status(401).json({
-      message: 'Failed to find your address!'
+    // $1
+    const address = await Address.findOne()
+      .bySender(req.userData.userId)
+      .populate(optionsPop);
+
+    // success response
+    res.status(200).json({
+      addressInfo: {
+        _id: address._id,
+        address: address.address,
+        address2: address.address2,
+        city: address.city,
+        zipCode: address.zipCode,
+        country: address.country,
+        senderId: address.senderId,
+        receiverIds: address.receiverIds // an object array [{_id: string, name: {first: string, last: string}}]
+      }
     });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Failed to find your address' });
   }
-
-  // send the response to frontend
-  res.status(200).json({
-    addressInfo: {
-      _id: fetchedAddress._id,
-      address: fetchedAddress.address,
-      address2: fetchedAddress.address2,
-      city: fetchedAddress.city,
-      zipCode: fetchedAddress.zipCode,
-      country: fetchedAddress.country,
-      senderId: fetchedAddress.senderId,
-      receiverIds: fetchedAddress.receiverIds // an object array [{_id: string, name: {first: string, last: string}}]
-    }
-  });
 };
 
 /*
@@ -103,71 +94,79 @@ exports.getAddressInfo = async (req, res) => {
 
 exports.createAddress = async (req, res, next) => {
   console.log('createAddress is called');
-  // patch all fields from request
-  const address = new Address({
-    address: req.body.address,
-    address2: req.body.address2,
-    city: req.body.city,
-    zipCode: req.body.zipCode,
-    country: req.body.country,
-    senderId: req.userData.userId,
-    receiverIds: []
-  });
-
-  // async funtion: create new address in db
-  const { error, data: fetchedAddress } = await async_wrapper(address.save());
-
-  if (error || !fetchedAddress) {
-    return res.status(401).json({
-      message: 'Failed to create a new address!'
+  try {
+    // $1: save address
+    const address_ = new Address({
+      address: req.body.address,
+      address2: req.body.address2,
+      city: req.body.city,
+      zipCode: req.body.zipCode,
+      country: req.body.country,
+      senderId: req.userData.userId,
+      receiverIds: []
     });
+    const address = await address_.save();
+
+    // success response
+    res.status(201).json({ addressInfo: address });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Unable to create new address' });
   }
-
-  // send the response to frontend
-  res.status(201).json({
-    addressInfo: fetchedAddress
-  });
-
-  // call post-hook
-  req.fetchedAddress = fetchedAddress;
-  next();
 };
 
 /*
   Function: add one extra receiver to an address [PATCH]
 */
 
-exports.addReceiver = async (req, res, next) => {
+exports.addReceiver = async (req, res) => {
   console.log('addReceiver is called');
-  // prepare the update; $addToSet ensure all array ids are uniques
-  const update = {
-    $addToSet: { receiverIds: mongoose.Types.ObjectId(req.userData.userId) }
-  };
 
-  // async funtion: push a new user into address doc's receiverId field
-  const { error, data: fetchedAddress } = await async_wrapper(
-    Address.findOneAndUpdate({ _id: req.body.addressId }, update, { runValidators: true })
-  );
+  // start session and transaction
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  if (error || !fetchedAddress) {
-    return res.status(401).json({
-      message: 'Failed to add new reciever to the address!'
+  try {
+    // filter, options, and update
+    const filter = { _id: req.body.addressId };
+    const filter2 = { _id: req.userData.userId };
+
+    const update = {
+      $addToSet: { receiverIds: mongoose.Types.ObjectId(req.userData.userId) }
+    };
+    const update2 = {
+      address: mongoose.Types.ObjectId(req.body.addressId)
+    };
+
+    const options = { session: session, runValidators: true };
+
+    // 1$: update address document
+    const address = await Address.findOneAndUpdate(filter, update, options);
+
+    // 2$: update user document
+    await User.updateOne(filter2, update2, options);
+
+    // complete transaction and session
+    await session.commitTransaction();
+    session.endSession();
+
+    // send the response to frontend
+
+    res.status(201).json({
+      address: {
+        _id: address._id,
+        address: address.address,
+        address2: address.address2,
+        city: address.city,
+        zipCode: address.zipCode,
+        country: address.country
+      }
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return res.status(500).json({
+      message: 'Failed to add new reciever to the address'
     });
   }
-
-  // send the response to frontend
-  res.status(201).json({
-    address: {
-      _id: fetchedAddress._id,
-      address: fetchedAddress.address,
-      address2: fetchedAddress.address2,
-      city: fetchedAddress.city,
-      zipCode: fetchedAddress.zipCode,
-      country: fetchedAddress.country
-    }
-  });
-
-  // call post-hook
-  req.fetchedAddress = fetchedAddress;
-  next();
 };

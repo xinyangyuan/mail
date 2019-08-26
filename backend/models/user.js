@@ -3,23 +3,45 @@ const uniqueValidator = require('mongoose-unique-validator');
 
 const timestampPlugin = require('./plugins/timestamp');
 
-// Schema
+/*
+  Schema:
+*/
+
 const userSchema = mongoose.Schema({
   name: {
     type: { first: { type: String }, last: { type: String } },
     required: true
   },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true, uniqueCaseInsensitive: true },
   password: { type: String, required: true },
   address: { type: mongoose.Schema.Types.ObjectId, ref: 'Address' },
   isSender: { type: Boolean, required: true },
   isConfirmed: { type: Boolean, required: true }
 });
 
-// virtual attribute
+/*
+  Virtual Attributes:
+*/
+
 userSchema.virtual('fullName').get(function() {
   return this.name.first + ' ' + this.name.last;
 });
+
+/*
+  Query helper:
+*/
+
+userSchema.query.byEmail = function(email) {
+  return this.where({ email: email });
+};
+
+userSchema.query.byAddress = function(address) {
+  return this.where({ address: address });
+};
+
+/*
+  Plug-ins:
+*/
 
 // use unique validator plugin/middleware
 userSchema.plugin(uniqueValidator);

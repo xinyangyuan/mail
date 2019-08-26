@@ -1,57 +1,78 @@
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const stripe = require('stripe')(process.env.STRIPE_KEY);
+
+const crypto = require('../utils/encrypt');
 
 const User = require('../models/user');
+const Mail = require('../models/mail');
+
+const Token = require('../services/token');
+const Email = require('../services/email');
 
 /*
-  Helper Function: Go-lang style async wrapper
+  Function: sign-up
 */
 
-const async_wrapper = promise =>
-  promise
-    // on success
-    .then(data => ({ data, error: null }))
-    // on error
-    .catch(error => ({ error, data: null }));
+exports.userSignUp = async (req, res) => {
+  console.log('userSignUp is called');
+  // start session and transaction
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-/*
-  Function: signup
-*/
+  try {
+    // options
+    const options = { session: session };
 
-exports.userSignUp = async (req, res, next) => {
-  // async funtion: generate hash, hash(plainPassword, saltRounds)
-  // saltRounds really mean cost factor, pick the cost according to the server setup
-  // https://security.stackexchange.com/questions/3959/recommended-of-iterations-when-using-pkbdf2-sha256/3993#3993
-  const hash = await bcrypt.hash(req.body.password, 10); // bcrpt error is NOT HANDELED
+    // $1: bcrypt
+    // saltRounds really mean cost factor, pick the cost according to the server setup
+    // https://security.stackexchange.com/questions/3959/recommended-of-iterations-when-using-pkbdf2-sha256/3993#3993
+    const hash = await bcrypt.hash(req.body.password, 10);
 
-  // async function: create the user in database
-  const user = new User({
-    name: { first: req.body.firstName, last: req.body.lastName },
-    email: req.body.email,
-    password: hash,
-    isSender: req.body.isSender,
-    isConfirmed: false
-  });
-  const { error, data: fetchedUser } = await async_wrapper(user.save());
+    // $2: create user
+    const user_ = new User({
+      name: { first: req.body.firstName, last: req.body.lastName },
+      email: req.body.email,
+      password: hash,
+      isSender: req.body.isSender,
+      isConfirmed: false
+    });
+    const user = await user_.save(options);
 
-  if (error || !fetchedUser) {
-    return res.status(401).json({ message: 'Your email is already registered!' });
+    // $3: send gretting mail
+    const mail = new Mail({
+      title: 'Hello: ' + user.fullName + '!',
+      description: 'Your first virtual mail is here!',
+      content: 'Hope you have a great time using it!',
+      senderId: mongoose.Types.ObjectId(user._id),
+      receiverId: mongoose.Types.ObjectId(user._id),
+      status: 'SCANNED_ARCHIVED',
+      envelopKey: crypto.encrypt('hello.jpg'),
+      contentPDFKey: crypto.encrypt('hello.pdf')
+    });
+    await mail.save(options);
+
+    // $3: email
+    Email.emailConfirmation(user);
+
+    // complete transaction and closes session
+    await session.commitTransaction();
+    session.endSession();
+
+    // success response:
+    res.status(201).json({ message: 'New user is created' });
+  } catch (error) {
+    // closes transaction and session
+    await session.abortTransaction();
+    session.endSession();
+
+    // error response
+    if (error.name === 'ValidatorError') {
+      res.status(401).json({ message: 'Email is already registered' });
+    } else {
+      res.status(500).json({ message: 'Unable to create new user' });
+    }
   }
-
-  // generate email verifcation link
-  const payload = {
-    userId: fetchedUser._id
-  };
-  const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
-
-  // user data & email data
-  req.fetchedUser = fetchedUser;
-  req.emailData = {
-    name: fetchedUser.fullName,
-    email: req.body.email,
-    emailToken
-  };
-  next();
 };
 
 /*
@@ -60,83 +81,63 @@ exports.userSignUp = async (req, res, next) => {
 
 exports.userSignIn = async (req, res) => {
   console.log('userSignIn is called');
-  // async funtion: find user with matched email in db
-  const { error, data: fetchedUser } = await async_wrapper(User.findOne({ email: req.body.email }));
+  try {
+    // filter
+    const filter = { email: req.body.email };
 
-  if (error || !fetchedUser) {
-    return res.status(401).json({
-      message: 'Email is not associated to a user.'
+    // $1: find user
+    const user = await User.findOne(filter);
+    if (!user) {
+      return res.status(400).json({ message: 'Email is not associated with a user' });
+    } else if (!user.isConfirmed) {
+      return res.status(400).json({ message: 'Please verify your email address' });
+    }
+
+    // $2: check user credentials
+    const result = await bcrypt.compare(req.body.password, user.password);
+    if (!result) return res.status(401).json({ message: 'Wrong user password entered.' });
+
+    // success response
+    const token = Token.generateAuthToken(user);
+    res.status(200).json({
+      token: token,
+      expiresDuration: 3600, // unit: second
+      userId: user._id,
+      isSender: user.isSender
     });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Unable to sign in the user' });
   }
-
-  if (!fetchedUser.isConfirmed) {
-    return res.status(401).json({
-      message: 'Please verify your email address!'
-    });
-  }
-
-  // async func: check user credentials
-  const result = await bcrypt.compare(req.body.password, fetchedUser.password); // bcrpt error is NOT HANDELED
-  if (!result) {
-    return res.status(401).json({
-      message: 'Wrong user password entered.'
-    });
-  }
-
-  // send the response to frontend
-  const payload = {
-    email: fetchedUser.email,
-    userId: fetchedUser._id,
-    accountType: fetchedUser.isSender ? 'sender' : 'user'
-  };
-  const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '1h' });
-
-  res.status(200).json({
-    token: token,
-    expiresDuration: 3600, // unit: second
-    userId: fetchedUser._id,
-    isSender: fetchedUser.isSender
-  });
 };
 
 /*
   Function: (re)-send email verification
 */
 
-exports.sendConfirmation = async (req, res, next) => {
+exports.sendConfirmation = async (req, res) => {
   console.log('sendConfirmation is called');
+  try {
+    // filter
+    const filter = { email: req.params.email };
 
-  // async funtion: find user with matched email in db
-  const { error, data: fetchedUser } = await async_wrapper(
-    User.findOne({ email: req.params.email })
-  );
+    // $1: find user
+    const user = await User.findOne(filter);
+    if (!user) {
+      return res.status(400).json({ message: 'Email is not associated with a user' });
+    } else if (user.isConfirmed) {
+      return res.status(400).json({ message: 'Email is already verified' });
+    }
 
-  if (error || !fetchedUser) {
-    return res.status(401).json({
-      message: 'Email is not associated to a user.'
-    });
+    // $2: email
+    await Email.emailConfirmation(user);
+
+    // success response
+    res.status(200).json({ message: 'Email sent successfully' });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Failed to send email verification' });
   }
-
-  if (fetchedUser.isConfirmed) {
-    return res.status(401).json({
-      message: 'Email is already verified.'
-    });
-  }
-
-  // generate email verifcation link
-  const payload = {
-    userId: fetchedUser._id
-  };
-  const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
-
-  // email data
-  req.fetchedUser = fetchedUser;
-  req.emailData = {
-    name: fetchedUser.fullName,
-    email: req.params.email,
-    emailToken
-  };
-  next();
 };
 
 /*
@@ -144,65 +145,47 @@ exports.sendConfirmation = async (req, res, next) => {
 */
 
 exports.verifyConfirmation = async (req, res) => {
+  console.log('verifyConfirmation is called');
+
   try {
-    console.log('verifyConfirmation is called');
-    // get email token from param
-    const emailToken = req.params.emailToken;
+    // verify token
+    const token = req.params.emailToken;
+    var decodedToken = Token.verifyConfirmationToken(token);
+  } catch {
+    return res.status(400).json({ message: 'Invalid email confirmation request' });
+  }
 
-    // synchronous func: will throw error if token is not verified
-    const decodedEmailToken = jwt.verify(emailToken, process.env.EMAIL_JWT_KEY);
+  try {
+    // $1: find user
+    const user = await User.findById(decodedToken.userId);
+    if (!user) return res.status(400).json({ message: 'Unable to find associated account' });
 
-    // async funtion: find user by ID in db
-    const { error, data: fetchedUser } = await async_wrapper(
-      User.findById(decodedEmailToken.userId)
-    );
-    if (error || !fetchedUser) {
-      return res.status(401).json({
-        message: 'Failed to find your account.'
-      });
-    }
+    // $2: bcrypt
+    const result = await bcrypt.compare(req.body.password, user.password);
+    if (!result) return res.status(401).json({ message: 'Wrong user password entered' });
 
-    // async func: check user credentials
-    const result = await bcrypt.compare(req.body.password, fetchedUser.password);
-    if (!result) {
-      return res.status(401).json({
-        message: 'Wrong user password entered.'
-      });
-    }
+    // $3: create stripe customer
+    // const customer = await stripe.customers.create({ email: user.email });
 
-    // update the user confirmation status
-    const update = {
-      $set: { isConfirmed: true }
-    };
-    const { err, data: updatedUser } = await async_wrapper(
-      User.findOneAndUpdate({ _id: decodedEmailToken.userId }, update, { runValidators: true })
-    );
-    if (err || !updatedUser) {
-      return res.status(401).json({
-        message: 'Failed to update your account status.'
-      });
-    }
+    // $4: update user
+    const filter = { _id: decodedToken.userId };
+    const update = { isConfirmed: true };
+    // const update = { isConfirmed: true, stripe_id: customer.id };
+    const options = { runValidators: true };
+    await User.updateOne(filter, update, options);
 
-    // finally send the response to frontend
-    const payload = {
-      email: updatedUser.email,
-      userId: updatedUser._id,
-      accountType: updatedUser.isSender ? 'sender' : 'user'
-    };
-    const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '1h' });
-
+    // success response
+    const token = Token.generateAuthToken(user);
     res.status(200).json({
-      email: updatedUser.email,
+      email: user.email,
       token: token,
       expiresDuration: 3600, // unit: second
-      userId: updatedUser._id,
-      isSender: updatedUser.isSender
+      userId: user._id,
+      isSender: user.isSender
     });
   } catch {
-    console.log('error occured');
-    return res.status(401).json({
-      message: 'Invalid confirmation request.'
-    });
+    // error response
+    res.status(500).json({ message: 'Unable to verify email address' });
   }
 };
 
@@ -210,39 +193,29 @@ exports.verifyConfirmation = async (req, res) => {
   Function: send password reset request to requested email
 */
 
-exports.resetPassword = async (req, res, next) => {
+exports.resetPassword = async (req, res) => {
   console.log('resetPassword is called');
+  try {
+    // filter
+    const filter = { email: req.params.email };
 
-  // async funtion: find user with matched email in db
-  const { error, data: fetchedUser } = await async_wrapper(
-    User.findOne({ email: req.params.email })
-  );
+    // $1: find user
+    const user = await User.findOne(filter);
+    if (!user) {
+      return res.status(400).json({ message: 'Email is not associated with a user' });
+    } else if (!user.isConfirmed) {
+      return res.status(400).json({ message: 'Need to confirm the email  before password reset' });
+    }
 
-  if (error || !fetchedUser) {
-    return res.status(401).json({
-      message: 'Email is not associated to a user'
-    });
+    // $2: email
+    await Email.passwordReset(user);
+
+    // success response
+    res.status(200).json({ message: 'Password reset email sent successfully' });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Failed to send password reset email' });
   }
-
-  if (!fetchedUser.isConfirmed) {
-    return res.status(401).json({
-      message: 'Need to confirm the email address before password reset'
-    });
-  }
-
-  // generate email verifcation link
-  const payload = {
-    userId: fetchedUser._id
-  };
-  const emailToken = jwt.sign(payload, process.env.EMAIL_JWT_KEY, { expiresIn: '1h' });
-
-  // email data
-  req.emailData = {
-    name: fetchedUser.fullName,
-    email: req.params.email,
-    emailToken
-  };
-  next();
 };
 
 /*
@@ -250,49 +223,37 @@ exports.resetPassword = async (req, res, next) => {
 */
 
 exports.verifyReset = async (req, res) => {
+  console.log('verifyReset is called');
   try {
-    console.log('verifyReset is called');
-    // get email token from param
-    const emailToken = req.params.emailToken;
+    // verify token
+    const token = req.params.emailToken;
+    var decodedToken = Token.verifyPasswordResetToken(token);
+  } catch {
+    return res.status(400).json({ message: 'Invalid password reset request' });
+  }
 
-    // synchronous func: will throw error if token is not verified
-    const decodedEmailToken = jwt.verify(emailToken, process.env.EMAIL_JWT_KEY);
-
-    // generate new password hash
+  try {
+    // $1: bcrpt
     const hash = await bcrypt.hash(req.body.password, 10);
 
-    // update the user confirmation status
-    const update = {
-      $set: { password: hash }
-    };
-    const { err, data: fetchedUser } = await async_wrapper(
-      User.findOneAndUpdate({ _id: decodedEmailToken.userId }, update, { runValidators: true })
-    );
-    if (err || !fetchedUser) {
-      return res.status(401).json({
-        message: 'Failed to reset your password.'
-      });
-    }
+    // $2: update user
+    const filter = { _id: decodedToken.userId };
+    const update = { password: hash };
+    const options = { runValidators: true };
+    const user = await User.findOneAndUpdate(filter, update, options);
+    if (!user) return res.status(400).json({ message: 'Failed to reset your password' });
 
-    // finally send the response to frontend
-    const payload = {
-      email: fetchedUser.email,
-      userId: fetchedUser._id,
-      accountType: fetchedUser.isSender ? 'sender' : 'user'
-    };
-    const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '1h' });
-
+    // success respons
+    const token = Token.generateAuthToken(user);
     res.status(200).json({
-      email: fetchedUser.email,
+      email: user.email,
       token: token,
       expiresDuration: 3600, // unit: second
-      userId: fetchedUser._id,
-      isSender: fetchedUser.isSender
+      userId: user._id,
+      isSender: user.isSender
     });
   } catch {
-    console.log('error occured');
-    return res.status(401).json({
-      message: 'Invalid password reset request'
-    });
+    // error response
+    res.status(500).json({ message: 'Failed to reset your password' });
   }
 };

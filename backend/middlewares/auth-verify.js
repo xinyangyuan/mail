@@ -30,14 +30,26 @@ exports.authVerify = (req, res, next) => {
 */
 
 exports.senderVerify = (req, res, next) => {
-  console.log('senderVerify is called');
+  console.log('sender verify is called');
 
-  // verify account type is sender
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_KEY);
+    req.userData = {
+      email: decodedToken.email,
+      userId: decodedToken.userId,
+      isSender: decodedToken.accountType === 'sender' // converts to boolean
+    };
+  } catch (error) {
+    res.status(401).json({ message: 'You are not authenticated!' });
+  }
+
   if (req.userData.isSender) {
     next();
   } else {
-    // senderVerify failed
-    res.status(403).json({ message: 'You are not authorized!' });
+    res.status(403).json({
+      message: 'You are not authorized!'
+    });
   }
 };
 

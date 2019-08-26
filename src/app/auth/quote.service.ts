@@ -37,6 +37,7 @@ export class QuoteService {
   */
 
   _getQoD(): Observable<Quote> {
+    // quote category
     const query = '?category=inspire';
     return this.http.get<Quote>(this.QUOTE_API_URL + query);
   }

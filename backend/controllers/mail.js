@@ -1,86 +1,59 @@
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-
-const crypto = require('../utils/encrypt');
-const s3 = require('../utils/aws');
 
 const Mail = require('../models/mail');
 const Address = require('../models/address');
 
-/*
-  Helper Function: Go-lang style async wrapper
-*/
+const generateFilename = require('../utils/generate-filename');
+const crypto = require('../utils/encrypt');
 
-const async_wrapper = promise =>
-  promise.then(data => ({ data, error: null })).catch(error => ({ error, data: null }));
-
-/*
-  Helper Function: generate search criteria based on user status and req querry
-*/
-
-const getUserSearchCriteria = req => {
-  // query requirements
-  const isSender = req.userData.isSender;
-  const receiverId = req.query.receiverId;
-  const receiverExist = typeof receiverId !== 'undefined';
-
-  // fake sender tries to fetch other user's mails
-  // added for better 401 error handling
-  if (receiverExist && !isSender) {
-    res.status(401).json({ message: 'Get you:) you are not authorized!' });
-  }
-
-  // define search criteria (what query is null)
-  if (isSender && receiverExist) {
-    // request is sent from a mail sender, and he wants to get his specific
-    // recipient's mails
-    searchCriteria = { receiverId: receiverId, senderId: req.userData.userId };
-  } else if (isSender) {
-    // request is sent from a mail sender, and he wants to get all mails that
-    // he sent
-    searchCriteria = { senderId: req.userData.userId };
-  } else {
-    // request is sent from a normal mail user
-    searchCriteria = { receiverId: req.userData.userId };
-  }
-
-  return searchCriteria;
-};
+const S3 = require('../services/s3');
+const Email = require('../services/email');
 
 /*
-  Function: fetch mails belongs to the user or sent by the sender [GET]
+  Function: get mail list [GET]
 */
 
 exports.getMailList = async (req, res) => {
   console.log('getMailList is called');
+  try {
+    // query by user status
+    const isSender = req.userData.isSender;
+    const userId = req.userData.userId;
+    // sender can query his/her receivers' mails
+    const receiverId = req.query.receiverId ? { receiverId: req.query.receiverId } : {};
 
-  // get search criteria and prepare db request template
-  let searchCriteria = getUserSearchCriteria(req);
-  searchCriteria = { ...searchCriteria, ...req.queryData.filterBy };
+    // filter, options, sort, skip, limit
+    const filter = { ...req.queryData.filterBy, ...receiverId };
+    const options = { envelopKey: 0, contentPDFKey: 0 };
+    const sort = req.queryData.sortBy;
+    const skip = req.queryData.skip;
+    const limit = req.queryData.limit;
 
-  // async query: get total mail count from database
-  const mailQuery = Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 });
-  const { error: err, data: mailCount } = await async_wrapper(mailQuery.countDocuments());
+    // $1: mail count
+    const mailCount = await Mail.find(filter, options)
+      .byUser(userId, isSender)
+      .countDocuments();
 
-  // async query:get mails from database
-  const { error: error, data: fetchedMails } = await async_wrapper(
-    Mail.find(searchCriteria, { envelopKey: 0, contentPDFKey: 0 }, req.queryData.sortBy)
-      .skip(req.queryData.skip)
-      .limit(Math.min(req.queryData.limit, mailCount)) // cap limit with mailCount
-  );
+    // $2: mail array
+    const mails = await Mail.find(filter, options)
+      .byUser(userId, isSender)
+      .sort(sort.sort)
+      .skip(skip)
+      .limit(Math.min(limit, mailCount)) // cap limit with mailCount
+      .lean();
 
-  if (err || error || !fetchedMails) {
-    return res.status(500).json({
+    // success response
+    res.status(200).json({
+      message: 'Mails fetched successfully.',
+      mailList: mails,
+      mailCount: mailCount
+    });
+  } catch {
+    // error response
+    res.status(500).json({
       message: 'Failed to fetch mails!'
     });
   }
-
-  // send fetched mails to frontend
-  res.status(200).json({
-    message: 'Mails fetched successfully.',
-    mailList: fetchedMails,
-    mailCount: mailCount
-  });
 };
 
 /*
@@ -89,27 +62,32 @@ exports.getMailList = async (req, res) => {
 
 exports.getMail = async (req, res) => {
   console.log('getMail is called');
+  try {
+    // query by user status
+    const isSender = req.userData.isSender;
+    const userId = req.userData.userId;
 
-  // get search criteria and prepare db request template
-  const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = req.param.id;
+    // filter, options
+    const filter = { _id: req.params.id };
+    const options = { envelopKey: 0, contentPDFKey: 0 };
 
-  // async query:get mails from database
-  const { error: error, data: fetchedMail } = await async_wrapper(
-    Mail.findOne(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
-  );
+    // $1: mail
+    const mail = await Mail.findOne(filter, options)
+      .byUser(userId, isSender)
+      .lean();
+    if (!mail) return res.status(400).json({ message: 'Cannot find the mail' });
 
-  if (error || !fetchedMail) {
-    return res.status(500).json({
-      message: 'Failed to fetch mail!'
+    // success response
+    res.status(200).json({
+      message: 'Mail fetched successfully',
+      mail: mail
+    });
+  } catch {
+    // error response
+    res.status(500).json({
+      message: 'Failed to fetch mail'
     });
   }
-
-  // send fetched mails to frontend
-  res.status(200).json({
-    message: 'Mail fetched successfully.',
-    mail: fetchedMail
-  });
 };
 
 /*
@@ -118,47 +96,43 @@ exports.getMail = async (req, res) => {
 
 exports.updateMails = async (req, res) => {
   console.log('updateMails is called');
-  // define search criteria :: make sure the request from mail's sender/user
-  const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = { $in: req.queryData.ids };
+  try {
+    // query by user status
+    const isSender = req.userData.isSender;
+    const userId = req.userData.userId;
 
-  // toggle terminated flag
-  const isTerminated = req.body.status === 'COLLECTED' || req.body.status === 'TRASHED';
+    // filter, options
+    const filter = { _id: { $in: req.queryData.ids } };
+    const options = { fields: { envelopKey: 0, contentPDFKey: 0 }, runValidators: true };
 
-  // prepare update
-  const update = {
-    'flags.read': typeof req.body.flags !== 'undefined' ? req.body.flags.read : undefined,
-    'flags.star': typeof req.body.flags !== 'undefined' ? req.body.flags.star : undefined,
-    'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
-    'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
-    status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
-  };
-  update.status = req.body.flags.issue ? 'RE_SCANNING' : undefined;
-  Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
+    // update
+    const isTerminated = req.body.status === 'COLLECTED' || req.body.status === 'TRASHED';
+    const update = {
+      'flags.read': typeof req.body.flags !== 'undefined' ? req.body.flags.read : undefined,
+      'flags.star': typeof req.body.flags !== 'undefined' ? req.body.flags.star : undefined,
+      'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
+      'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
+      status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
+    };
+    Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
 
-  // async function to update one mail's flag and get the updated doc
-  const { error, data: result } = await async_wrapper(
-    Mail.updateMany(
-      searchCriteria,
-      { $set: update },
-      {
-        fields: { envelopKey: 0, contentPDFKey: 0 },
-        runValidators: true // run mongoose validators to check updated field type
-      }
-    )
-  );
+    // $1: update mails
+    result = await Mail.updateMany(filter, { $set: update }, options).byUser(userId, isSender);
+    if (result.n === 0) {
+      console.log('no mail is updated by the patch request');
+    }
 
-  if (error || result.n === 0) {
+    // success response
+    res.status(201).json({
+      message: 'Mails flag(s) or status patched successfully',
+      mail: result
+    });
+  } catch {
+    // error response
     return res.status(500).json({
-      message: 'Failed to toggle mail flag(s)!'
+      message: 'Failed to patch mail update'
     });
   }
-
-  // send POST request's result to frontend
-  res.status(201).json({
-    message: 'Mail flag(s) set successfully.',
-    mail: result
-  });
 };
 
 /*
@@ -167,98 +141,107 @@ exports.updateMails = async (req, res) => {
 
 exports.updateMail = async (req, res) => {
   console.log('updateMail is called');
-  // define search criteria :: make sure the request from mail's sender/user
-  const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = req.params.id;
+  try {
+    // query by user status
+    const isSender = req.userData.isSender;
+    const userId = req.userData.userId;
 
-  // toggle terminated flag
-  const isTerminated = req.body.status === 'COLLECTED' || req.body.status === 'TRASHED';
+    // filter, options
+    const filter = { _id: req.params.id };
+    const options = { fields: { envelopKey: 0, contentPDFKey: 0 }, runValidators: true };
 
-  // prepare update
-  const update = {
-    'flags.read': typeof req.body.flags !== 'undefined' ? req.body.flags.read : undefined,
-    'flags.star': typeof req.body.flags !== 'undefined' ? req.body.flags.star : undefined,
-    'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
-    'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
-    status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
-  };
-  Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
+    // update
+    const isTerminated = req.body.status === 'COLLECTED' || req.body.status === 'TRASHED';
+    const update = {
+      'flags.read': typeof req.body.flags !== 'undefined' ? req.body.flags.read : undefined,
+      'flags.star': typeof req.body.flags !== 'undefined' ? req.body.flags.star : undefined,
+      'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
+      'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
+      status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
+    };
+    Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
 
-  // async function to update one mail's flag and get the updated doc
-  const { error, data: result } = await async_wrapper(
-    Mail.updateOne(
-      searchCriteria,
-      { $set: update },
-      {
-        fields: { envelopKey: 0, contentPDFKey: 0 },
-        runValidators: true
-      }
-    )
-  );
+    // $1: update mail
+    result = await Mail.updateOne(filter, update, options).byUser(userId, isSender);
+    if (result.n === 0) {
+      console.log('no mail is updated by the patch request');
+    }
 
-  if (error || result.n === 0) {
+    // success response
+    res.status(201).json({
+      message: 'Mail flag(s) or status patched successfully',
+      mail: result
+    });
+  } catch {
+    // error response
     return res.status(500).json({
-      message: 'Failed to update mail!'
+      message: 'Failed to patch mail update'
     });
   }
-
-  // send POST request's result to frontend
-  res.status(201).json({
-    message: 'Mail updated successfully'
-  });
 };
 
 /*
-  Function: delete mails [DELETE]
+  Function: delete mails [DEL]
 */
+
 exports.deleteMails = async (req, res) => {
-  // define search criteria
-  const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = { $in: req.queryData.ids };
+  try {
+    // query by user status
+    const isSender = req.userData.isSender;
+    const userId = req.userData.userId;
 
-  // async function to update one mail's flag
-  const { error, data: deletionResult } = await async_wrapper(
-    Mail.deleteMany(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
-  );
+    // filter, options
+    const filter = { _id: { $in: req.queryData.ids } };
+    const options = { envelopKey: 0, contentPDFKey: 0 };
 
-  if (error || deletionResult.deletedCount) {
+    // $1: delete mails
+    const result = await Mail.deleteMany(filter, options).byUser(userId, isSender);
+    if (result.deletedCount === 0) {
+      console.log('no mail is deleted by the del request');
+    }
+
+    // success response
+    res.status(201).json({
+      message: 'Mails deleted successfully.'
+    });
+  } catch {
+    // error response
     return res.status(500).json({
-      message: 'Failed to delete mail!'
+      message: 'Failed to delete mails'
     });
   }
-
-  // send DELETE request's result to frontend
-  res.status(201).json({
-    message: 'Mail deleted successfully.'
-  });
 };
 
 /*
-  Function: delete a mail [DELETE]
+  Function: delete a mail [DEL]
 */
+
 exports.deleteMail = async (req, res) => {
-  // define search criteria
-  const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = req.params.id;
+  try {
+    // query by user status
+    const isSender = req.userData.isSender;
+    const userId = req.userData.userId;
 
-  // sender cannot delete scanned mails
-  // if (req.userData.isSender) searchCriteria['status'] = 'CREATED';
+    // filter, options
+    const filter = { _id: req.params.id };
+    const options = { envelopKey: 0, contentPDFKey: 0 };
 
-  // async function to update one mail's flag
-  const { error, data: deletionResult } = await async_wrapper(
-    Mail.deleteOne(searchCriteria, { envelopKey: 0, contentPDFKey: 0 })
-  );
+    // $1: delete mails
+    const result = await Mail.deleteOne(filter, options).byUser(userId, isSender);
+    if (result.deletedCount === 0) {
+      console.log('no mail is deleted by the del request');
+    }
 
-  if (error || deletionResult.deletedCount === 0) {
+    // success response
+    res.status(201).json({
+      message: 'Mail deleted successfully.'
+    });
+  } catch {
+    // error response
     return res.status(500).json({
-      message: 'Failed to delete mail!'
+      message: 'Failed to delete mail'
     });
   }
-
-  // send DELETE request's result to frontend
-  res.status(201).json({
-    message: 'Mail deleted successfully.'
-  });
 };
 
 /*
@@ -266,105 +249,87 @@ exports.deleteMail = async (req, res) => {
 */
 
 exports.getEnvelop = async (req, res) => {
-  // get search criteria
-  const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = req.params.id;
+  try {
+    // query by user status
+    const isSender = req.userData.isSender;
+    const userId = req.userData.userId;
 
-  // async function to get the requested mail from database
-  const { err, data: fetchedMail } = await async_wrapper(Mail.findOne(searchCriteria));
-  if (err || !fetchedMail) {
+    // filter
+    const filter = { _id: req.params.id };
+
+    // $1: find mail
+    const mail = await Mail.findOne(filter).byUser(userId, isSender);
+    if (!mail) {
+      return res.status(400).json({ message: 'Cannot find mail' });
+    } else if (!mail.envelopKey) {
+      return res.status(400).json({ message: 'Cannot find mail envelop' });
+    }
+
+    // s3 params
+    const key = crypto.decrypt(mail.envelopKey);
+    const params = { Bucket: process.env.AWS_BUCKET, Key: key };
+    const ext = key.split('.').slice(-1)[0];
+
+    // $2: stream envelop image from s3
+    var stream = S3.s3.getObject(params).createReadStream();
+    stream.on('error', () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
+    req.on('close', () => stream.end()); // ensure cancelled request also closes stream
+
+    // stream response
+    res.setHeader('Content-Type', 'image/' + ext);
+    stream.pipe(res);
+  } catch {
+    // error response
+    if (stream) stream.end();
     return res.status(500).json({
-      message: 'Failed to find the mail!'
+      message: 'Failed to get envelop'
     });
   }
-
-  // eject on empty key  TODELET!
-  if (typeof fetchedMail.envelopKey === 'undefined') {
-    return res.status(500).json({
-      message: 'Failed to the mail envelop!'
-    });
-  }
-
-  // define search params
-  const key = crypto.decrypt(fetchedMail.envelopKey);
-  const params = {
-    Bucket: process.env.AWS_BUCKET,
-    Key: key
-  };
-  const ext = key.split('.').slice(-1)[0];
-
-  // find file from S3 and pipe it to response
-  // set res header
-  res.setHeader('Content-Type', 'image/' + ext);
-
-  // create readable stream from aws s3
-  const stream = s3.getObject(params).createReadStream();
-
-  // handle error
-  stream.on('error', error => {
-    stream.end(); // mannually closes the stream
-  });
-
-  // closes redableStream
-  req.on('close', () => {
-    stream.end(); // if request is cancelled, also closes the stream
-  });
-
-  // start fetching the file and pipe it to response
-  stream.pipe(res);
 };
 
 /*
   Function: get one mail's content PDF [GET]
 */
+
 exports.getContentPDF = async (req, res) => {
   console.log('getContentPDF is called');
-  // get search criteria
-  const searchCriteria = getUserSearchCriteria(req);
-  searchCriteria['_id'] = req.params.id;
+  try {
+    // query by user status
+    const isSender = req.userData.isSender;
+    const userId = req.userData.userId;
 
-  // async function to get the requested mail from database
-  const { err, data: fetchedMail } = await async_wrapper(
-    Mail.findOneAndUpdate(searchCriteria, { $set: { 'flags.read': true } })
-  );
-  if (err || !fetchedMail) {
+    // filter, update
+    const filter = { _id: req.params.id };
+    const update = { $set: { 'flags.read': true } };
+
+    // $1: find mail
+    const mail = await Mail.findOneAndUpdate(filter, update).byUser(userId, isSender);
+    if (!mail) {
+      return res.status(400).json({ message: 'Cannot find mail' });
+    } else if (!mail.contentPDFKey) {
+      return res.status(400).json({ message: 'Cannot find mail content pdf' });
+    }
+
+    // s3 params
+    const key = crypto.decrypt(mail.contentPDFKey);
+    const params = { Bucket: process.env.AWS_BUCKET, Key: key };
+
+    // $2: stream content pdf from s3
+    var stream = S3.s3.getObject(params).createReadStream();
+    stream.on('error', () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
+    req.on('close', () => stream.end()); // ensure cancelled request also closes stream
+
+    // stream response
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="' + 'Mail Content' + '"');
+    stream.pipe(res);
+  } catch {
+    // error response
+    if (stream) stream.end();
     return res.status(500).json({
-      message: 'Failed to find the mail!'
+      message: 'Failed to get contend pdf'
     });
   }
-
-  // eject on empty key  TODELET!
-  if (typeof fetchedMail.contentPDFKey === 'undefined') {
-    return res.status(401).json({ message: 'Failed to find mail pdf!' });
-  }
-
-  // define search params
-  const key = crypto.decrypt(fetchedMail.contentPDFKey);
-  const params = {
-    Bucket: process.env.AWS_BUCKET,
-    Key: key
-  };
-
-  // find file from S3 and pipe it to response
-  // set headers
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; filename="' + 'Mail Content' + '"');
-
-  // create readable stream from aws s3
-  const stream = s3.getObject(params).createReadStream();
-
-  // handle error
-  stream.on('error', error => {
-    stream.end(); // mannually closes the stream
-  });
-
-  // closes redableStream
-  req.on('end', () => {
-    stream.end(); //if request is cancelled, also closes the stream
-  });
-
-  // start fetching the file and pipe it to response
-  stream.pipe(res);
 };
 
 /*
@@ -372,165 +337,157 @@ exports.getContentPDF = async (req, res) => {
 */
 
 exports.createMail = async (req, res, next) => {
-  // check is there error in file type outputed by multer || no envelop image uploaded
-  if (req.fileTypeError || typeof req.fileData.envelopKey === 'undefined') {
-    const message = req.error || 'Unable to find envelop image!';
-    return res.status(401).json(message);
-  }
+  // check uploaded envelop
+  if (req.fileTypeError)
+    return res.status(401).json('Invalid envelop image filetype (allowed type: jpg, jpeg, png)');
+  if (typeof req.body.receiverId === 'undefined')
+    return res.status(401).json('Please specify receiver');
 
-  // check whether recipient is provided TODO
-  if (typeof req.body.receiverId === 'undefined') {
-    return res.status(401).json({
-      message: 'Please specify the recipient!'
+  // start session and transaction
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // envelop file
+    const file = req.files.envelop[0];
+
+    // filter, options, populate options
+    const filter = { senderId: req.userData.userId, receiverIds: req.body.receiverId };
+    const options = { session: session, runValidators: true };
+    const receiverId = mongoose.Types.ObjectId(req.body.receiverId);
+    const optionsPop = { path: 'receiverIds', match: { _id: receiverId } };
+
+    // $1: check receiver belongs to sender
+    const address = await Address.findOne(filter, {}, options).populate(optionsPop);
+    if (!address) throw Error;
+
+    // $2: create mail
+    const mail_ = new Mail({
+      title: req.body.title,
+      description: req.body.description,
+      content: req.body.content,
+      senderId: mongoose.Types.ObjectId(req.userData.userId),
+      receiverId: mongoose.Types.ObjectId(receiverId),
+      status: 'CREATED'
+    });
+    const mail = await mail_.save(options);
+
+    // $3: s3 file upload
+    const filename = generateFilename(file, mail);
+    await S3.uploadFile(file, filename);
+
+    // $4: update mail envelop field
+    const filterUpdate = { _id: mail._id };
+    const update = { envelopKey: crypto.encrypt(filename) };
+    await Mail.updateOne(filterUpdate, update, options);
+
+    // $5: inovice and stripe
+    // const invoice = await Invoice.newMail(receiver, mail)
+    // const invoice = await Invoice.newMailScan(receiver, mail)
+    // invoice.rollBack()
+
+    // $6: send email
+    const receiver = address.receiverIds[0];
+    await Email.mailReceivedNotification(receiver, mail, file);
+
+    // complete transaction and closes session
+    await session.commitTransaction();
+    session.endSession();
+
+    // success response
+    res.status(201).json({
+      message: 'Mail sent successfully',
+      mail: mail
+    });
+  } catch {
+    // closes transaction and session
+    await session.abortTransaction();
+    session.endSession();
+
+    // error response
+    res.status(500).json({
+      message: 'Failed to create new mail'
     });
   }
-
-  const { error: err, data: senderReceiverValid } = await async_wrapper(
-    Address.findOne({
-      senderId: req.userData.userId,
-      // ISSUE: if receiver is empty always true!!!!
-      // Although mail cannot be save due to required schema
-      receiverIds: req.body.receiverId
-    }).populate({
-      path: 'receiverIds',
-      match: { _id: mongoose.Types.ObjectId(req.body.receiverId) }
-    })
-  );
-
-  if (err || !senderReceiverValid) {
-    return res.status(401).json({
-      message: 'Cannot send mail to this user!' // this will expose that this is a valid USERID !! TODOTODOTODO
-    });
-  }
-
-  // encrypt s3 keys beofre save to database
-  const envelopKey = crypto.encrypt(req.fileData.envelopKey);
-  const contentPDFKey =
-    typeof req.fileData.contentPDFKey !== 'undefined'
-      ? crypto.encrypt(req.fileData.contentPDFKey)
-      : undefined;
-
-  // prepare the mail contents
-  const mail = new Mail({
-    title: req.body.title,
-    description: req.body.description,
-    content: req.body.content,
-    senderId: mongoose.Types.ObjectId(req.userData.userId),
-    receiverId: mongoose.Types.ObjectId(req.body.receiverId),
-    envelopKey: envelopKey,
-    contentPDFKey: contentPDFKey, // undefined will automatically trimmed by mongoose
-    status: 'CREATED'
-  });
-
-  // async function to save mail into database
-  const { data: fetchedMail, error } = await async_wrapper(mail.save());
-
-  if (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: 'Failed to send the new mail!'
-    });
-  }
-
-  // send POST request's result to frontend
-  delete fetchedMail.envelopKey;
-  delete fetchedMail.contentPDFKey;
-
-  res.status(201).json({
-    message: 'Mail sent successfully.',
-    mail: fetchedMail
-  });
-
-  // magic link token
-  const scanToken = jwt.sign(
-    { receiverId: req.body.receiverId, status: 'SCANNING' },
-    process.env.EMAIL_JWT_KEY,
-    { expiresIn: '24h' }
-  );
-  const skipScanToken = jwt.sign(
-    { receiverId: req.body.receiverId, status: 'UNSCANNED_ARCHIVED' },
-    process.env.EMAIL_JWT_KEY,
-    { expiresIn: '24h' }
-  );
-  const emailToken = { scan: scanToken, skipScan: skipScanToken };
-
-  // email data
-  const receiver = senderReceiverValid.receiverIds[0]; // user model
-  req.emailData = {
-    name: receiver.fullName,
-    email: receiver.email,
-    id: fetchedMail._id,
-    emailToken
-  };
-  next();
 };
 
 /*
   Function: modify a mail (change mail text content, envelop image, upload content pdf) [PUT]
 */
+
 exports.modifyMail = async (req, res, next) => {
-  console.log('modifyMail is called');
+  // check uploaded envelop
+  if (req.fileTypeError)
+    return res.status(401).json('Invalid envelop image filetype (allowed type: jpg, jpeg, png)');
 
-  // check is there error in file type outputed by multer
-  if (req.fileTypeError) {
-    return res.status(401).json(req.error);
-  }
+  // start session and transaction
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  // encrypt s3 keys beofre save to database
-  const envelopKey =
-    typeof req.fileData.envelopKey !== 'undefined'
-      ? crypto.encrypt(req.fileData.envelopKey)
-      : undefined;
-  const contentPDFKey =
-    typeof req.fileData.contentPDFKey !== 'undefined'
-      ? crypto.encrypt(req.fileData.contentPDFKey)
-      : undefined;
+  try {
+    // envelop and pdffile
+    const envelopFile = req.files.envelop ? req.files.envelop[0] : undefined;
+    const contentFile = req.files.contentPDF ? req.files.contentPDF[0] : undefined;
 
-  console.log(req.fileData.envelopKey);
-  console.log(req.fileData.contentPDFKey);
+    // filter, options
+    const filter = { _id: req.params.id, senderId: req.userData.userId, 'flags.terminated': false };
+    const options = { session: session, runValidators: true };
+    const optionsPop = { path: 'receiverId' };
 
-  // prepare the mail contents
-  const update = {
-    title: req.body.title,
-    description: req.body.description,
-    content: req.body.content,
-    envelopKey: envelopKey,
-    contentPDFKey: contentPDFKey,
-    'flags.read': false,
-    'flags.issue': false,
-    status: contentPDFKey ? 'SCANNED_ARCHIVED' : undefined,
-    updatedAt: Date.now()
-  };
-  for (const param in update) if (!update[param]) delete update[param]; // trim undefined fields in update
+    // $1: find mail
+    const mail = await Mail.findOne(filter, {}, options).populate(optionsPop);
 
-  // async function to save mail into database
-  const { data: result, error } = await async_wrapper(
-    Mail.findOneAndUpdate(
-      { _id: req.params.id, senderId: req.userData.userId, 'flags.terminated': false },
-      { $set: update },
-      {
-        fields: { envelopKey: 0, contentPDFKey: 0 },
-        runValidators: true // run mongoose validators to check updated field type
-      }
-    ).populate({ path: 'receiverId' })
-  );
+    // $2: upload file
+    if (envelopFile) {
+      const filename = generateFilename(envelopFile, mail);
+      var envelopKey = crypto.encrypt(filename);
+      await S3.uploadFile(envelopFile, filename);
+    }
+    if (contentFile) {
+      const filename = generateFilename(contentFile, mail);
+      var contentKey = crypto.encrypt(filename);
+      await S3.uploadFile(contentFile, filename);
+    }
 
-  if (error || result.n === 0) {
-    return res.status(500).json({
-      message: 'Failed to update the mail!'
+    // $3: update mail
+    const update = {
+      title: req.body.title,
+      description: req.body.description,
+      content: req.body.content,
+      envelopKey: envelopKey,
+      contentPDFKey: contentKey,
+      'flags.read': false,
+      'flags.issue': false,
+      status: contentKey ? 'SCANNED_ARCHIVED' : undefined,
+      updatedAt: Date.now()
+    };
+    for (const param in update) if (!update[param]) delete update[param];
+    const result = await Mail.updateOne(filter, update, options);
+    if (result.n === 0) console.log('no mail is put updated');
+
+    // $4: send email
+    if (contentFile) {
+      const receiver = mail.receiverId;
+      await Email.mailScannedNotification(receiver, contentFile);
+    }
+
+    // complete transaction and closes session
+    await session.commitTransaction();
+    session.endSession();
+
+    // success response
+    res.status(201).json({
+      message: 'Mail put updated successfully',
+      mail: mail
+    });
+  } catch {
+    // closes transaction and session
+    await session.abortTransaction();
+    session.endSession();
+
+    // error response
+    res.status(500).json({
+      message: 'Failed to put update mail'
     });
   }
-
-  // send PUT request's result to frontend
-  res.status(201).json({
-    message: 'Mail updated successfully.'
-  });
-
-  // email data
-  const receiver = result.receiverId; // user model
-  req.emailData = {
-    name: receiver.fullName,
-    email: receiver.email
-  };
-  if (contentPDFKey) next();
 };

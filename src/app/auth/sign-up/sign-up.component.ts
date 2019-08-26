@@ -46,7 +46,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
           Validators.pattern('^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$')
         ]
       ],
-      accountType: ['user', Validators.required],
+      accountType: [{ value: 'user', disabled: true }, Validators.required],
       isAgreed: [false, Validators.requiredTrue]
     });
 
@@ -62,7 +62,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
   }
 
   // Method: call signUp serivce
-  onSignUp() {
+  async onSignUp() {
     // async operations: add user and add user to the address receiver list
     this.authService
       ._signUp(
@@ -72,7 +72,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
         this.password.value,
         this.accountType.value === 'sender'
       )
-      .subscribe();
+      .toPromise();
 
     // immediately re-direct the user to sign-in page without listening to the server cb
     this.routerService.navigate(['']);

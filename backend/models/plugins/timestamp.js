@@ -1,7 +1,7 @@
 module.exports = function timestamp(schema) {
   // Add the two fields to the schema
   schema.add({
-    createdAt: Date,
+    createdAt: { type: Date, immutable: true },
     updatedAt: Date
   });
 

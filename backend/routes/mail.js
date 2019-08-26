@@ -4,12 +4,9 @@ const AuthMiddleware = require('../middlewares/auth-verify');
 const queryCheck = require('../middlewares/query-check');
 const updateVerify = require('../middlewares/update-verify');
 const fileUpload = require('../middlewares/file-upload');
-const s3Upload = require('../middlewares/s3-upload');
 const emailTokenVerify = require('../middlewares/email-token-verify');
 
 const MailController = require('../controllers/mail');
-
-const Email = require('../hooks/send-email');
 
 const router = express.Router();
 
@@ -22,28 +19,12 @@ router.get('/:id', AuthMiddleware.authVerify, MailController.getMail);
 router.get('/:id/envelop', AuthMiddleware.authVerify, MailController.getEnvelop);
 router.get('/:id/contentPDF', AuthMiddleware.authVerify, MailController.getContentPDF);
 
-router.post(
-  '',
-  AuthMiddleware.authVerify,
-  AuthMiddleware.senderVerify,
-  fileUpload,
-  s3Upload,
-  MailController.createMail,
-  Email.mailReceivedNotification
-);
+router.post('', AuthMiddleware.senderVerify, fileUpload, MailController.createMail);
 
-router.put(
-  '/:id',
-  AuthMiddleware.authVerify,
-  AuthMiddleware.senderVerify,
-  fileUpload,
-  s3Upload,
-  MailController.modifyMail,
-  Email.mailScannedNotification
-);
+router.put('/:id', AuthMiddleware.senderVerify, fileUpload, MailController.modifyMail);
 
-router.patch('', AuthMiddleware.authVerify, queryCheck, updateVerify, MailController.updateMails); // can moddify flags || status
-router.patch('/:id', AuthMiddleware.authVerify, updateVerify, MailController.updateMail); // can moddify flags || status
+router.patch('', AuthMiddleware.authVerify, queryCheck, updateVerify, MailController.updateMails);
+router.patch('/:id', AuthMiddleware.authVerify, updateVerify, MailController.updateMail);
 router.patch('/:id/:emailToken', emailTokenVerify, updateVerify, MailController.updateMail);
 
 router.delete('', AuthMiddleware.authVerify, MailController.deleteMails);

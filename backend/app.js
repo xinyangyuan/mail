@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const userRoutes = require('./routes/user');
 const addressRoutes = require('./routes/address');
 const mailRoutes = require('./routes/mail');
+const paymentRoutes = require('./routes/payment');
 
 const app = express();
 
@@ -53,4 +54,6 @@ app.use((req, res, next) => {
 app.use('/api/user', userRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/mail', mailRoutes);
+app.user('/api/payment', paymentRoutes);
+
 module.exports = app;
