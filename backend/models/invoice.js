@@ -6,24 +6,24 @@ const timestampPlugin = require('./plugins/timestamp');
 */
 
 const invoiceSchema = mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  subscription_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
-  start_date: { type: Date, required: true },
-  end_date: { type: Date, required: true },
-  mail_ids: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }],
-  scan_mail_ids: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }]
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
+  mailIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }],
+  scanIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }],
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true }
 });
 
 /*
   Virtual Attributes:
 */
 
-invoiceSchema.virtual('total_mail').get(function() {
-  return this.mail_ids.length;
+invoiceSchema.virtual('mailCount').get(function() {
+  return this.mailIds.length;
 });
 
-invoiceSchema.virtual('total_scan').get(function() {
-  return this.scan_mail_ids.length;
+invoiceSchema.virtual('scanCount').get(function() {
+  return this.scanIds.length;
 });
 
 /*
@@ -33,13 +33,13 @@ invoiceSchema.virtual('total_scan').get(function() {
 invoiceSchema.statics.findByYearMonth = function(
   year,
   month,
-  user_id = undefined,
+  userId = undefined,
   projection = {},
   options = {}
 ) {
   const conditions = {
-    ...{ user_id },
-    ...{ start_date: { $gte: new Date(year, month - 1), $lt: new Date(year, month) } }
+    ...{ userId },
+    ...{ startDate: { $gte: new Date(year, month - 1), $lt: new Date(year, month) } }
   };
   return this.find(conditions, projection, options);
 };
@@ -49,19 +49,12 @@ invoiceSchema.statics.findByYearMonth = function(
 */
 
 invoiceSchema.query.currentPeriod = function() {
-  return this.where({ start_date: { $lte: Date.now() }, end_date: { $gt: Date.now() } });
+  return this.where({ startDate: { $lte: Date.now() }, endDate: { $gt: Date.now() } });
 };
 
 invoiceSchema.query.byUser = function(userId) {
-  return this.where({ user_id: userId });
+  return this.where({ userId: userId });
 };
-
-// const date = new Date()
-// const currentYear = date.getFullYear, currentMonth = date.getMonth
-// const anchorDate = subscription.start_date.getDate()
-
-// const startDate = new Date(Date.UTC(currentYear, currentMonth, anchorDate));
-// const endDate = new Date(startDate.setMonth(startDate.getMonth() + 1));
 
 /*
   Plug-ins:

@@ -2,10 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const stripeWebhookRoutes = require('./routes/stripe-webhook');
 const userRoutes = require('./routes/user');
 const addressRoutes = require('./routes/address');
 const mailRoutes = require('./routes/mail');
+const planRoutes = require('./routes/plan');
 const paymentRoutes = require('./routes/payment');
+const subscriptionRoutes = require('./routes/subscription');
 
 const app = express();
 
@@ -30,7 +33,7 @@ mongoose
  parse data stream to data object
 */
 
-app.use(bodyParser.json()); // jason type data
+app.use(bodyParser.json()); // json type data
 app.use(bodyParser.urlencoded({ extended: false })); // url encoded data
 
 /*
@@ -48,12 +51,20 @@ app.use((req, res, next) => {
 });
 
 /*
+ stripe webhook route
+*/
+
+app.use('/stripe-webhook', stripeWebhookRoutes);
+
+/*
  api routes
 */
 
 app.use('/api/user', userRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/mail', mailRoutes);
-app.user('/api/payment', paymentRoutes);
+app.use('/api/plan', planRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 module.exports = app;

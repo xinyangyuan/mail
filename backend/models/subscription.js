@@ -7,54 +7,77 @@ const timestampPlugin = require('./plugins/timestamp');
 
 function anchorDay() {
   const isMidnight =
-    this.start_date.getHours() +
-      this.start_date.getSeconds() +
-      this.start_date.getMilliseconds() ===
+    this.startDate.getHours() + this.startDate.getSeconds() + this.startDate.getMilliseconds() ===
     0;
-  return isMidnight ? this.start_date.getDate() : this.start_date.getDate() + 1;
+  return isMidnight ? this.startDate.getDate() : this.startDate.getDate() + 1;
 }
 
 /*
   Schema:
 */
 
+const terminationSchema = mongoose.Schema({
+  reason: { type: String, required: true },
+  date: { type: Date, required: true }
+});
+
+const stripeItems = mongoose.Schema(
+  {
+    stripeId: { type: String, required: true }, // subscription item si_xxx
+    product: { type: String, enum: ['mail', 'scan', 'delivery', 'translation'], required: true },
+    type: { type: String, enum: ['metered', 'licensed'], required: true }
+  },
+  { _id: false }
+);
+
 const subscriptionSchema = mongoose.Schema({
-  plan_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true },
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  stripe_id: { type: String, required: true },
-  start_date: { type: Date, required: true, immutable: true },
-  anchor_day: { type: Number, default: anchorDay },
-  period_start_date: {
-    type: Date,
-    default: function() {
-      return this.start_date;
+  planIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true }],
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  addressId: { type: mongoose.Schema.Types.ObjectId, ref: 'Address', required: true },
+  stripeId: {
+    type: String,
+    required: function() {
+      return ['ACTIVE', 'PAST_DUE', 'CANCELED'].includes(this.status);
     }
   },
-  period_end_date: { type: Date, required: true },
-  auto_renew: { type: Boolean, default: true },
-  termination: {
-    type: { reason: String, date: Date }
-  }
+  stripeItems: [{ type: stripeItems }],
+  status: {
+    type: String,
+    enum: ['INCOMPLETE', 'ACTIVE', 'PAST_DUE', 'CANCELED'],
+    default: 'INCOMPLETE'
+  },
+  startDate: { type: Date, required: true, immutable: true },
+  anchorDay: { type: Number, default: anchorDay },
+  periodStartDate: {
+    type: Date,
+    default: function() {
+      return this.startDate;
+    }
+  },
+  periodEndDate: { type: Date, required: true },
+  isAutoRenew: { type: Boolean, default: true },
+  isAllowOverage: { type: Boolean, default: false },
+  termination: { type: terminationSchema }
 });
 
 /*
   Virtual Attribute:
 */
 
-subscriptionSchema.virtual('end_date').get(function() {
-  if (!this.auto_renew) {
-    return this.period_end_date;
+subscriptionSchema.virtual('endDate').get(function() {
+  if (!this.isAutoRenew) {
+    return this.periodEndDate;
   } else {
     return null;
   }
 });
 
-subscriptionSchema.virtual('is_terminated').get(function() {
-  return typeof this.termination === 'undefined' || this.period_end_date > Date.now();
+subscriptionSchema.virtual('isTerminated').get(function() {
+  return typeof this.termination === 'undefined' || this.periodEndDate > Date.now();
 });
 
-subscriptionSchema.virtual('is_active').get(function() {
-  return !(typeof this.termination === 'undefined' || this.period_end_date > Date.now());
+subscriptionSchema.virtual('isActive').get(function() {
+  return !(typeof this.termination === 'undefined' || this.periodEndDate > Date.now());
 });
 
 /*
@@ -62,11 +85,19 @@ subscriptionSchema.virtual('is_active').get(function() {
 */
 
 subscriptionSchema.query.isActive = function() {
-  return this.where({ period_end_date: { $gt: Date.now() }, termination: { $exists: false } });
+  return this.where({ periodEndDate: { $gt: Date.now() }, termination: { $exists: false } });
+};
+
+subscriptionSchema.query.byPlan = function(planId) {
+  return this.where({ planId: planId });
 };
 
 subscriptionSchema.query.byUser = function(userId) {
-  return this.where({ user_id: userId });
+  return this.where({ userId: userId });
+};
+
+subscriptionSchema.query.byAddress = function(addressId) {
+  return this.where({ addressId: addressId });
 };
 
 /*

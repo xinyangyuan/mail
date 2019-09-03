@@ -6,12 +6,21 @@ const timestampPlugin = require('./plugins/timestamp');
 */
 
 const paymentSchema = mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  subscription_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
-  stripe_id: { type: String, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
+  stripeId: { type: String, required: true }, // payment_intent : 'pi_xxx'
+  stripeInvoiceUrl: { type: String, required: true },
+  reason: { type: String, required: true },
   amount: { type: Number, required: true },
-  type: { type: String, enum: ['NEW_SUBSCRIPTION, RENEW_SUBSCRIPTION'], required: true },
   date: { type: Date, immutable: true, required: true }
+});
+
+/*
+  Virtual Attribute:
+*/
+
+paymentSchema.virtual('stripeInvoicePdf').get(function() {
+  return this.stripeInvoiceUrl + '/pdf';
 });
 
 /*
@@ -21,12 +30,12 @@ const paymentSchema = mongoose.Schema({
 paymentSchema.statics.findByYearMonth = function(
   year,
   month,
-  user_id = undefined,
+  userId = undefined,
   projection = {},
   options = {}
 ) {
   const conditions = {
-    ...{ user_id },
+    ...{ userId },
     ...{ date: { $gte: new Date(year, month - 1), $lt: new Date(year, month) } }
   };
   return this.find(conditions, projection, options);
@@ -37,7 +46,7 @@ paymentSchema.statics.findByYearMonth = function(
 */
 
 paymentSchema.query.byUser = function(userId) {
-  return this.where({ user_id: userId });
+  return this.where({ userId: userId });
 };
 
 paymentSchema.query.currentMonth = function() {

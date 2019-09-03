@@ -6,8 +6,9 @@ const Address = require('../models/address');
 const generateFilename = require('../utils/generate-filename');
 const crypto = require('../utils/encrypt');
 
-const S3 = require('../services/s3');
-const Email = require('../services/email');
+const S3Service = require('../services/s3');
+const EmailService = require('../services/email');
+const InvoiceService = require('../services/invoice');
 
 /*
   Function: get mail list [GET]
@@ -22,20 +23,20 @@ exports.getMailList = async (req, res) => {
     // sender can query his/her receivers' mails
     const receiverId = req.query.receiverId ? { receiverId: req.query.receiverId } : {};
 
-    // filter, options, sort, skip, limit
+    // filter, projection, sort, skip, limit
     const filter = { ...req.queryData.filterBy, ...receiverId };
-    const options = { envelopKey: 0, contentPDFKey: 0 };
+    const projection = { envelopKey: 0, contentPDFKey: 0 };
     const sort = req.queryData.sortBy;
     const skip = req.queryData.skip;
     const limit = req.queryData.limit;
 
     // $1: mail count
-    const mailCount = await Mail.find(filter, options)
+    const mailCount = await Mail.find(filter, projection)
       .byUser(userId, isSender)
       .countDocuments();
 
     // $2: mail array
-    const mails = await Mail.find(filter, options)
+    const mails = await Mail.find(filter, projection)
       .byUser(userId, isSender)
       .sort(sort.sort)
       .skip(skip)
@@ -67,12 +68,12 @@ exports.getMail = async (req, res) => {
     const isSender = req.userData.isSender;
     const userId = req.userData.userId;
 
-    // filter, options
+    // filter, projection
     const filter = { _id: req.params.id };
-    const options = { envelopKey: 0, contentPDFKey: 0 };
+    const projection = { envelopKey: 0, contentPDFKey: 0 };
 
     // $1: mail
-    const mail = await Mail.findOne(filter, options)
+    const mail = await Mail.findOne(filter, projection)
       .byUser(userId, isSender)
       .lean();
     if (!mail) return res.status(400).json({ message: 'Cannot find the mail' });
@@ -162,7 +163,7 @@ exports.updateMail = async (req, res) => {
     Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
 
     // $1: update mail
-    result = await Mail.updateOne(filter, update, options).byUser(userId, isSender);
+    result = await Mail.updateOne(filter, { $set: update }, options).byUser(userId, isSender);
     if (result.n === 0) {
       console.log('no mail is updated by the patch request');
     }
@@ -190,12 +191,12 @@ exports.deleteMails = async (req, res) => {
     const isSender = req.userData.isSender;
     const userId = req.userData.userId;
 
-    // filter, options
+    // filter, projection
     const filter = { _id: { $in: req.queryData.ids } };
-    const options = { envelopKey: 0, contentPDFKey: 0 };
+    const projection = { envelopKey: 0, contentPDFKey: 0 };
 
     // $1: delete mails
-    const result = await Mail.deleteMany(filter, options).byUser(userId, isSender);
+    const result = await Mail.deleteMany(filter, projection).byUser(userId, isSender);
     if (result.deletedCount === 0) {
       console.log('no mail is deleted by the del request');
     }
@@ -222,12 +223,12 @@ exports.deleteMail = async (req, res) => {
     const isSender = req.userData.isSender;
     const userId = req.userData.userId;
 
-    // filter, options
+    // filter, projection
     const filter = { _id: req.params.id };
-    const options = { envelopKey: 0, contentPDFKey: 0 };
+    const projection = { envelopKey: 0, contentPDFKey: 0 };
 
     // $1: delete mails
-    const result = await Mail.deleteOne(filter, options).byUser(userId, isSender);
+    const result = await Mail.deleteOne(filter, projection).byUser(userId, isSender);
     if (result.deletedCount === 0) {
       console.log('no mail is deleted by the del request');
     }
@@ -271,7 +272,7 @@ exports.getEnvelop = async (req, res) => {
     const ext = key.split('.').slice(-1)[0];
 
     // $2: stream envelop image from s3
-    var stream = S3.s3.getObject(params).createReadStream();
+    var stream = S3Service.s3.getObject(params).createReadStream();
     stream.on('error', () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
     req.on('close', () => stream.end()); // ensure cancelled request also closes stream
 
@@ -315,7 +316,7 @@ exports.getContentPDF = async (req, res) => {
     const params = { Bucket: process.env.AWS_BUCKET, Key: key };
 
     // $2: stream content pdf from s3
-    var stream = S3.s3.getObject(params).createReadStream();
+    var stream = S3Service.s3.getObject(params).createReadStream();
     stream.on('error', () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
     req.on('close', () => stream.end()); // ensure cancelled request also closes stream
 
@@ -349,13 +350,17 @@ exports.createMail = async (req, res, next) => {
 
   try {
     // envelop file
-    const file = req.files.envelop[0];
+    const file = req.files.envelop[0]; // try catch throw Error('Please include envelop info')
 
     // filter, options, populate options
-    const filter = { senderId: req.userData.userId, receiverIds: req.body.receiverId };
+    const filter = { senderId: req.userData.userId, 'receivers.receiverId': req.body.receiverId };
     const options = { session: session, runValidators: true };
     const receiverId = mongoose.Types.ObjectId(req.body.receiverId);
-    const optionsPop = { path: 'receiverIds', match: { _id: receiverId } };
+    const optionsPop = {
+      path: 'receivers.receiverId',
+      match: { _id: receiverId },
+      select: '_id name email'
+    };
 
     // $1: check receiver belongs to sender
     const address = await Address.findOne(filter, {}, options).populate(optionsPop);
@@ -374,32 +379,40 @@ exports.createMail = async (req, res, next) => {
 
     // $3: s3 file upload
     const filename = generateFilename(file, mail);
-    await S3.uploadFile(file, filename);
+    await S3Service.uploadFile(file, filename);
 
     // $4: update mail envelop field
     const filterUpdate = { _id: mail._id };
     const update = { envelopKey: crypto.encrypt(filename) };
     await Mail.updateOne(filterUpdate, update, options);
 
-    // $5: inovice and stripe
-    // const invoice = await Invoice.newMail(receiver, mail)
-    // const invoice = await Invoice.newMailScan(receiver, mail)
-    // invoice.rollBack()
-
-    // $6: send email
-    const receiver = address.receiverIds[0];
-    await Email.mailReceivedNotification(receiver, mail, file);
+    // $5: send email
+    const receiver = address.receivers[0].receiverId;
+    await EmailService.mailReceivedNotification(receiver, mail, file);
 
     // complete transaction and closes session
     await session.commitTransaction();
     session.endSession();
+
+    // $7: invoice and stripe
+    let succeeded = false;
+    for (let i = 0; i < 3 && !succeeded; i++) {
+      try {
+        await InvoiceService.newMail(receiver._id, mail._id);
+        succeeded = true;
+      } catch (error) {
+        console.error(error);
+      }
+    }
 
     // success response
     res.status(201).json({
       message: 'Mail sent successfully',
       mail: mail
     });
-  } catch {
+  } catch (err) {
+    console.log(err);
+
     // closes transaction and session
     await session.abortTransaction();
     session.endSession();
@@ -415,7 +428,7 @@ exports.createMail = async (req, res, next) => {
   Function: modify a mail (change mail text content, envelop image, upload content pdf) [PUT]
 */
 
-exports.modifyMail = async (req, res, next) => {
+exports.modifyMail = async (req, res) => {
   // check uploaded envelop
   if (req.fileTypeError)
     return res.status(401).json('Invalid envelop image filetype (allowed type: jpg, jpeg, png)');
@@ -430,9 +443,13 @@ exports.modifyMail = async (req, res, next) => {
     const contentFile = req.files.contentPDF ? req.files.contentPDF[0] : undefined;
 
     // filter, options
-    const filter = { _id: req.params.id, senderId: req.userData.userId, 'flags.terminated': false };
+    const filter = {
+      _id: req.params.id,
+      senderId: req.userData.userId,
+      'flags.terminated': false
+    };
     const options = { session: session, runValidators: true };
-    const optionsPop = { path: 'receiverId' };
+    const optionsPop = { path: 'receiverId', select: '_id email name' };
 
     // $1: find mail
     const mail = await Mail.findOne(filter, {}, options).populate(optionsPop);
@@ -441,12 +458,12 @@ exports.modifyMail = async (req, res, next) => {
     if (envelopFile) {
       const filename = generateFilename(envelopFile, mail);
       var envelopKey = crypto.encrypt(filename);
-      await S3.uploadFile(envelopFile, filename);
+      await S3Service.uploadFile(envelopFile, filename);
     }
     if (contentFile) {
       const filename = generateFilename(contentFile, mail);
       var contentKey = crypto.encrypt(filename);
-      await S3.uploadFile(contentFile, filename);
+      await S3Service.uploadFile(contentFile, filename);
     }
 
     // $3: update mail
@@ -462,25 +479,40 @@ exports.modifyMail = async (req, res, next) => {
       updatedAt: Date.now()
     };
     for (const param in update) if (!update[param]) delete update[param];
-    const result = await Mail.updateOne(filter, update, options);
+    const result = await Mail.updateOne(filter, { $set: update }, options);
     if (result.n === 0) console.log('no mail is put updated');
 
     // $4: send email
+    const receiver = mail.receiverId;
     if (contentFile) {
-      const receiver = mail.receiverId;
-      await Email.mailScannedNotification(receiver, contentFile);
+      await EmailService.mailScannedNotification(receiver, contentFile);
     }
 
     // complete transaction and closes session
     await session.commitTransaction();
     session.endSession();
 
+    // $5: invoice and stripe
+    if (contentFile) {
+      let succeeded = false;
+      for (let i = 0; i < 3 && !succeeded; i++) {
+        try {
+          await InvoiceService.newScan(receiver._id, mail._id);
+          succeeded = true;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+
     // success response
     res.status(201).json({
       message: 'Mail put updated successfully',
       mail: mail
     });
-  } catch {
+  } catch (err) {
+    console.log(err);
+
     // closes transaction and session
     await session.abortTransaction();
     session.endSession();

@@ -1,9 +1,18 @@
 const express = require('express');
+
+const AuthMiddleware = require('../middlewares/auth-verify');
+const SubscriptionController = require('../controllers/subscription');
+
 const router = express.Router();
 
-// subscription api routes
-router.get(''); // get all subscription associated with a user
-router.get('/:id'); // get specific subscription
-router.patch(''); // create new payment doc
+// Subscription api routes
+router.get('', AuthMiddleware.authVerify, SubscriptionController.getSubscriptionList);
+router.get('/:id', AuthMiddleware.authVerify, SubscriptionController.getSubscription);
+
+router.post('', AuthMiddleware.authVerify, SubscriptionController.createSubscription);
+
+router.patch('', AuthMiddleware.authVerify, SubscriptionController.getSubscription); // AUTO-RENEW, OVERAGE
+
+router.delete('', AuthMiddleware.authVerify, SubscriptionController.getSubscription); // CANCEL
 
 module.exports = router;

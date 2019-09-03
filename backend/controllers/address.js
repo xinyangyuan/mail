@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const Address = require('../models/address');
 const User = require('../models/user');
 
+const AddressService = require('../services/address');
+
 /*
 Function: get list of all addresses [GET]
 */
@@ -11,28 +13,46 @@ exports.getAddressList = async (req, res) => {
   console.log('getAddressList is called');
   try {
     // projection:
-    const projection = { senderId: 0, receiverIds: 0, __v: 0 };
+    const projection = { senderId: 0, receivers: 0, __v: 0 };
 
     // $1: get address list
-    const addresses = await Address.find({}, projection).lean();
+    const addresses = await Address.find({}, projection);
+
+    // //    addressList = addresses.map(address => {
+    //     return {
+    //       line1: address.line1,
+    //       line2: address.line2,
+    //       city: address.city,
+    //       zip: address.zip,
+    //       country: address.country,
+    //       vacantMailboxNos: address.vacantMailboxNos
+    //     };
+    //   });
 
     // success respons
-    res.status(200).json({ message: 'success', addressList: addresses });
-  } catch {
+    res.status(200).json({
+      message: 'success',
+      addressList: addresses
+    });
+  } catch (err) {
+    console.log(err);
     // error response
     res.status(500).json({ message: 'Failed to get address list' });
   }
 };
 
 /*
-  Function: get one address [GET]
+  Function: get one address by id [GET]
 */
 
 exports.getAddress = async (req, res) => {
   console.log('getAddress is called');
   try {
+    // PROJECT
+    const projection = { senderId: 0, 'receivers.receiverId': 0, __v: 0 };
+
     // $1: get address
-    const address = await Address.findById(req.params.id).lean();
+    const address = await Address.findById(req.params.id, projection);
     if (!address) {
       return res.status(400).json({ message: 'Cannot find the address' });
     }
@@ -41,11 +61,12 @@ exports.getAddress = async (req, res) => {
     res.status(200).json({
       address: {
         _id: address._id,
-        address: address.address,
-        address2: address.address2,
+        line1: address.line1,
+        line2: address.line2,
         city: address.city,
-        zipCode: address.zipCode,
-        country: address.country
+        zip: address.zip,
+        country: address.country,
+        vacantMailboxNos: address.vacantMailboxNos
       }
     });
   } catch {
@@ -62,27 +83,29 @@ exports.getAddressInfo = async (req, res) => {
   console.log('getAddressInfo is called');
   try {
     // optionsPop
-    const optionsPop = { path: 'receiverIds', select: '_id name' };
+    const optionsPop = { path: 'receivers.receiverId', select: '_id name' };
 
     // $1
     const address = await Address.findOne()
       .bySender(req.userData.userId)
       .populate(optionsPop);
+    console.log(address);
 
     // success response
     res.status(200).json({
       addressInfo: {
         _id: address._id,
-        address: address.address,
-        address2: address.address2,
+        address: address.line1,
+        address2: address.line2,
         city: address.city,
-        zipCode: address.zipCode,
+        zipCode: address.zip,
         country: address.country,
         senderId: address.senderId,
-        receiverIds: address.receiverIds // an object array [{_id: string, name: {first: string, last: string}}]
+        receivers: address.receivers // an object array [{_id: string, name: {first: string, last: string}}]
       }
     });
-  } catch {
+  } catch (error) {
+    console.log(error);
     // error response
     res.status(500).json({ message: 'Failed to find your address' });
   }
@@ -92,18 +115,17 @@ exports.getAddressInfo = async (req, res) => {
   Function: create one new address [POST]
 */
 
-exports.createAddress = async (req, res, next) => {
+exports.createAddress = async (req, res) => {
   console.log('createAddress is called');
   try {
-    // $1: save address
+    // $1: save address [single sender can create multiple addresses]
     const address_ = new Address({
-      address: req.body.address,
-      address2: req.body.address2,
+      line1: req.body.address,
+      line2: req.body.address2,
       city: req.body.city,
-      zipCode: req.body.zipCode,
+      zip: req.body.zipCode,
       country: req.body.country,
-      senderId: req.userData.userId,
-      receiverIds: []
+      senderId: req.userData.userId
     });
     const address = await address_.save();
 
@@ -121,50 +143,31 @@ exports.createAddress = async (req, res, next) => {
 
 exports.addReceiver = async (req, res) => {
   console.log('addReceiver is called');
-
-  // start session and transaction
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // validation
+  if (!req.body.addressId) return res.status(400).json({ message: 'Please provide address' });
 
   try {
-    // filter, options, and update
-    const filter = { _id: req.body.addressId };
-    const filter2 = { _id: req.userData.userId };
+    // addressId, userId, mailboxNo
+    const addressId = mongoose.Types.ObjectId(req.body.addressId);
+    const userId = mongoose.Types.ObjectId(req.userData.userId);
+    const mailboxNo = req.body.mailboxNo;
 
-    const update = {
-      $addToSet: { receiverIds: mongoose.Types.ObjectId(req.userData.userId) }
-    };
-    const update2 = {
-      address: mongoose.Types.ObjectId(req.body.addressId)
-    };
+    // $1: add user to address
+    const address = await AddressService.addReceiver(addressId, userId, mailboxNo);
 
-    const options = { session: session, runValidators: true };
-
-    // 1$: update address document
-    const address = await Address.findOneAndUpdate(filter, update, options);
-
-    // 2$: update user document
-    await User.updateOne(filter2, update2, options);
-
-    // complete transaction and session
-    await session.commitTransaction();
-    session.endSession();
-
-    // send the response to frontend
-
+    // success response
     res.status(201).json({
       address: {
         _id: address._id,
-        address: address.address,
-        address2: address.address2,
+        address: address.line1,
+        address2: address.line2,
         city: address.city,
-        zipCode: address.zipCode,
+        zipCode: address.zip,
         country: address.country
       }
     });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    console.log(error);
     return res.status(500).json({
       message: 'Failed to add new reciever to the address'
     });

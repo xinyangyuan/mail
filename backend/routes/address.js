@@ -11,7 +11,9 @@ router.patch('/addReceiver', AuthMiddleware.authVerify, AddressController.addRec
 
 router.get('', AddressController.getAddressList); // PUBLIC ACCESSIBLE
 router.get('/:id', AddressController.getAddress); // PUBLIC ACCESSIBLE
+// router.get('/:id/info', AuthMiddleware.senderVerify, AddressController.getAddressInfo);
 
 router.post('', AuthMiddleware.senderVerify, AddressController.createAddress);
+// router.post('/:id/receivers/:receiverId', AuthMiddleware.authVerify, AddressController.addReceiver);
 
 module.exports = router;

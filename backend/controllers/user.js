@@ -16,6 +16,13 @@ const Email = require('../services/email');
 
 exports.userSignUp = async (req, res) => {
   console.log('userSignUp is called');
+  // validation
+  if (!req.body.firstName)
+    return res.status(401).json({ message: 'Please provide user firstName' });
+  if (!req.body.lastName) return res.status(401).json({ message: 'Please provide user lastName' });
+  if (!req.body.email) return res.status(401).json({ message: 'Please provide user email' });
+  if (!req.body.password) return res.status(401).json({ message: 'Please provide user password' });
+
   // start session and transaction
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -52,7 +59,7 @@ exports.userSignUp = async (req, res) => {
     });
     await mail.save(options);
 
-    // $3: email
+    // $4: email
     Email.emailConfirmation(user);
 
     // complete transaction and closes session
@@ -95,7 +102,7 @@ exports.userSignIn = async (req, res) => {
 
     // $2: check user credentials
     const result = await bcrypt.compare(req.body.password, user.password);
-    if (!result) return res.status(401).json({ message: 'Wrong user password entered.' });
+    if (!result) return res.status(401).json({ message: 'Wrong user password entered' });
 
     // success response
     const token = Token.generateAuthToken(user);

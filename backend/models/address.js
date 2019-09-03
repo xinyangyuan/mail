@@ -1,18 +1,39 @@
 const mongoose = require('mongoose');
+
 const timestampPlugin = require('./plugins/timestamp');
+
+const NUMBER_MAILBOXES = 500;
 
 /*
   Schema:
 */
 
 const addressSchema = mongoose.Schema({
-  address: { type: String, required: true },
-  address2: { type: String },
+  line1: { type: String, required: true },
+  line2: { type: String },
   city: { type: String, required: true },
-  zipCode: { type: String, required: true },
+  zip: { type: String, required: true },
   country: { type: String, required: true },
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  receiverIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  receivers: [
+    mongoose.Schema(
+      {
+        mailboxNo: { type: Number, min: 1, max: NUMBER_MAILBOXES, required: true },
+        receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+      },
+      { _id: false }
+    )
+  ]
+});
+
+/*
+  Virtual Attributes:
+*/
+
+addressSchema.virtual('vacantMailboxNos').get(function() {
+  const mailboxes = Array.from(Array(NUMBER_MAILBOXES), (x, i) => i + 1); // [1,2,3,4,..]
+  const takenMailboxes = this.receivers.map(receiver => receiver.mailboxNo);
+  return mailboxes.filter(mailbox => !takenMailboxes.includes(mailbox));
 });
 
 /*

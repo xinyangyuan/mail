@@ -41,7 +41,7 @@ exports.senderVerify = (req, res, next) => {
       isSender: decodedToken.accountType === 'sender' // converts to boolean
     };
   } catch (error) {
-    res.status(401).json({ message: 'You are not authenticated!' });
+    return res.status(401).json({ message: 'You are not authenticated!' });
   }
 
   if (req.userData.isSender) {

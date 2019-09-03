@@ -14,7 +14,17 @@ const userSchema = mongoose.Schema({
   },
   email: { type: String, required: true, unique: true, uniqueCaseInsensitive: true },
   password: { type: String, required: true },
-  address: { type: mongoose.Schema.Types.ObjectId, ref: 'Address' },
+  mailboxes: [
+    mongoose.Schema(
+      {
+        mailboxNo: { type: Number, min: 0, max: 500, required: true },
+        addressId: { type: mongoose.Schema.Types.ObjectId, ref: 'Address', required: true }
+      },
+      { _id: false }
+    )
+  ],
+  stripeId: { type: String },
+  paymentSource: { type: String },
   isSender: { type: Boolean, required: true },
   isConfirmed: { type: Boolean, required: true }
 });

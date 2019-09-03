@@ -7,6 +7,16 @@ const timestampPlugin = require('./plugins/timestamp');
   Schema:
 */
 
+const mailFlagSchema = mongoose.Schema(
+  {
+    read: { type: Boolean, required: true },
+    star: { type: Boolean, required: true },
+    issue: { type: Boolean, required: true },
+    terminated: { type: Boolean, required: true }
+  },
+  { _id: false }
+);
+
 const mailSchema = mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
@@ -21,12 +31,7 @@ const mailSchema = mongoose.Schema({
     }
   },
   flags: {
-    type: {
-      read: { type: Boolean },
-      star: { type: Boolean },
-      issue: { type: Boolean },
-      terminated: { type: Boolean }
-    },
+    type: mailFlagSchema,
     default: { read: false, star: false, issue: false, terminated: false }
   },
   status: {
