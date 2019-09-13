@@ -1,10 +1,20 @@
+/* Mat Card */
 mat-card {
-  margin: 1rem auto;
-  width: 400px;
-  text-align: center;
+  width: 450px;
+  min-width: 350px;
+  height: 600px;
+  padding: 0px;
 }
 
-mat-form-field,
-textarea {
-  width: 100%;
+/* Card Title */
+.title {
+  font-size: 28px;
+  letter-spacing: 0;
+  color: #4c4eb5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.address-create-form {
+  width: 80%;
+  margin: auto;
 }

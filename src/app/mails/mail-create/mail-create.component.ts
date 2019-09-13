@@ -40,9 +40,9 @@ export class MailCreateComponent implements OnInit {
   // Init Method
   ngOnInit() {
     // get the list of receivers
-    this.addressService._getMyAddressInfo().subscribe(res => {
-      this.receiverList = res.addressInfo.receiverIds;
-    });
+    // this.addressService._getMyAddressInfo().subscribe(res => {
+    //   // this.receiverList = res.addressInfo.receiverIds;
+    // });
 
     // initialize the reactive form
     this.form = this.fb.group({

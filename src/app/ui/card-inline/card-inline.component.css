@@ -1,0 +1,10 @@
+/* Card */
+.card-inline {
+  background-color: #ffffff;
+  border: rgb(248, 248, 248) solid 1px;
+  padding-top: 0.8em;
+  padding-bottom: 0.8em;
+  /* border-radius: 10px; */
+  /* border-top: rgb(248, 248, 248) solid 1px; */
+  /* border-bottom: rgb(248, 248, 248) solid 1px; */
+}

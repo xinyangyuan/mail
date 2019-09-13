@@ -7,21 +7,20 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { AngularMaterialModule } from './core/angular-material/angular-material.module';
 import { CookieService } from 'ngx-cookie-service';
 import { NgxsModule } from '@ngxs/store';
+import { CardInlineModule } from './ui/card-inline/card-inline.module';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
-
 import { AppRoutingModule } from './app-routing.module';
+
 import { AppComponent } from './app.component';
 import { MailCreateComponent } from './mails/mail-create/mail-create.component';
 import { SignUpComponent } from './auth/sign-up/sign-up.component';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { HeaderComponent } from './navigation/header/header.component';
 import { NavigationListComponent } from './navigation/navigation-list/navigation-list.component';
-import { SignupPageComponent } from './layout/signup-page/signup-page.component';
 import { DashboardPageComponent } from './layout/dashboard-page/dashboard-page.component';
 import { MailListComponent } from './mails/mail-list/mail-list.component';
 import { UserListComponent } from './users/user-list/user-list.component';
 import { HeaderPublicComponent } from './navigation/header-public/header-public.component';
-import { AddressSelectComponent } from './addresses/address-select/address-select.component';
 import { AddressCardComponent } from './addresses/address-card/address-card.component';
 import { AddressCreateComponent } from './addresses/address-create/address-create.component';
 import { SignUpConfirmationComponent } from './auth/sign-up-confirmation/sign-up-confirmation.component';
@@ -43,6 +42,18 @@ import { PasswordlessMailUpdateComponent } from './passwordless/passwordless-mai
 import { PasswordlessSate } from './passwordless/store/passwordless.state';
 import { PaymentRequestComponent } from './payment/payment-request/payment-request.component';
 import { PaymentCheckoutComponent } from './payment/payment-checkout/payment-checkout.component';
+import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
+import { AddressState } from './addresses/store/address.state';
+import { AddressSelectFormComponent } from './addresses/address-select-form/address-select-form.component';
+import { PlanCardComponent } from './plans/plan-card/plan-card.component';
+import { PlanState } from './plans/store/plan.state';
+import { LoadingSpinnerCubeComponent } from './ui/loading-spinner-cube/loading-spinner-cube.component';
+import { NewSubscriptionCheckoutComponent } from './subscription/new-subscription-checkout/new-subscription-checkout.component';
+import { AddressCardSimpleComponent } from './addresses/address-card-simple/address-card-simple.component';
+import { NewSubscriptionSelectPlanComponent } from './subscription/new-subscription-select-plan/new-subscription-select-plan.component';
+import { NewSubscriptionSelectAddressComponent } from './subscription/new-subscription-select-address/new-subscription-select-address.component';
+import { PlanListComponent } from './plans/plan-list/plan-list.component';
+import { NewSubscriptionComponent } from './subscription/new-subscription/new-subscription.component';
 
 @NgModule({
   declarations: [
@@ -53,10 +64,8 @@ import { PaymentCheckoutComponent } from './payment/payment-checkout/payment-che
     SignUpComponent,
     HeaderComponent,
     NavigationListComponent,
-    SignupPageComponent,
     DashboardPageComponent,
     HeaderPublicComponent,
-    AddressSelectComponent,
     AddressCardComponent,
     AddressCreateComponent,
     SignUpConfirmationComponent,
@@ -72,24 +81,43 @@ import { PaymentCheckoutComponent } from './payment/payment-checkout/payment-che
     MailItemActionBarComponent,
     PasswordlessMailUpdateComponent,
     PaymentRequestComponent,
-    PaymentCheckoutComponent
+    PaymentCheckoutComponent,
+    MainLayoutComponent,
+    AddressSelectFormComponent,
+    PlanCardComponent,
+    LoadingSpinnerCubeComponent,
+    NewSubscriptionCheckoutComponent,
+    AddressCardSimpleComponent,
+    NewSubscriptionSelectPlanComponent,
+    NewSubscriptionSelectAddressComponent,
+    PlanListComponent,
+    NewSubscriptionComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     AngularMaterialModule,
+    CardInlineModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     FlexLayoutModule,
-    NgxsModule.forRoot([MailState, AuthState, PasswordlessSate], ngxsConfig),
+    NgxsModule.forRoot(
+      [MailState, AuthState, PasswordlessSate, AddressState, PlanState],
+      ngxsConfig
+    ),
     NgxsLoggerPluginModule.forRoot()
   ],
   providers: [
     CookieService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+  ],
+  entryComponents: [
+    NewSubscriptionSelectPlanComponent,
+    NewSubscriptionSelectAddressComponent,
+    NewSubscriptionCheckoutComponent
   ],
   bootstrap: [AppComponent]
 })

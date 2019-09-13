@@ -1,3 +1,29 @@
-<div #payElement>
-  <!-- A Stripe Element will be inserted here. -->
+<div class="payment">
+  <!-- Payment Form -->
+  <form (submit)="handleForm($event)">
+    <!-- Payment Request Element -->
+    <div #payElement>
+      <!--stripe paymentRequestButton element inserted here-->
+    </div>
+
+    <!-- Card Element -->
+    <fieldset>
+      <legend class="card-only">
+        {{ showPaymentRequest ? 'Or enter card details' : 'Pay with card' }}
+      </legend>
+      <div class="container">
+        <div id="cardElement" #cardElement>
+          <!--stripe card element inserted here-->
+        </div>
+        <button type="submit">Pay ${{ amount / 100 }}</button>
+      </div>
+    </fieldset>
+  </form>
+
+  <!-- Error Message -->
+  <div class="error-message">
+    <h3>
+      {{ cardErrors }}
+    </h3>
+  </div>
 </div>

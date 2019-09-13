@@ -13,6 +13,7 @@ export class SignUpConfirmationComponent implements OnInit {
   form: FormGroup;
   accountType: string;
   emailToken: string;
+  hide = true;
 
   // Constructor
   constructor(
@@ -45,9 +46,9 @@ export class SignUpConfirmationComponent implements OnInit {
 
     // redirect user to pick address or create address
     if (this.accountType === 'user') {
-      this.router.navigate(['addAddress']);
+      this.router.navigate(['add-address']);
     } else if (this.accountType === 'sender') {
-      this.router.navigate(['newAddress']);
+      this.router.navigate(['create-address']);
     }
   }
 

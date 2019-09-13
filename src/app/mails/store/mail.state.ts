@@ -36,14 +36,14 @@ export interface MailStateModel {
 
   // Envelop Image
   imageTaskPool: string[]; // list of mail id
-  currentImageTasks: string[]; // list of mail id list
+  currentImageTasks: string[]; // list of mail id
   imageURLs: { [key: string]: SafeUrl };
 
   // Content Pdf
   pdfURL: string;
 
   // URL Data
-  urlData: Data;
+  urlData: Data; // {read: false} || {star : true}
 }
 
 /*
@@ -737,6 +737,7 @@ export class MailState {
   /*
    Action: delete a mail
   */
+
   @Action(MailActions.DeleteMail)
   deleteMail(ctx: StateContext<MailStateModel>, action: MailActions.DeleteMail) {
     const state = ctx.getState();
@@ -757,8 +758,14 @@ export class MailState {
 
   @Action(MailActions.EditMail)
   editMail(ctx: StateContext<MailStateModel>, action: MailActions.EditMail) {
+    // get current state
+    const state = ctx.getState();
+
+    // remove the edited mail envelop image from the imageURLs
+    const { [action.payload._id]: _, ...imageURLs } = state.imageURLs;
+
     // return new state
-    ctx.patchState({ editedMail: action.payload });
+    ctx.patchState({ editedMail: action.payload, imageURLs });
   }
 
   /*

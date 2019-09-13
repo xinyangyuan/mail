@@ -1,0 +1,14 @@
+/* Header Text */
+.card-inline-header {
+  padding-left: 1em;
+  border-left: 4px solid #e45;
+  color: #e45;
+}
+
+.card-inline-header h1 {
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+}

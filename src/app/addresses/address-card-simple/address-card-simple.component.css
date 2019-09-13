@@ -1,0 +1,80 @@
+/* Card */
+.card {
+  background-color: #ffffff;
+  border: rgb(248, 248, 248) solid 1px;
+  padding-top: 0.8em;
+  padding-bottom: 0.8em;
+  /* border-radius: 10px; */
+  /* border-top: rgb(248, 248, 248) solid 1px; */
+  /* border-bottom: rgb(248, 248, 248) solid 1px; */
+}
+
+/* Title Text */
+.title {
+  padding-left: 1em;
+  border-left: 4px solid #e45;
+  color: #e45;
+}
+
+.title h1 {
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Description Text */
+.description {
+  min-width: 12em;
+  padding-left: 2em;
+}
+
+.description h1 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  color: black;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+}
+
+.description h2 {
+  font-size: 10px;
+  font-weight: 400;
+  text-align: left;
+  color: #999;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+}
+
+.description ul {
+  list-style-position: inside;
+  padding-left: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* End Text */
+.end {
+  padding-left: 2em;
+  padding-right: 2em;
+}
+
+.end h1 {
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+/* Mat Cards */
+mat-card {
+  width: 450px;
+  min-width: 350px;
+  height: 600px;
+}

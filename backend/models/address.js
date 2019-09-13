@@ -31,7 +31,7 @@ const addressSchema = mongoose.Schema({
 */
 
 addressSchema.virtual('vacantMailboxNos').get(function() {
-  const mailboxes = Array.from(Array(NUMBER_MAILBOXES), (x, i) => i + 1); // [1,2,3,4,..]
+  const mailboxes = Array.from(Array(NUMBER_MAILBOXES), (x, i) => i + 101); // [1,2,3,4,..]
   const takenMailboxes = this.receivers.map(receiver => receiver.mailboxNo);
   return mailboxes.filter(mailbox => !takenMailboxes.includes(mailbox));
 });

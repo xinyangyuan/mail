@@ -29,7 +29,7 @@ export class MailCardGridItemComponent implements OnInit, OnChanges {
 
   // Init Method:
   ngOnInit() {
-    // mail property is undefined before initialization
+    // this.mail property is undefined before initialization
     this.isSelected$ = this.store.select(MailState.isSelected(this.mail));
   }
 

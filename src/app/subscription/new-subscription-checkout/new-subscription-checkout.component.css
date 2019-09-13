@@ -1,0 +1,37 @@
+/* Mat Cards */
+mat-card {
+  width: 450px;
+  min-width: 350px;
+  height: 600px;
+  padding: 0px;
+}
+
+.image {
+  background-image: url('https://images.unsplash.com/photo-1565614692402-8c5397a38648?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1534&q=80');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
+}
+
+/* Selection Title */
+.selction-title {
+  color: #666666;
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 0.2em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Title */
+.title {
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: 1px;
+  color: #4c4eb5;
+  -webkit-font-smoothing: antialiased;
+}
+
+:host {
+  background: linear-gradient(to right, rgb(224, 234, 252), rgb(207, 222, 243));
+}

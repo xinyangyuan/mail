@@ -1,0 +1,31 @@
+<mat-card fxLayout="column" fxLayoutAlign="space-around center">
+  <!-- Title -->
+  <h1 class="title">Chooese Your Plan</h1>
+
+  <!-- Plans -->
+  <app-plan-list></app-plan-list>
+
+  <!-- Monthly/Annual Toggle Button -->
+  <div fxFlex></div>
+  <div style="padding: 1rem; width: 100%;" fxLayout="row" fxLayoutAlign="space-between center">
+    <!-- back button -->
+    <a [routerLink]="" fragment="select-address">
+      <button mat-stroked-button color="primary" style="font-size: 12px">
+        BACK
+      </button>
+    </a>
+    <!-- next button -->
+    <a>
+      <button
+        mat-stroked-button
+        color="primary"
+        style="font-size: 12px"
+        [disabled]="!(selectedPlan$ | async)"
+        [routerLink]=""
+        fragment="checkout"
+      >
+        NEXT
+      </button>
+    </a>
+  </div>
+</mat-card>

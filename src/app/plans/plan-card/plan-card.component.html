@@ -1,0 +1,54 @@
+<div [ngStyle]="applyScale()">
+  <ng-container *ngIf="{ isSelected: isSelected$ | async } as data">
+    <!-- Plan Card -->
+    <div
+      fxLayout="row"
+      fxLayoutAlign="start stretch"
+      class="plan-card"
+      (click)="onClick()"
+      [ngStyle]="data.isSelected && { 'box-shadow': '0 0 0 2pt #5661b3' }"
+    >
+      <!-- Plan Name & Price -->
+      <div class="title">
+        <h1>${{ plan.price / 100 }}<span>/month</span></h1>
+        <p>{{ plan.name }}</p>
+      </div>
+
+      <!-- Plan Feature -->
+      <div
+        fxFlex
+        fxLayout="row"
+        fxLayoutAlign="space-around center"
+        class="description"
+        [ngStyle]="data.isSelected && { 'background-color': '#e6e8ff' }"
+      >
+        <!-- Feature 1 -->
+        <div class="description-text">
+          <h1>1</h1>
+          <h2>Account</h2>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="description-text">
+          <h1>{{ plan.mailCredit === -1 ? 'Unlimit' : plan.mailCredit }}</h1>
+          <h2>FREE MAILS</h2>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="description-text" fxLayout="column">
+          <div style="height: 1.2em" fxFlexAlign="end">
+            <img
+              *ngIf="data.isSelected"
+              src="../../../assets/img/selected.svg"
+              style="height: 1.2em"
+              alt="selected icon"
+            />
+          </div>
+          <h1>{{ plan.scanCredit === -1 ? 'Unlimit' : plan.scanCredit }}</h1>
+          <h2>FREE SCANS</h2>
+          <div style="height: 1.2em"></div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

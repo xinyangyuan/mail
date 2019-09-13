@@ -1,14 +1,13 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { SignupPageComponent } from './layout/signup-page/signup-page.component';
+import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { DashboardPageComponent } from './layout/dashboard-page/dashboard-page.component';
 
 import { MailListComponent } from './mails/mail-list/mail-list.component';
 import { UserListComponent } from './users/user-list/user-list.component';
 import { MailCreateComponent } from './mails/mail-create/mail-create.component';
 import { AddressCreateComponent } from './addresses/address-create/address-create.component';
-import { AddressSelectComponent } from './addresses/address-select/address-select.component';
 import { SignInComponent } from './auth/sign-in/sign-in.component';
 import { SignUpComponent } from './auth/sign-up/sign-up.component';
 import { SignUpConfirmationComponent } from './auth/sign-up-confirmation/sign-up-confirmation.component';
@@ -16,21 +15,23 @@ import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { MailUpdateComponent } from './mails/mail-update/mail-update.component';
 import { PasswordlessMailUpdateComponent } from './passwordless/passwordless-mail-update/passwordless-mail-update.component';
-import { PaymentRequestComponent } from './payment/payment-request/payment-request.component';
-
 import { MailStatus } from './mails/mail.model';
+
+import { NewSubscriptionComponent } from './subscription/new-subscription/new-subscription.component';
+import { AddressCardSimpleComponent } from './addresses/address-card-simple/address-card-simple.component';
+import { NewSubscriptionCheckoutComponent } from './subscription/new-subscription-checkout/new-subscription-checkout.component';
 
 const routes: Routes = [
   {
     path: '',
-    // component: SignupPageComponent,
+    component: MainLayoutComponent,
     children: [
       { path: '', redirectTo: 'signin', pathMatch: 'full' },
-      { path: 'signin', component: SignInComponent },
+      { path: 'signin', component: AddressCardSimpleComponent },
       { path: 'signup', component: SignUpComponent },
       { path: 'confirmation/:accountType/:emailToken', component: SignUpConfirmationComponent },
-      { path: 'newAddress', component: AddressCreateComponent },
-      { path: 'addAddress', component: AddressSelectComponent },
+      { path: 'create-address', component: AddressCreateComponent },
+      // { path: 'add-address', component: NewSubscriptionComponent },
       { path: 'forgot-password', component: ForgotPasswordComponent },
       { path: 'reset-password/:emailToken', component: ResetPasswordComponent }
     ]

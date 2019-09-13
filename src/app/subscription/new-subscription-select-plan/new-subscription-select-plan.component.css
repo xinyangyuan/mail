@@ -1,0 +1,17 @@
+/* Mat Card */
+mat-card {
+  width: 450px;
+  min-width: 350px;
+  height: 600px;
+  padding: 0px;
+}
+
+/* Title */
+.title {
+  font-size: 28px;
+  letter-spacing: 0;
+  color: #4c4eb5;
+  -webkit-font-smoothing: antialiased;
+  padding-top: 2em;
+  padding-bottom: 1em;
+}

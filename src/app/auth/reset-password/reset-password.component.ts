@@ -12,6 +12,7 @@ export class ResetPasswordComponent implements OnInit {
   // Attributes
   form: FormGroup;
   emailToken: string;
+  hide = true;
 
   // Constructor
   constructor(
@@ -30,7 +31,14 @@ export class ResetPasswordComponent implements OnInit {
 
     // reactive form
     this.form = this.fb.group({
-      password: ['', [Validators.required]]
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.pattern('^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$')
+        ]
+      ]
     });
   }
 

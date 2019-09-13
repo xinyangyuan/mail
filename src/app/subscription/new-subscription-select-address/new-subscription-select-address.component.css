@@ -1,0 +1,48 @@
+/* Mat Cards */
+mat-card {
+  width: 450px;
+  min-width: 350px;
+  height: 600px;
+  padding: 0px;
+}
+
+/* Image Card */
+.image {
+  background-image: url('https://images.unsplash.com/photo-1523495706668-1fd3d480bc63?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1534&q=80');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* Address Select Card */
+.title {
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: 0;
+  color: #4c4eb5;
+  -webkit-font-smoothing: antialiased;
+}
+
+app-address-select-form {
+  width: 80%;
+  height: 150px;
+}
+
+/* Address Card */
+.description {
+  text-align: center;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 19px;
+  color: gray;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mailbox-text {
+  text-align: left;
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 16px;
+  line-height: 1.2em;
+  -webkit-font-smoothing: antialiased;
+}

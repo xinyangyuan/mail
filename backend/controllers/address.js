@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const Address = require('../models/address');
-const User = require('../models/user');
 
 const AddressService = require('../services/address');
 
@@ -16,26 +15,13 @@ exports.getAddressList = async (req, res) => {
     const projection = { senderId: 0, receivers: 0, __v: 0 };
 
     // $1: get address list
-    const addresses = await Address.find({}, projection);
-
-    // //    addressList = addresses.map(address => {
-    //     return {
-    //       line1: address.line1,
-    //       line2: address.line2,
-    //       city: address.city,
-    //       zip: address.zip,
-    //       country: address.country,
-    //       vacantMailboxNos: address.vacantMailboxNos
-    //     };
-    //   });
+    const addresses = await Address.find({}, projection)
+      .lean()
+      .exec();
 
     // success respons
-    res.status(200).json({
-      message: 'success',
-      addressList: addresses
-    });
-  } catch (err) {
-    console.log(err);
+    res.status(200).json({ message: 'success', addressList: addresses });
+  } catch (error) {
     // error response
     res.status(500).json({ message: 'Failed to get address list' });
   }
@@ -48,27 +34,20 @@ exports.getAddressList = async (req, res) => {
 exports.getAddress = async (req, res) => {
   console.log('getAddress is called');
   try {
-    // PROJECT
-    const projection = { senderId: 0, 'receivers.receiverId': 0, __v: 0 };
+    // projection
+    const projection = { senderId: 0, receivers: 0, __v: 0 };
 
     // $1: get address
-    const address = await Address.findById(req.params.id, projection);
+    const address = await Address.findById(req.params.id, projection)
+      .lean()
+      .exec();
+
     if (!address) {
       return res.status(400).json({ message: 'Cannot find the address' });
     }
 
     // success response
-    res.status(200).json({
-      address: {
-        _id: address._id,
-        line1: address.line1,
-        line2: address.line2,
-        city: address.city,
-        zip: address.zip,
-        country: address.country,
-        vacantMailboxNos: address.vacantMailboxNos
-      }
-    });
+    res.status(200).json({ message: 'success', address });
   } catch {
     // error response
     res.status(500).json({ message: 'Failed to find the address' });
@@ -76,38 +55,55 @@ exports.getAddress = async (req, res) => {
 };
 
 /*
-  Function: get one address information [GET]
+  Function: get one address's receivers filed by id [GET]
 */
 
-exports.getAddressInfo = async (req, res) => {
-  console.log('getAddressInfo is called');
+exports.getAddressReceivers = async (req, res) => {
+  console.log('getAddressReceivers is called');
   try {
-    // optionsPop
-    const optionsPop = { path: 'receivers.receiverId', select: '_id name' };
+    // projection
+    const projection = { receivers: 1 };
+    const optionsPop = { path: 'receivers.receiverId', select: ' name ' };
 
-    // $1
-    const address = await Address.findOne()
-      .bySender(req.userData.userId)
-      .populate(optionsPop);
-    console.log(address);
+    // $1: get address
+    const address = await Address.findById(req.params.id, projection)
+      .populate(optionsPop)
+      .lean()
+      .exec();
+    if (!address) {
+      return res.status(400).json({ message: `Cannot find the address` });
+    }
+
+    // success response
+    res.status(200).json({ message: 'success', address });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Failed to find the address' });
+  }
+};
+
+/*
+  Function: get one address's vacantMailboxNos virtual filed by id [GET]
+*/
+
+exports.getVacantMailboxNos = async (req, res) => {
+  console.log('getVacantMailboxNos is called');
+  try {
+    // projection
+    const projection = { receivers: 1 };
+
+    // $1: get address
+    const address = await Address.findById(req.params.id, projection).exec();
+    if (!address) return res.status(400).json({ message: `Cannot find the address` });
 
     // success response
     res.status(200).json({
-      addressInfo: {
-        _id: address._id,
-        address: address.line1,
-        address2: address.line2,
-        city: address.city,
-        zipCode: address.zip,
-        country: address.country,
-        senderId: address.senderId,
-        receivers: address.receivers // an object array [{_id: string, name: {first: string, last: string}}]
-      }
+      message: 'success',
+      address: { _id: address._id, vacantMailboxNos: address.vacantMailboxNos }
     });
-  } catch (error) {
-    console.log(error);
+  } catch {
     // error response
-    res.status(500).json({ message: 'Failed to find your address' });
+    res.status(500).json({ message: 'Failed to find the address' });
   }
 };
 
@@ -120,17 +116,17 @@ exports.createAddress = async (req, res) => {
   try {
     // $1: save address [single sender can create multiple addresses]
     const address_ = new Address({
-      line1: req.body.address,
-      line2: req.body.address2,
+      line1: req.body.line1,
+      line2: req.body.line2,
       city: req.body.city,
-      zip: req.body.zipCode,
+      zip: req.body.zip,
       country: req.body.country,
       senderId: req.userData.userId
     });
     const address = await address_.save();
 
     // success response
-    res.status(201).json({ addressInfo: address });
+    res.status(201).json({ message: 'success', address });
   } catch {
     // error response
     res.status(500).json({ message: 'Unable to create new address' });
@@ -148,7 +144,7 @@ exports.addReceiver = async (req, res) => {
 
   try {
     // addressId, userId, mailboxNo
-    const addressId = mongoose.Types.ObjectId(req.body.addressId);
+    const addressId = mongoose.Types.ObjectId(req.params.id);
     const userId = mongoose.Types.ObjectId(req.userData.userId);
     const mailboxNo = req.body.mailboxNo;
 
@@ -159,17 +155,16 @@ exports.addReceiver = async (req, res) => {
     res.status(201).json({
       address: {
         _id: address._id,
-        address: address.line1,
-        address2: address.line2,
+        line1: address.line1,
+        line2: address.line2,
         city: address.city,
-        zipCode: address.zip,
+        zip: address.zip,
         country: address.country
       }
     });
   } catch (error) {
+    // error response
     console.log(error);
-    return res.status(500).json({
-      message: 'Failed to add new reciever to the address'
-    });
+    res.status(500).json({ message: 'Failed to add new reciever to the address' });
   }
 };

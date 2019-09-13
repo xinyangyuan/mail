@@ -1,0 +1,45 @@
+<form [formGroup]="form" class="address-select-form" fxLayout="column" (submit)="onSubmit()">
+  <!-- location form field -->
+  <mat-form-field>
+    <mat-select placeholder="Address" formControlName="address" [compareWith]="compareIds">
+      <mat-option *ngFor="let address of addresses$ | async" [value]="address">
+        {{ address.city }}, {{ address.country }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- mailbox form field -->
+  <mat-form-field *ngIf="_address.value">
+    <input
+      type="text"
+      matInput
+      placeholder="Mailbox"
+      formControlName="mailbox"
+      [matAutocomplete]="auto"
+    />
+
+    <!-- auto-complete -->
+    <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+      <ng-container *ngIf="filteredMailboxes$ | async as filteredMailboxes; else loading">
+        <ng-template [ngIf]="filteredMailboxes" [ngIfElse]="loading">
+          <mat-option *ngFor="let filteredMailbox of filteredMailboxes" [value]="filteredMailbox">
+            {{ filteredMailbox }}
+          </mat-option>
+        </ng-template>
+        <ng-template #loading>
+          <mat-option>
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          </mat-option>
+        </ng-template>
+      </ng-container>
+    </mat-autocomplete>
+
+    <!-- error messages -->
+    <mat-error *ngIf="_mailbox.hasError('unavalableMailbox') && _mailbox.touched">
+      No.{{ _mailbox.getError('unavalableMailbox').value }} is not avalable
+    </mat-error>
+    <mat-error *ngIf="_mailbox.hasError('required') && _mailbox.touched">
+      Please select a mailbox
+    </mat-error>
+  </mat-form-field>
+</form>

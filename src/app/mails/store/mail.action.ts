@@ -62,7 +62,7 @@ export class UpdateMails {
 */
 
 export class SendMail {
-  static readonly type = '[Mail Create Page] Send new Mail';
+  static readonly type = '[Mail Create Page] Send Mail';
   constructor(public payload: FormGroup) {}
 }
 

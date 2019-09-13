@@ -20,7 +20,9 @@ import {
   MatProgressSpinnerModule,
   MatRippleModule,
   MatCheckboxModule,
-  MAT_SNACK_BAR_DEFAULT_OPTIONS
+  MAT_SNACK_BAR_DEFAULT_OPTIONS,
+  MatAutocompleteModule,
+  MatTreeModule
 } from '@angular/material';
 import { MatProgressButtonsModule } from 'mat-progress-buttons';
 
@@ -47,7 +49,9 @@ import { MatProgressButtonsModule } from 'mat-progress-buttons';
     MatProgressSpinnerModule,
     MatRippleModule,
     MatCheckboxModule,
-    MatProgressButtonsModule
+    MatProgressButtonsModule,
+    MatAutocompleteModule,
+    MatTreeModule
   ],
   providers: [{ provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 1500 } }]
 })

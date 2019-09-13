@@ -359,7 +359,7 @@ exports.createMail = async (req, res, next) => {
     const optionsPop = {
       path: 'receivers.receiverId',
       match: { _id: receiverId },
-      select: '_id name email'
+      select: ' name email'
     };
 
     // $1: check receiver belongs to sender
@@ -449,7 +449,7 @@ exports.modifyMail = async (req, res) => {
       'flags.terminated': false
     };
     const options = { session: session, runValidators: true };
-    const optionsPop = { path: 'receiverId', select: '_id email name' };
+    const optionsPop = { path: 'receiverId', select: ' email name' };
 
     // $1: find mail
     const mail = await Mail.findOne(filter, {}, options).populate(optionsPop);

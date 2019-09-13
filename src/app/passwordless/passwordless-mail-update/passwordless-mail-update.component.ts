@@ -13,9 +13,15 @@ export class PasswordlessMailUpdateComponent implements OnInit {
   // Attributes
   id: string;
   emailToken: string;
-  updatedStatus: 'scan' | 'skip-scan';
   timer: NodeJS.Timer;
-  text = 'loading result';
+
+  // update result:
+  updatedStatus: 'scan' | 'skip-scan';
+  result: string;
+  isSucceeded: boolean;
+
+  // ui
+  isloading: boolean = true;
 
   // Constructor:
   constructor(private route: ActivatedRoute, private store: Store) {}
@@ -43,17 +49,26 @@ export class PasswordlessMailUpdateComponent implements OnInit {
       .dispatch(
         new PasswordlessActions.UpdateMailStatus({ id: this.id, emailToken: this.emailToken })
       )
-      .subscribe(() => {
-        switch (this.updatedStatus) {
-          case 'scan':
-            this.text = 'Mail is Scanning Now 🏃';
-            break;
-          case 'skip-scan':
-            this.text = 'Mail is Archived!';
-            break;
-          default:
-            this.text = 'Mail is Processed!';
+      .subscribe(
+        () => {
+          this.isloading = false;
+          this.isSucceeded = true;
+          switch (this.updatedStatus) {
+            case 'scan':
+              this.result = 'Mail is Scanning Now. 🏃';
+              break;
+            case 'skip-scan':
+              this.result = 'Mail is Archived.';
+              break;
+            default:
+              this.result = 'Mail is Processed.';
+          }
+        },
+        () => {
+          this.isloading = false;
+          this.isSucceeded = false;
+          this.result = 'Unable to Update.';
         }
-      });
+      );
   }
 }

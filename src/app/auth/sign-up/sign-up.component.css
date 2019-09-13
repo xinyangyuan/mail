@@ -1,10 +1,9 @@
-/* Mat Cards */
+/* Mat Card */
 mat-card {
   width: 450px;
   min-width: 350px;
   height: 600px;
   padding: 0px;
-  margin: auto;
 }
 
 /* Sign Up Form */

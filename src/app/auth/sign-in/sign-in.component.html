@@ -1,5 +1,8 @@
-<div fxLayout="row" fxLayoutAlign="center center" style="height: 100%">
+<div fxLayout="row" fxLayoutAlign="center center">
+  <!-- Image Hero Card -->
   <mat-card class="image" fxHide.lt-md> </mat-card>
+
+  <!-- Signin Card -->
   <mat-card fxLayout="column" fxLayoutAlign="space-between center">
     <!-- Logo -->
     <div fxFlex></div>
@@ -53,7 +56,7 @@
 
     <!-- Go-to Sign-Up Button -->
     <div fxFlex></div>
-    <a style="padding: 1rem" [routerLink]="['/signup']">
+    <a style="padding: 1rem" [routerLink]="['/signup']" tabindex="-1">
       <button mat-button color="primary" style="font-size: 12px">
         SIGN UP
       </button>

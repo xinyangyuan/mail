@@ -1,0 +1,68 @@
+<div fxLayout="row" fxLayoutAlign="center center">
+  <!-- Card: Default Display -->
+  <mat-card *ngIf="!formStatus" class="image"> </mat-card>
+
+  <!-- Card: Selected Mailbox -->
+  <mat-card *ngIf="formStatus" fxLayout="column" fxLayoutAlign="center center">
+    <!-- mail envelop icon -->
+    <div>
+      <img
+        src="https://image.flaticon.com/icons/svg/1459/1459346.svg"
+        alt="mail envelop icon"
+        style="height: 100px"
+      />
+    </div>
+
+    <!-- selected mailbox info -->
+    <div style="width: 80%; height: 15em" fxLayout="column" fxLayoutAlign="start center">
+      <h1 class="title">
+        Your selected mailbox
+      </h1>
+      <h2 class="description">
+        This is the mailbox address generated based on your location and number selection, and you
+        will be using it to use your mailbox service
+      </h2>
+      <div class="mailbox-text">
+        <p *ngIf="formStatus === 'VALID'">
+          {{ address?.line1 }} {{ address?.line2 }} #{{ mailbox }} <br />
+          {{ address?.city }} {{ address?.zip }} <br />
+          {{ address?.country }}
+        </p>
+        <mat-spinner *ngIf="formStatus !== 'VALID'" [diameter]="26"></mat-spinner>
+      </div>
+    </div>
+  </mat-card>
+
+  <!-- Card: Selection Form  -->
+  <mat-card fxLayout="column" fxLayoutAlign="space-between center">
+    <!-- title -->
+    <div fxFlex></div>
+    <div style=" width: 80%; text-align: center;">
+      <h1 class="title">
+        Select Your Mailbox
+      </h1>
+    </div>
+
+    <!-- address form -->
+    <app-address-select-form
+      [(mailbox)]="mailbox"
+      [(address)]="address"
+      (formStatus)="handleFormStatus($event)"
+      #addressForm
+    ></app-address-select-form>
+
+    <!-- back & next button -->
+    <div fxFlex></div>
+    <div style="padding: 1rem; width: 100%;" fxLayout="row" fxLayoutAlign="end">
+      <button
+        mat-stroked-button
+        color="primary"
+        style="font-size: 12px"
+        [disabled]="formStatus !== 'VALID'"
+        (click)="onNext()"
+      >
+        NEXT
+      </button>
+    </div>
+  </mat-card>
+</div>

@@ -1,0 +1,48 @@
+<div fxLayout="row" fxLayoutAlign="center center">
+  <!-- Checkout Items Card -->
+  <mat-card fxLayout="column" fxLayoutAlign="center center" class="image" *ngIf="false">
+    <!-- Selected Plan -->
+    <div style="text-align: left; width:83%" *ngIf="false">
+      <h3 class="selction-title">Selected plan</h3>
+    </div>
+    <app-plan-card *ngIf="false"></app-plan-card>
+
+    <!-- Selected Address -->
+  </mat-card>
+
+  <mat-card fxLayout="column" fxLayoutAlign="center center" class="image">
+    <div style="width: 90%; margin-top: 1rem; text-align: left">
+      <h1 style="color:white">
+        Enjoy to life without <br />
+        delays.
+      </h1>
+    </div>
+
+    <div fxFlex></div>
+    <!-- <app-plan-card style="padding: 1rem"></app-plan-card> -->
+  </mat-card>
+
+  <!-- Payment Card -->
+  <mat-card fxLayout="column" fxLayoutAlign="center center">
+    <!-- Title -->
+    <div fxFlex></div>
+    <div style=" text-align: center;" *ngIf="false">
+      <h1 class="title">
+        Checkout! 🎉
+      </h1>
+    </div>
+
+    <!-- Payment Element -->
+    <app-payment-request style="width: 24rem"></app-payment-request>
+
+    <!-- Back & Next Button -->
+    <div fxFlex></div>
+    <div style="padding: 1rem; width: 100%;" fxLayout="row" fxLayoutAlign="start">
+      <a [routerLink]="" fragment="select-plan">
+        <button mat-stroked-button color="primary" style="font-size: 12px">
+          BACK
+        </button>
+      </a>
+    </div>
+  </mat-card>
+</div>

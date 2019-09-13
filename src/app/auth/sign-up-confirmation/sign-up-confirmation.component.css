@@ -1,15 +1,31 @@
+/* Mat Card */
 mat-card {
-  width: 50%;
-  margin: auto;
-  min-width: 400px;
-  max-width: 400px;
+  width: 450px;
+  min-width: 350px;
+  height: 600px;
+  padding: 0px;
 }
 
-mat-form-field,
-textarea {
-  width: 100%;
+/* Headline and Tagline */
+.headline {
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: 0;
+  color: #4c4eb5;
+  -webkit-font-smoothing: antialiased;
 }
 
-.button {
-  margin: 0 auto;
+.tagline {
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 19px;
+  color: gray;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Signup Confirmation Form */
+.signup-confirmation-form {
+  width: 75%;
+  /* margin: auto auto; */
 }

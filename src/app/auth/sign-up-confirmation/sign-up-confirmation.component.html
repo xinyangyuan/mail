@@ -1,17 +1,60 @@
-<mat-card>
-  <form [formGroup]="form" (submit)="onConfirm()" class="signup-confirmation-form">
+<mat-card fxLayout="column" fxLayoutAlign="space-between center">
+  <!-- Logo -->
+  <div fxFlex></div>
+  <div>
+    <img src="../../../assets/img/logo.svg" alt="Logo" style="height:100px" />
+  </div>
+
+  <!-- Headline & Tagline (your automate mail assistance) -->
+  <div style=" width: 80%; text-align: center;">
+    <h1 class="headline">Welcome to life without delays.</h1>
+    <h2 class="tagline">
+      Congradulation, your created account will keep all of your mails accessible to you within
+      seconds, and there are just a few more steps to let us know more about you
+    </h2>
+  </div>
+
+  <!-- Signup Confirmation Form -->
+  <div fxFlex></div>
+  <form
+    [formGroup]="form"
+    (submit)="onConfirm()"
+    class="signup-confirmation-form"
+    fxLayout="row wrap"
+  >
     <!-- password form control -->
-    <mat-form-field appearance="outline">
+    <mat-form-field
+      appearance="standard"
+      hintLabel="Contains number & letter"
+      style="padding-bottom: 8rem"
+      fxFlex="100%"
+    >
       <mat-label>Password</mat-label>
-      <input matInput type="password" formControlName="password" />
+      <input matInput formControlName="password" [type]="hide ? 'password' : 'text'" />
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="hide = !hide"
+        [attr.aria-label]="'Hide password'"
+        [attr.aria-pressed]="hide"
+        type="button"
+        style="font-size: 10px;"
+        tabindex="-1"
+      >
+        <mat-icon>{{ hide ? 'lock' : 'lock_open' }}</mat-icon>
+      </button>
+      <mat-hint align="end">{{ password.value?.length || 0 }}/6</mat-hint>
       <mat-error *ngIf="password.invalid && password.touched">
         Please enter a valid password
       </mat-error>
     </mat-form-field>
 
-    <!-- button to submit -->
-    <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">
-      CONFIRM
-    </button>
+    <!-- submit button -->
+    <div fxFlex="100%" fxLayout="row" fxLayoutAlign="center center">
+      <button mat-stroked-button color="primary" [disabled]="form.invalid" type="submit">
+        NEXT
+      </button>
+    </div>
   </form>
+  <div fxFlex></div>
 </mat-card>
