@@ -7,6 +7,11 @@ export interface Address {
   country: string;
 }
 
+export interface Mailbox {
+  address: Address;
+  mailboxNo: number;
+}
+
 export class Receivers {
   _id: string;
   name: { first: string; last: string };

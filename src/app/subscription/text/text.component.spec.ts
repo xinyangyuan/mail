@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CardInlineTailComponent } from './card-inline-tail.component';
+import { TextComponent } from './text.component';
 
-describe('CardInlineTailComponent', () => {
-  let component: CardInlineTailComponent;
-  let fixture: ComponentFixture<CardInlineTailComponent>;
+describe('TextComponent', () => {
+  let component: TextComponent;
+  let fixture: ComponentFixture<TextComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CardInlineTailComponent ]
+      declarations: [ TextComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CardInlineTailComponent);
+    fixture = TestBed.createComponent(TextComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

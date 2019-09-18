@@ -1,0 +1,7 @@
+/* Mat Cards */
+mat-card {
+  width: 450px;
+  min-width: 350px;
+  height: 600px;
+  padding: 0;
+}

@@ -1,1 +1,12 @@
-<div fxLayout="row" fxLayoutAlign="start center" class="card-inline"></div>
+<div class="container card-inline">
+  <!-- Header -->
+  <div [ngStyle]="{ color: color, 'border-left': '4px solid ' + color }">
+    <ng-content select="[header]"></ng-content>
+  </div>
+
+  <!-- Body -->
+  <ng-content select="[body]"></ng-content>
+
+  <!-- Tail -->
+  <ng-content select="[tail]"></ng-content>
+</div>

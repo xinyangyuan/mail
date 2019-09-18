@@ -16,10 +16,9 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password.com
 import { MailUpdateComponent } from './mails/mail-update/mail-update.component';
 import { PasswordlessMailUpdateComponent } from './passwordless/passwordless-mail-update/passwordless-mail-update.component';
 import { MailStatus } from './mails/mail.model';
-
 import { NewSubscriptionComponent } from './subscription/new-subscription/new-subscription.component';
-import { AddressCardSimpleComponent } from './addresses/address-card-simple/address-card-simple.component';
-import { NewSubscriptionCheckoutComponent } from './subscription/new-subscription-checkout/new-subscription-checkout.component';
+
+import { TextComponent } from './subscription/text/text.component';
 
 const routes: Routes = [
   {
@@ -27,11 +26,11 @@ const routes: Routes = [
     component: MainLayoutComponent,
     children: [
       { path: '', redirectTo: 'signin', pathMatch: 'full' },
-      { path: 'signin', component: AddressCardSimpleComponent },
+      { path: 'signin', component: TextComponent },
       { path: 'signup', component: SignUpComponent },
       { path: 'confirmation/:accountType/:emailToken', component: SignUpConfirmationComponent },
-      { path: 'create-address', component: AddressCreateComponent },
-      // { path: 'add-address', component: NewSubscriptionComponent },
+      { path: 'new-subscription', component: NewSubscriptionComponent },
+      { path: 'new-address', component: AddressCreateComponent },
       { path: 'forgot-password', component: ForgotPasswordComponent },
       { path: 'reset-password/:emailToken', component: ResetPasswordComponent }
     ]

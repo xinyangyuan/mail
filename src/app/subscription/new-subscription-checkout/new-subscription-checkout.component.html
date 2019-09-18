@@ -1,48 +1,90 @@
 <div fxLayout="row" fxLayoutAlign="center center">
-  <!-- Checkout Items Card -->
-  <mat-card fxLayout="column" fxLayoutAlign="center center" class="image" *ngIf="false">
-    <!-- Selected Plan -->
-    <div style="text-align: left; width:83%" *ngIf="false">
-      <h3 class="selction-title">Selected plan</h3>
-    </div>
-    <app-plan-card *ngIf="false"></app-plan-card>
-
-    <!-- Selected Address -->
-  </mat-card>
-
-  <mat-card fxLayout="column" fxLayoutAlign="center center" class="image">
-    <div style="width: 90%; margin-top: 1rem; text-align: left">
+  <!-- Image Card -->
+  <mat-card fxLayout="column" fxLayoutAlign="start center" class="image">
+    <div style="width: 90%; text-align: left">
       <h1 style="color:white">
         Enjoy to life without <br />
         delays.
       </h1>
     </div>
-
-    <div fxFlex></div>
-    <!-- <app-plan-card style="padding: 1rem"></app-plan-card> -->
   </mat-card>
 
   <!-- Payment Card -->
-  <mat-card fxLayout="column" fxLayoutAlign="center center">
-    <!-- Title -->
-    <div fxFlex></div>
-    <div style=" text-align: center;" *ngIf="false">
-      <h1 class="title">
-        Checkout! 🎉
-      </h1>
-    </div>
+  <ng-container
+    *ngIf="{
+      plan: plan$ | async,
+      address: address$ | async,
+      mailboxNo: mailboxNo$ | async
+    } as data"
+  >
+    <mat-card fxLayout="column" fxLayoutAlign="start center">
+      <!-- Title -->
+      <div class="title">
+        <h1>Checkout! 🎉</h1>
+      </div>
 
-    <!-- Payment Element -->
-    <app-payment-request style="width: 24rem"></app-payment-request>
+      <!-- Selected Address -->
+      <div class="selected-address">
+        <p style="text-align: start">SELECTED ADDRESS:</p>
+        <app-card-inline color="darkslateblue">
+          <div header>
+            <h1>Mail</h1>
+          </div>
 
-    <!-- Back & Next Button -->
-    <div fxFlex></div>
-    <div style="padding: 1rem; width: 100%;" fxLayout="row" fxLayoutAlign="start">
-      <a [routerLink]="" fragment="select-plan">
-        <button mat-stroked-button color="primary" style="font-size: 12px">
-          BACK
-        </button>
-      </a>
-    </div>
-  </mat-card>
+          <div body>
+            <ul>
+              <li>{{ data.address.line1 }} {{ data.address.line2 }} #{{ data.mailboxNo }}</li>
+              <li style="list-style: none; padding-left: 20px;">
+                {{ data.address.city }} {{ data.address.zip }}
+              </li>
+              <li style="list-style: none; padding-left: 20px;">{{ data.address.country }}</li>
+            </ul>
+          </div>
+        </app-card-inline>
+      </div>
+
+      <!-- Selected Plan -->
+      <div class="selected-plan">
+        <p style="text-align: STAR">SELECTED PLAN:</p>
+        <app-card-inline color="cornflowerblue">
+          <div header>
+            <h1>Plan</h1>
+          </div>
+
+          <div body>
+            <ul>
+              <li>{{ data.plan.name }} plan</li>
+              <li>
+                {{ data.plan.mailCredit === -1 ? 'Unlimit' : data.plan.mailCredit }} free mail per
+                month
+              </li>
+              <li>
+                {{ data.plan.scanCredit === -1 ? 'Unlimit' : data.plan.scanCredit }} free mcan per
+                month
+              </li>
+              <li>{{ data.plan.type | titlecase }} subscription</li>
+            </ul>
+          </div>
+
+          <div tail>
+            <h1>{{ data.plan.price / 100 }}/{{ data.plan.type === 'monthly' ? 'M' : 'Y' }}</h1>
+          </div>
+        </app-card-inline>
+      </div>
+
+      <!-- Payment -->
+      <div fxFlex></div>
+      <app-payment-request></app-payment-request>
+
+      <!-- Back & Next Button -->
+      <div fxFlex></div>
+      <div style="padding: 1rem; width: 100%;" fxLayout="row" fxLayoutAlign="start">
+        <a [routerLink]="" fragment="select-plan">
+          <button mat-stroked-button color="primary" style="font-size: 12px">
+            BACK
+          </button>
+        </a>
+      </div>
+    </mat-card>
+  </ng-container>
 </div>

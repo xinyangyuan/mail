@@ -1,0 +1,12 @@
+.modal {
+  width: 350px;
+  height: 350px;
+  margin: -24px;
+  background-color: rgb(0, 126, 189);
+}
+
+.title {
+  font-weight: 500;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}

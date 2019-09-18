@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const Subscription = require('../models/subscription');
 const Payment = require('../models/payment');
 
+const AddressService = require('../services/address');
+
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /*
@@ -19,20 +21,17 @@ exports.eventHandler = async (req, res) => {
     // Handle the event
     switch (event.type) {
       case 'invoice.payment_succeeded':
-        const invoice = eventObj;
+        let invoice = eventObj;
         await handleInvoicePaymentSucceeded(invoice);
         break;
       case 'customer.subscription.created':
-        let subscription = eventObj;
-        await handleCustomerSubscriptionCreated(subscription);
+        await handleCustomerSubscriptionCreated(eventObj);
         break;
       case 'customer.subscription.updated':
-        // const subscription = eventObj;
-        await handleCustomerSubscriptionUpdated(subscription);
+        await handleCustomerSubscriptionUpdated(eventObj);
         break;
       case 'customer.subscription.deleted':
-        // const subscription = eventObj;
-        await handleCustomerSubscriptionDeleted(subscription);
+        await handleCustomerSubscriptionDeleted(eventObj);
         break;
       default:
         return res.status(400).end();
@@ -98,7 +97,14 @@ const handleInvoicePaymentSucceeded = async stripeInvoice => {
     // $2: update subscription
     await Subscription.updateOne(filter, update, options);
 
-    // $3: create payment
+    // $3: add user to address
+    if (billingReason === 'subscription_create') {
+      const { addressId, userId } = subscription.toObject();
+      const mailboxNo = stripeInvoice.lines.data[0].metadata.mailboxNo;
+      await AddressService.addReceiver(addressId, userId, mailboxNo, options.session);
+    }
+
+    // $4: create payment
     const payment_ = new Payment({
       userId: subscription.userId,
       subscriptionId: subscription._id,

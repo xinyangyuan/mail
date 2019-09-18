@@ -46,9 +46,9 @@ export class SignUpConfirmationComponent implements OnInit {
 
     // redirect user to pick address or create address
     if (this.accountType === 'user') {
-      this.router.navigate(['add-address']);
+      this.router.navigate(['new-subscription']);
     } else if (this.accountType === 'sender') {
-      this.router.navigate(['create-address']);
+      this.router.navigate(['new-address']);
     }
   }
 

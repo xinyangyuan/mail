@@ -1,9 +1,5 @@
 import { Plan } from '../plan.model';
 
-/*
-    Action
-*/
-
 export class GetPlans {
   static readonly type = '[Plan List Component] Get Plans';
 }

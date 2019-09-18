@@ -3,9 +3,23 @@
   <h1 class="title">Chooese Your Plan</h1>
 
   <!-- Plans -->
-  <app-plan-list></app-plan-list>
+  <app-plan-list [type]="planType"></app-plan-list>
 
   <!-- Monthly/Annual Toggle Button -->
+  <div fxFlex></div>
+  <div class="plan-type-switch" fxLayout="row" fxLayoutAlign="center center">
+    <p style="margin-right: 0.5em" [style.color]="isMonthly ? '#4c4eb5' : ''">Monthly</p>
+    <ui-switch
+      size="small"
+      color="#e2e8f0"
+      defaultBgColor="#e2e8f0"
+      [checked]="!isMonthly"
+      (change)="onToggle($event)"
+    ></ui-switch>
+    <p style="margin-left: 0.5em" [style.color]="isMonthly ? '' : '#4c4eb5'">Annually</p>
+  </div>
+
+  <!-- Back & Next Buttons -->
   <div fxFlex></div>
   <div style="padding: 1rem; width: 100%;" fxLayout="row" fxLayoutAlign="space-between center">
     <!-- back button -->

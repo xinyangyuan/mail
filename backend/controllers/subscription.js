@@ -5,7 +5,6 @@ const Plan = require('../models/plan');
 const Subscription = require('../models/subscription');
 const User = require('../models/user');
 
-const AddressService = require('../services/address');
 const SubscriptionService = require('../services/subscription');
 
 /*
@@ -118,33 +117,25 @@ exports.createSubscription = async (req, res) => {
     // START TRANSACTION
     subscription = await SubscriptionService.newSubscription(userId, planIds, addressId, session);
 
-    // $5: add new user to address
-    address = await AddressService.addReceiver(addressId, userId, mailboxNo, session);
-
-    // $6: create stripe subscription
+    // $5: create stripe subscription
     const stripeSubscription = await stripe.subscriptions.create({
       customer: user.stripeId,
       items: plans.flatMap(plan => plan.stripeItems),
-      metadata: { id: subscription._id.toString() },
+      metadata: { id: subscription._id.toString(), mailboxNo },
       expand: ['latest_invoice.payment_intent']
     });
-
-    // verify stripe transaction
-    if (stripeSubscription.latest_invoice.payment_intent.status !== 'succeeded') {
-      res.status(401).json({
-        message: 'stripe payment error',
-        status: stripeSubscription.latest_invoice.payment_intent.status
-      });
-      throw Error('stripe payment error');
-    }
 
     // COMMIT TRANSACTION
     await session.commitTransaction();
     session.endSession();
 
     // success reponse
-    res.status(201).json({ status: 'success' });
+    res
+      .status(201)
+      .json({ status: 'success', paymentIntent: stripeSubscription.latest_invoice.payment_intent });
   } catch (error) {
+    console.log(error);
+
     // ABORT TRANSACTION
     await session.abortTransaction();
     session.endSession();

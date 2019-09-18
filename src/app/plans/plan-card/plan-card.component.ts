@@ -13,7 +13,7 @@ import { PlanState } from '../store/plan.state';
 })
 export class PlanCardComponent implements OnInit {
   // Attribute
-  @Input() plan: Plan = { _id: '', name: 'simple', price: 999, mailCredit: -1, scanCredit: 1 };
+  @Input() plan: Plan;
   isSelected$: Observable<boolean>;
 
   // UI

@@ -97,6 +97,7 @@ export class AuthState {
   /*
    Action: auto sign-in using credentials stored in cookies
   */
+
   @Action(AutoSignIn)
   autoSignIn(ctx: StateContext<AuthStateModel>) {
     ctx.patchState({ isLoading: true });

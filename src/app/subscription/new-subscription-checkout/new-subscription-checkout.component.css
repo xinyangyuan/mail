@@ -3,7 +3,7 @@ mat-card {
   width: 450px;
   min-width: 350px;
   height: 600px;
-  padding: 0px;
+  padding: 0;
 }
 
 .image {
@@ -23,15 +23,54 @@ mat-card {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Payment Card */
 /* Title */
 .title {
+  padding-top: 1em;
+}
+
+.title h1 {
   font-weight: 500;
   font-size: 24px;
-  letter-spacing: 1px;
+  letter-spacing: 0;
   color: #4c4eb5;
   -webkit-font-smoothing: antialiased;
 }
 
-:host {
-  background: linear-gradient(to right, rgb(224, 234, 252), rgb(207, 222, 243));
+/* Selected Plan */
+.selected-plan {
+  width: 90%;
+}
+
+.selected-plan p {
+  margin: 0.5em 0;
+  padding-left: 12px;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 16px;
+  color: gray;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Selected Plan */
+.selected-address {
+  width: 90%;
+  margin-top: 0.5em;
+}
+
+.selected-address p {
+  margin: 0.5em 0;
+  padding-left: 12px;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 16px;
+  color: gray;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Payment Element */
+app-payment-request {
+  width: 90%;
 }

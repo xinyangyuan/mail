@@ -1,7 +1,8 @@
 export interface Plan {
-  _id: string;
+  ids: string[];
   name: string;
   price: number;
   mailCredit: number;
   scanCredit: number;
+  type: 'monthly' | 'annual';
 }

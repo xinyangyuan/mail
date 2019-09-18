@@ -6,6 +6,7 @@ const Subscription = require('../models/subscription');
 /*
   New Subscription:
 */
+
 exports.newSubscription = async (userId, planIds, addressId, session = undefined) => {
   // options
   const options = session ? { session: session } : {};

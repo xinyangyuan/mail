@@ -10,7 +10,9 @@
     >
       <!-- Plan Name & Price -->
       <div class="title">
-        <h1>${{ plan.price / 100 }}<span>/month</span></h1>
+        <h1>
+          ${{ plan.price / 100 }}<span>/{{ plan.type === 'monthly' ? 'month' : 'year' }}</span>
+        </h1>
         <p>{{ plan.name }}</p>
       </div>
 

@@ -7,8 +7,9 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { AngularMaterialModule } from './core/angular-material/angular-material.module';
 import { CookieService } from 'ngx-cookie-service';
 import { NgxsModule } from '@ngxs/store';
-import { CardInlineModule } from './ui/card-inline/card-inline.module';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
+import { UiSwitchModule } from 'ngx-ui-switch';
+
 import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
@@ -49,11 +50,14 @@ import { PlanCardComponent } from './plans/plan-card/plan-card.component';
 import { PlanState } from './plans/store/plan.state';
 import { LoadingSpinnerCubeComponent } from './ui/loading-spinner-cube/loading-spinner-cube.component';
 import { NewSubscriptionCheckoutComponent } from './subscription/new-subscription-checkout/new-subscription-checkout.component';
-import { AddressCardSimpleComponent } from './addresses/address-card-simple/address-card-simple.component';
 import { NewSubscriptionSelectPlanComponent } from './subscription/new-subscription-select-plan/new-subscription-select-plan.component';
 import { NewSubscriptionSelectAddressComponent } from './subscription/new-subscription-select-address/new-subscription-select-address.component';
 import { PlanListComponent } from './plans/plan-list/plan-list.component';
 import { NewSubscriptionComponent } from './subscription/new-subscription/new-subscription.component';
+import { CardInlineComponent } from './ui/card-inline/card-inline.component';
+import { TextComponent } from './subscription/text/text.component';
+import { PaymentModalComponent } from './payment/payment-modal/payment-modal.component';
+import { PaymentState } from './payment/state/payment.state';
 
 @NgModule({
   declarations: [
@@ -87,24 +91,26 @@ import { NewSubscriptionComponent } from './subscription/new-subscription/new-su
     PlanCardComponent,
     LoadingSpinnerCubeComponent,
     NewSubscriptionCheckoutComponent,
-    AddressCardSimpleComponent,
     NewSubscriptionSelectPlanComponent,
     NewSubscriptionSelectAddressComponent,
     PlanListComponent,
-    NewSubscriptionComponent
+    NewSubscriptionComponent,
+    CardInlineComponent,
+    TextComponent,
+    PaymentModalComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     AngularMaterialModule,
-    CardInlineModule,
+    UiSwitchModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     FlexLayoutModule,
     NgxsModule.forRoot(
-      [MailState, AuthState, PasswordlessSate, AddressState, PlanState],
+      [MailState, AuthState, PasswordlessSate, AddressState, PlanState, PaymentState],
       ngxsConfig
     ),
     NgxsLoggerPluginModule.forRoot()
@@ -117,7 +123,8 @@ import { NewSubscriptionComponent } from './subscription/new-subscription/new-su
   entryComponents: [
     NewSubscriptionSelectPlanComponent,
     NewSubscriptionSelectAddressComponent,
-    NewSubscriptionCheckoutComponent
+    NewSubscriptionCheckoutComponent,
+    PaymentModalComponent
   ],
   bootstrap: [AppComponent]
 })

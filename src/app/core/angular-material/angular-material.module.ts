@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
+import { MatProgressButtonsModule } from 'mat-progress-buttons';
 import {
+  MAT_SNACK_BAR_DEFAULT_OPTIONS,
   MatButtonModule,
   MatExpansionModule,
   MatIconModule,
@@ -20,11 +22,10 @@ import {
   MatProgressSpinnerModule,
   MatRippleModule,
   MatCheckboxModule,
-  MAT_SNACK_BAR_DEFAULT_OPTIONS,
   MatAutocompleteModule,
-  MatTreeModule
+  MatSlideToggleModule,
+  MatDialogModule
 } from '@angular/material';
-import { MatProgressButtonsModule } from 'mat-progress-buttons';
 
 @NgModule({
   exports: [
@@ -51,7 +52,8 @@ import { MatProgressButtonsModule } from 'mat-progress-buttons';
     MatCheckboxModule,
     MatProgressButtonsModule,
     MatAutocompleteModule,
-    MatTreeModule
+    MatSlideToggleModule,
+    MatDialogModule
   ],
   providers: [{ provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 1500 } }]
 })

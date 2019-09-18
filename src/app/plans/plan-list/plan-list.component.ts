@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Select, Store } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 
 import { Plan } from '../plan.model';
 import { PlanState } from '../store/plan.state';
@@ -11,14 +11,15 @@ import * as PlanActions from '../store/plan.action';
   templateUrl: './plan-list.component.html',
   styleUrls: ['./plan-list.component.css']
 })
-export class PlanListComponent implements OnInit {
+export class PlanListComponent implements OnChanges {
   // Attributes
-  @Select(PlanState.plans) plans$: Observable<Plan>;
+  plans$: Observable<Plan[]>;
+  @Input() type: Plan['type'];
 
   constructor(private store: Store) {}
 
-  ngOnInit() {
-    // fetch plan list
-    this.store.dispatch(new PlanActions.GetPlans());
+  ngOnChanges() {
+    this.store.dispatch(new PlanActions.GetPlans()); // fetch plan list
+    this.plans$ = this.store.select(PlanState.plansOf(this.type));
   }
 }

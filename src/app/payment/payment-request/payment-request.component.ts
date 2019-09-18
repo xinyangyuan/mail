@@ -1,5 +1,11 @@
-import { Component, Input, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, Input, AfterViewInit, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Observable } from 'rxjs';
+import { skipWhile } from 'rxjs/operators';
+import { Store, Select } from '@ngxs/store';
+
 import { PaymentService } from '../payment.service';
+import { PaymentState, PaymentStateModel } from '../state/payment.state';
+import * as PaymentActions from '../state/payment.action';
 
 @Component({
   selector: 'app-payment-request',
@@ -10,13 +16,13 @@ export class PaymentRequestComponent implements AfterViewInit {
   // Attributes:
   @Input() amount: number = 999;
   @Input() label: string = 'simple plan';
-
-  // UI:
-  isLoading: boolean;
-  confirmation: boolean;
+  @Output() source = new EventEmitter<stripe.Source>();
+  @Select(PaymentState.paymentStatus) paymentStatus$: Observable<
+    PaymentStateModel['paymentStatus']
+  >;
 
   // Stripe card elemnet:
-  @ViewChild('cardElement', { static: true }) cardElement;
+  @ViewChild('cardElement', { static: false }) cardElement;
   card: stripe.elements.Element;
   cardErrors: string;
 
@@ -28,7 +34,7 @@ export class PaymentRequestComponent implements AfterViewInit {
   showPaymentRequest: boolean;
 
   // Constructor:
-  constructor(private payment: PaymentService) {}
+  constructor(private payment: PaymentService, private store: Store) {}
 
   // Init Method:
   ngAfterViewInit() {
@@ -47,12 +53,17 @@ export class PaymentRequestComponent implements AfterViewInit {
       style: {
         base: {
           color: '#32325D',
+          iconColor: '#32325D',
           fontWeight: 500,
-          fontFamily: 'Inter UI, Open Sans, Segoe UI, sans-serif',
+          fontFamily: 'Roboto, Inter UI, Open Sans, Segoe UI, sans-serif',
           fontSize: '16px',
           fontSmoothing: 'antialiased',
           '::placeholder': {
-            color: '#8791a3'
+            color: '#8791a3',
+            iconColor: '#8791a3'
+          },
+          ':disabled': {
+            color: 'rgb(171, 171, 171)'
           }
         },
         invalid: {
@@ -65,7 +76,7 @@ export class PaymentRequestComponent implements AfterViewInit {
     // 2: register card element event listener
     this.card.on('change', ({ error }) => {
       if (error) {
-        this.cardErrors = error.message + ' 🙅'; // 🚫
+        this.cardErrors = error.message + ' 🙅';
       } else {
         this.cardErrors = '';
       }
@@ -96,15 +107,19 @@ export class PaymentRequestComponent implements AfterViewInit {
     this.mountButton();
 
     // 3: register stripe payment eventListener
-    this.paymentRequest.on('token', async event => {
-      console.log(event);
-
-      // http service call to the backend
-      // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX DO THE BACKEND CALL
-
-      setTimeout(() => {
-        event.complete('success');
-      }, 1000);
+    this.paymentRequest.on('source', async event => {
+      this.source.emit(event.source);
+      this.store.dispatch(new PaymentActions.OpenPayment());
+      this.paymentStatus$.pipe(skipWhile(value => value !== 'pending')).forEach(status => {
+        switch (status) {
+          case 'success':
+          case 'requires_action':
+            event.complete('success');
+            break;
+          default:
+            event.complete('error');
+        }
+      });
     });
   }
 
@@ -124,23 +139,17 @@ export class PaymentRequestComponent implements AfterViewInit {
   // Method: handle card element form
   async handleForm(event) {
     event.preventDefault();
-    // $: call stripe api to create card source
+
+    // call stripe api to create payment source
     const { source, error } = await this.payment.stripe.createSource(this.card);
+
+    // emit source or dispay error
     if (error) {
-      this.cardErrors = error.message + ' 🙅'; // 🚫
-      console.log(`%c Error`, 'color: red');
-      console.log(error);
+      this.cardErrors = error.message + ' 🙅';
     } else {
-      console.log(source);
-      console.log(`%c Success!`, 'color: blue');
-      // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX DO THE BACKEND CALL
+      this.card.update({ disabled: true });
+      this.source.emit(source);
+      this.store.dispatch(new PaymentActions.OpenPayment(true));
     }
   }
 }
-
-// const paymentIntentSecret = 'pi_91_secret_W9';
-// const result = await this.payment.stripe.handleCardPayment(paymentIntentSecret);
-// console.log(result);
-
-// 1. here is the card
-// 2. here is the thing that you should do
