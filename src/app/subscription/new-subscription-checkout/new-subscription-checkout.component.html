@@ -74,7 +74,10 @@
 
       <!-- Payment -->
       <div fxFlex></div>
-      <app-payment-request></app-payment-request>
+      <app-payment-request
+        [amount]="data.plan.price"
+        [label]="data.plan.name + ' ' + data.plan.type"
+      ></app-payment-request>
 
       <!-- Back & Next Button -->
       <div fxFlex></div>

@@ -10,7 +10,24 @@ exports.generateAuthToken = user => {
     userId: user._id,
     accountType: user.isSender ? 'sender' : 'user'
   };
-  return jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '1h' });
+  return jwt.sign(payload, process.env.JWT_KEY, { expiresIn: '15m' });
+};
+
+/*
+  Generate Refresh Token:
+*/
+
+exports.generateRefreshToken = user => {
+  const payload = { userId: user._id };
+  return jwt.sign(payload, process.env.JWT_REFRESH_KEY, { expiresIn: '2d' });
+};
+
+/*
+  Verify Refresh Token:
+*/
+
+exports.verifyRefreshToken = token => {
+  return jwt.verify(token, process.env.JWT_REFRESH_KEY);
 };
 
 /*

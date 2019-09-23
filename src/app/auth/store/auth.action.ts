@@ -1,14 +1,14 @@
-/*
-    Action: get mail list from API
-*/
-
 export class SignIn {
   static readonly type = '[Sign In Page] Sign In';
   constructor(public payload: { email: string; password: string }) {}
 }
 
 export class AutoSignIn {
-  static readonly type = '[App Init] Auto Sign In';
+  static readonly type = '[App Component] Auto Sign In';
+}
+
+export class RefreshToken {
+  static readonly type = '[Auth Interceptor] Refresh Token';
 }
 
 export class SignUp {

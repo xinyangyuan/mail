@@ -1,19 +1,18 @@
 import { State, Selector, Action, StateContext } from '@ngxs/store';
-
-import * as AuthAction from './auth.action';
-import { AutoSignIn } from './auth.action';
-import { AuthData } from '../auth-data.model';
-import { AuthService } from '../auth.service';
 import { tap } from 'rxjs/operators';
+
+import * as AuthActions from './auth.action';
+import { User } from '../auth-data.model';
+import { AuthService } from '../auth.service';
 
 /*
    Auth State
 */
 
 export interface AuthStateModel {
-  user: AuthData;
-  isLoading: boolean;
-  needConfirmation: boolean;
+  user: User;
+  token: string;
+  authError: string;
 }
 
 /*
@@ -22,13 +21,14 @@ export interface AuthStateModel {
 
 const initialState: AuthStateModel = {
   user: null,
-  isLoading: false,
-  needConfirmation: false
+  token: null,
+  authError: null
 };
 
 /*
    Action Map:
 */
+
 @State<AuthStateModel>({ name: 'auth', defaults: initialState })
 export class AuthState {
   // Constructor:
@@ -54,40 +54,37 @@ export class AuthState {
   }
 
   @Selector()
-  static isLoading(state: AuthStateModel) {
-    return state.isLoading;
+  static token(state: AuthStateModel) {
+    return state.token;
   }
 
   @Selector()
-  static needConfirmation(state: AuthStateModel) {
-    return state.needConfirmation;
+  static authError(state: AuthStateModel) {
+    return state.authError;
+  }
+
+  @Selector()
+  static isAuthenticated(state: AuthStateModel) {
+    return state.token !== undefined;
   }
 
   /*
    Action: sign in
   */
 
-  @Action(AuthAction.SignIn)
-  signIn(ctx: StateContext<AuthStateModel>, action: AuthAction.SignIn) {
-    ctx.patchState({ isLoading: true });
-
+  @Action(AuthActions.SignIn)
+  signIn(ctx: StateContext<AuthStateModel>, action: AuthActions.SignIn) {
     return this.authService._signIn(action.payload.email, action.payload.password).pipe(
       tap(
         result => {
           ctx.patchState({
-            isLoading: false,
-            user: {
-              email: action.payload.email,
-              password: action.payload.password,
-              isSender: result.isSender
-            }
+            token: result.token,
+            user: result.user
           });
         },
         error => {
           ctx.patchState({
-            isLoading: false,
-            needConfirmation:
-              error.error.message === 'Please verify your email address!' ? true : false
+            authError: error.error.message
           });
         }
       )
@@ -95,42 +92,62 @@ export class AuthState {
   }
 
   /*
+   Action: sign out
+  */
+
+  @Action(AuthActions.SignOut)
+  signOut(ctx: StateContext<AuthStateModel>) {
+    return this.authService._signOut();
+  }
+
+  /*
    Action: auto sign-in using credentials stored in cookies
   */
 
-  @Action(AutoSignIn)
-  autoSignIn(ctx: StateContext<AuthStateModel>) {
-    ctx.patchState({ isLoading: true });
-
-    if (this.authService.autoSignIn()) {
-      const { email, expiresIn, token, isSender } = this.authService.getAuthInfo();
-      ctx.patchState({ user: { email, isSender } });
+  @Action(AuthActions.AutoSignIn)
+  async autoSignIn(ctx: StateContext<AuthStateModel>) {
+    // get new access token
+    const { ok, token } = await this.authService._refreshToken().toPromise();
+    if (!ok) {
+      return;
     }
+    ctx.patchState({ token });
+
+    // get user
+    const { user } = await this.authService._getUser().toPromise();
+    ctx.patchState({ user });
+  }
+
+  /*
+   Action: refresh token
+  */
+
+  @Action(AuthActions.RefreshToken)
+  refreshToken(ctx: StateContext<AuthStateModel>) {
+    return this.authService._refreshToken().pipe(
+      tap(result => {
+        ctx.patchState({
+          token: result.token
+        });
+      })
+    );
   }
 
   /*
    Action: resend email confirmation
   */
 
-  @Action(AuthAction.ResendEmailConfirmation)
+  @Action(AuthActions.ResendEmailConfirmation)
   resendEmailConfirmation(
     ctx: StateContext<AuthStateModel>,
-    action: AuthAction.ResendEmailConfirmation
+    action: AuthActions.ResendEmailConfirmation
   ) {
-    ctx.patchState({ isLoading: true });
-
     return this.authService._sendEmailConfirmation(action.payload).pipe(
-      tap(
-        result => {
-          ctx.patchState({
-            isLoading: false,
-            needConfirmation: false
-          });
-        },
-        error => {
-          ctx.patchState({ isLoading: false });
-        }
-      )
+      tap(result => {
+        ctx.patchState({
+          authError: null
+        });
+      })
     );
   }
 }

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const stripe = require('stripe')(process.env.STRIPE_KEY);
 
 const crypto = require('../utils/encrypt');
 
@@ -9,6 +8,31 @@ const Mail = require('../models/mail');
 
 const Token = require('../services/token');
 const Email = require('../services/email');
+
+/*
+  Function: get user
+*/
+
+exports.getUser = async (req, res) => {
+  console.log('getUser is called');
+  try {
+    // $1: find user
+    const user = await User.findById(req.userData.userId);
+
+    // success response
+    res.status(200).json({
+      ok: true,
+      user: {
+        name: user.name,
+        email: user.email,
+        isSender: user.isSender
+      }
+    });
+  } catch {
+    // error response
+    res.status(500).json({ ok: false, message: 'Unable to find user' });
+  }
+};
 
 /*
   Function: sign-up
@@ -67,7 +91,7 @@ exports.userSignUp = async (req, res) => {
     session.endSession();
 
     // success response:
-    res.status(201).json({ message: 'New user is created' });
+    res.status(201).json({ ok: true, message: 'New user is created' });
   } catch (error) {
     // closes transaction and session
     await session.abortTransaction();
@@ -104,17 +128,71 @@ exports.userSignIn = async (req, res) => {
     const result = await bcrypt.compare(req.body.password, user.password);
     if (!result) return res.status(401).json({ message: 'Wrong user password entered' });
 
-    // success response
+    // tokens
     const token = Token.generateAuthToken(user);
+    const refreshToken = Token.generateRefreshToken(user);
+
+    // success response
+    res.cookie('jid', refreshToken, { httpOnly: true }); // path: '/refresh_token'
     res.status(200).json({
-      token: token,
-      expiresDuration: 3600, // unit: second
-      userId: user._id,
-      isSender: user.isSender
+      ok: true,
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+        isSender: user.isSender
+      }
     });
   } catch {
     // error response
     res.status(500).json({ message: 'Unable to sign in the user' });
+  }
+};
+
+/*
+  Function: refresh token
+*/
+
+exports.refreshToken = async (req, res) => {
+  console.log('refreshToken is called');
+  try {
+    // refreshToken
+    let refreshToken = req.cookies.jid;
+    if (!refreshToken) throw Error('Invalid session.');
+
+    // verify token
+    const payload = Token.verifyRefreshToken(refreshToken);
+
+    // $1: find user
+    const user = await User.findById(payload.userId);
+    if (!user) throw Error('Unable to find user.');
+
+    // new tokens
+    const token = Token.generateAuthToken(user);
+    refreshToken = Token.generateRefreshToken(user);
+
+    // success response
+    res.cookie('jid', refreshToken, { httpOnly: true }); // path: '/refresh_token'
+    res.status(200).json({ ok: true, token });
+  } catch (error) {
+    // error response
+    res.json({ ok: false, message: error });
+  }
+};
+
+/*
+  Function: sign-out
+*/
+
+exports.userSignOut = async (req, res) => {
+  console.log('userSignOut is called');
+  try {
+    // success response
+    res.cookie('jid', '', { httpOnly: true }); // path: '/refresh_token'
+    res.status(200).json({ ok: true });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Unable to sign out the user' });
   }
 };
 
@@ -171,25 +249,14 @@ exports.verifyConfirmation = async (req, res) => {
     const result = await bcrypt.compare(req.body.password, user.password);
     if (!result) return res.status(401).json({ message: 'Wrong user password entered' });
 
-    // $3: create stripe customer
-    // const customer = await stripe.customers.create({ email: user.email });
-
-    // $4: update user
+    // $3: update user
     const filter = { _id: decodedToken.userId };
     const update = { isConfirmed: true };
-    // const update = { isConfirmed: true, stripe_id: customer.id };
     const options = { runValidators: true };
     await User.updateOne(filter, update, options);
 
     // success response
-    const token = Token.generateAuthToken(user);
-    res.status(200).json({
-      email: user.email,
-      token: token,
-      expiresDuration: 3600, // unit: second
-      userId: user._id,
-      isSender: user.isSender
-    });
+    res.status(200).json({ message: 'success' });
   } catch {
     // error response
     res.status(500).json({ message: 'Unable to verify email address' });
@@ -250,15 +317,8 @@ exports.verifyReset = async (req, res) => {
     const user = await User.findOneAndUpdate(filter, update, options);
     if (!user) return res.status(400).json({ message: 'Failed to reset your password' });
 
-    // success respons
-    const token = Token.generateAuthToken(user);
-    res.status(200).json({
-      email: user.email,
-      token: token,
-      expiresDuration: 3600, // unit: second
-      userId: user._id,
-      isSender: user.isSender
-    });
+    // success response
+    res.status(200).json({ message: 'success' });
   } catch {
     // error response
     res.status(500).json({ message: 'Failed to reset your password' });

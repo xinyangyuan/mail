@@ -1,8 +1,7 @@
-import { MatDialog, MatDialogRef } from '@angular/material';
 import { State, Selector, Action, StateContext } from '@ngxs/store';
 
 import * as PaymentActions from './payment.action';
-import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
+import { PaymentService } from '../payment.service';
 
 /*
    Payment State
@@ -30,11 +29,8 @@ const initialState: PaymentStateModel = {
 
 @State<PaymentStateModel>({ name: 'payment', defaults: initialState })
 export class PaymentState {
-  // Attributes
-  private paymentDialog: MatDialogRef<PaymentModalComponent>;
-
-  // Constructor
-  constructor(private dialog: MatDialog) {}
+  // Constructor:
+  constructor(private paymentService: PaymentService) {}
 
   /*
    Selectors:
@@ -60,17 +56,12 @@ export class PaymentState {
   */
 
   @Action(PaymentActions.OpenPayment)
-  openPayment(ctx: StateContext<PaymentStateModel>, action: PaymentActions.OpenPayment) {
+  async openPayment(ctx: StateContext<PaymentStateModel>, action: PaymentActions.OpenPayment) {
     // return new state
-    ctx.setState({
-      source: null,
-      paymentIntentResponse: null,
-      paymentStatus: 'pending'
-    });
-
-    // SIDE EFFECT: open payment status modal
+    ctx.setState({ source: null, paymentIntentResponse: null, paymentStatus: 'pending' });
+    // side effect:
     if (action.showLoading) {
-      this.paymentDialog = this.dialog.open(PaymentModalComponent);
+      this.paymentService.openDialog();
     }
   }
 
@@ -88,16 +79,6 @@ export class PaymentState {
   }
 
   /*
-   Action: close payment [clear the store]
-  */
-
-  // @Action(PaymentActions.ClosePayment)
-  // closePayment(ctx: StateContext<PaymentStateModel>) {
-  //   // reset store
-  //   ctx.setState({ ...initialState });
-  // }
-
-  /*
    Action: payment requires action, 3d-secure
   */
 
@@ -105,11 +86,6 @@ export class PaymentState {
   paymentRequiresAction(ctx: StateContext<PaymentStateModel>) {
     // return new state
     ctx.patchState({ paymentStatus: 'requires_action' });
-
-    // SIDE EFFECT: closes payment status modal, since the 3d-secure modal will pop-up
-    if (this.paymentDialog) {
-      this.paymentDialog.close();
-    }
   }
 
   /*
@@ -123,11 +99,6 @@ export class PaymentState {
       paymentStatus: 'success',
       paymentIntentResponse: action.payload
     });
-
-    // SIDE EFFECT:
-    if (action.showResult && !this.paymentDialog) {
-      this.dialog.open(PaymentModalComponent);
-    }
   }
 
   /*
@@ -141,10 +112,5 @@ export class PaymentState {
       paymentStatus: 'error',
       paymentIntentResponse: action.payload
     });
-
-    // SIDE EFFECT:
-    if (action.showResult && !this.paymentDialog) {
-      this.dialog.open(PaymentModalComponent);
-    }
   }
 }

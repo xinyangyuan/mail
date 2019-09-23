@@ -18,15 +18,13 @@ import { PasswordlessMailUpdateComponent } from './passwordless/passwordless-mai
 import { MailStatus } from './mails/mail.model';
 import { NewSubscriptionComponent } from './subscription/new-subscription/new-subscription.component';
 
-import { TextComponent } from './subscription/text/text.component';
-
 const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
     children: [
       { path: '', redirectTo: 'signin', pathMatch: 'full' },
-      { path: 'signin', component: TextComponent },
+      { path: 'signin', component: SignInComponent },
       { path: 'signup', component: SignUpComponent },
       { path: 'confirmation/:accountType/:emailToken', component: SignUpConfirmationComponent },
       { path: 'new-subscription', component: NewSubscriptionComponent },
@@ -37,13 +35,14 @@ const routes: Routes = [
   },
   {
     path: '',
+    component: MainLayoutComponent,
     children: [{ path: 'update-mail/:id/:emailToken', component: PasswordlessMailUpdateComponent }]
   },
   {
     path: '',
     component: DashboardPageComponent,
     children: [
-      { path: 'mails', component: MailListComponent }, // MailListComponent
+      { path: 'mails', component: MailListComponent },
       { path: 'stared', component: MailListComponent, data: { star: true } },
       { path: 'unread', component: MailListComponent, data: { read: false } },
       { path: 'scanning', component: MailListComponent, data: { status: MailStatus.SCANNING } },

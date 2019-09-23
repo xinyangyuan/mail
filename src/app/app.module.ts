@@ -55,7 +55,6 @@ import { NewSubscriptionSelectAddressComponent } from './subscription/new-subscr
 import { PlanListComponent } from './plans/plan-list/plan-list.component';
 import { NewSubscriptionComponent } from './subscription/new-subscription/new-subscription.component';
 import { CardInlineComponent } from './ui/card-inline/card-inline.component';
-import { TextComponent } from './subscription/text/text.component';
 import { PaymentModalComponent } from './payment/payment-modal/payment-modal.component';
 import { PaymentState } from './payment/state/payment.state';
 
@@ -96,7 +95,6 @@ import { PaymentState } from './payment/state/payment.state';
     PlanListComponent,
     NewSubscriptionComponent,
     CardInlineComponent,
-    TextComponent,
     PaymentModalComponent
   ],
   imports: [

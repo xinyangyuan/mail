@@ -1,19 +1,24 @@
-<div fxLayout="row" fxLayoutAlign="space-around center" class="modal">
+<div
+  *ngIf="paymentStatus$ | async as paymentStatus"
+  fxLayout="row"
+  fxLayoutAlign="space-around center"
+  class="modal"
+>
   <!-- loading spinner -->
-  <div fxLayout="column" fxLayoutAlign="center center">
+  <div *ngIf="paymentStatus === 'pending'" fxLayout="column" fxLayoutAlign="center center">
     <app-loading-spinner-cube></app-loading-spinner-cube>
     <h2 class="title">Processing..</h2>
   </div>
 
   <!-- success result -->
-  <!-- <div *ngIf="!isloading && isSucceeded" style="text-align: center">
+  <div *ngIf="paymentStatus === 'success'" style="text-align: center">
     <img src="../../../assets/img/success.svg" alt="success icon" />
-    <h2 class="title">{{ result }}</h2>
-  </div> -->
+    <h2 class="title">Payment Succeeded.</h2>
+  </div>
 
   <!-- error result -->
-  <!-- <div *ngIf="!isloading && !isSucceeded" style="text-align: center">
+  <div *ngIf="paymentStatus === 'error'" style="text-align: center">
     <img src="../../../assets/img/alert.svg" alt="alert icon" />
-    <h2 class="title">{{ result }}</h2>
-  </div> -->
+    <h2 class="title">Payment Failed.</h2>
+  </div>
 </div>

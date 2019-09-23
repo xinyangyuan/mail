@@ -281,15 +281,25 @@ export class MailState {
         // dispatch action
         ctx.dispatch(new MailActions.GenerateImageTasks());
       }),
-      // cancellation
       takeUntil(
-        merge(
-          this.actions$.pipe(ofActionDispatched(MailActions.GetEnvelopImage)),
-          this.actions$.pipe(ofActionDispatched(MailActions.ChangePage)),
-          this.actions$.pipe(ofActionDispatched(MailActions.ResetMailList)),
-          this.actions$.pipe(ofActionDispatched(MailActions.ResetStore))
+        // cancellation
+        this.actions$.pipe(
+          ofActionDispatched(
+            MailActions.GetEnvelopImage,
+            MailActions.ChangePage,
+            MailActions.ResetMailList,
+            MailActions.ResetStore
+          )
         )
       )
+      // takeUntil(
+      //   merge(
+      //     this.actions$.pipe(ofActionDispatched(MailActions.GetEnvelopImage)),
+      //     this.actions$.pipe(ofActionDispatched(MailActions.ChangePage)),
+      //     this.actions$.pipe(ofActionDispatched(MailActions.ResetMailList)),
+      //     this.actions$.pipe(ofActionDispatched(MailActions.ResetStore))
+      //   )
+      // )
     );
   }
 

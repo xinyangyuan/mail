@@ -1,11 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
+const AuthMiddleware = require('../middlewares/auth-verify');
 const UserController = require('../controllers/user');
 
 // user api routes
-router.post('/signup', UserController.userSignUp);
+router.get('/self', AuthMiddleware.authVerify, UserController.getUser);
+
 router.post('/signin', UserController.userSignIn);
+router.post('/signup', UserController.userSignUp);
+router.post('/signout', UserController.userSignOut);
+router.post('/refresh_token', UserController.refreshToken);
 
 router.get('/confirmation/:email', UserController.sendConfirmation);
 router.post('/confirmation/:emailToken', UserController.verifyConfirmation);

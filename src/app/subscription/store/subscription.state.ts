@@ -1,15 +1,16 @@
 import { State, Action, StateContext } from '@ngxs/store';
 
-import { PaymentService } from 'src/app/payment/payment.service';
+import { Subscription } from '../subscription.model';
 import * as SubscriptionActions from './subscription.action';
 import { SubscriptionService } from '../subscription.service';
+import { PaymentService } from 'src/app/payment/payment.service';
 
 /*
    Plan State
 */
 
 export interface SubscriptionStateModel {
-  // subscription;
+  subscription: Subscription;
 }
 
 /*
@@ -17,7 +18,7 @@ export interface SubscriptionStateModel {
 */
 
 const initialState: SubscriptionStateModel = {
-  // subscription
+  subscription: null
 };
 
 /*
@@ -43,9 +44,10 @@ export class SubscriptionState {
   ) {
     // rest api call
     const { source, plan, mailbox } = action.payload;
-    await this.subscriptionService._createSubscription(plan, source, mailbox).toPromise();
+    const createSubscription$ = this.subscriptionService._createSubscription(plan, source, mailbox);
+    const { paymentIntent } = await createSubscription$.toPromise();
 
-    // handle result
-    // await this.paymentService._handlePaymentIntent();
+    // handle paymentIntent result [3d secure modal for require_actions]
+    await this.paymentService._handlePaymentIntent(paymentIntent);
   }
 }

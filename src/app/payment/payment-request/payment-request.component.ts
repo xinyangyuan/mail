@@ -14,8 +14,8 @@ import * as PaymentActions from '../state/payment.action';
 })
 export class PaymentRequestComponent implements AfterViewInit {
   // Attributes:
-  @Input() amount: number = 999;
-  @Input() label: string = 'simple plan';
+  @Input() amount: number;
+  @Input() label: string;
   @Output() source = new EventEmitter<stripe.Source>();
   @Select(PaymentState.paymentStatus) paymentStatus$: Observable<
     PaymentStateModel['paymentStatus']

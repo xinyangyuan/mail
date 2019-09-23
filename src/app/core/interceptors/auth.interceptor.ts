@@ -1,20 +1,51 @@
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler } from '@angular/common/http';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import { Store } from '@ngxs/store';
+import * as jwtDecode from 'jwt-decode';
 
-import { AuthService } from '../../auth/auth.service';
+import { AuthService } from 'src/app/auth/auth.service';
+import * as AuthActions from '../../auth/store/auth.action';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private authService: AuthService) {}
+  constructor(private store: Store, private authService: AuthService) {}
 
-  intercept(req: HttpRequest<any>, next: HttpHandler) {
-    // Get the auth token from  authservice
-    const authToken = this.authService.getAuthToken();
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // case 1: refresh token request
+    if (req.url.includes('refresh_token')) {
+      return next.handle(req);
+    }
 
-    // Clone the request and handel the cloned request with auth header
-    const authRequest = req.clone({
-      setHeaders: { Authorization: 'Bearer ' + authToken }
-    });
-    return next.handle(authRequest);
+    // case 2:
+    try {
+      const { exp } = jwtDecode(this.store.selectSnapshot(state => state.auth.token));
+      if (Date.now() < exp * 1000) {
+        return next.handle(this.generateAuthRequest(req));
+      }
+    } catch {
+      return next.handle(req);
+    }
+
+    // case 3:
+    // return this.authService._refreshToken().pipe(
+    //   mergeMap(result => {
+    //     const authRequest = req.clone({ setHeaders: { Authorization: 'Bearer ' + result.token } });
+    //     return next.handle(authRequest);
+    //   })
+    // );
+
+    // case 3:
+    return this.store.dispatch(new AuthActions.RefreshToken()).pipe(
+      mergeMap(() => {
+        return next.handle(this.generateAuthRequest(req));
+      })
+    );
+  }
+
+  private generateAuthRequest(req: HttpRequest<any>) {
+    const authToken = this.store.selectSnapshot(state => state.auth.token);
+    return req.clone({ setHeaders: { Authorization: 'Bearer ' + authToken } });
   }
 }

@@ -41,18 +41,25 @@
       </div>
     </form>
 
-    <!-- Basic Error Message -->
-    <div
-      *ngIf="needConfirmation$ | async"
-      class="error-message"
-      fxLayout="row"
-      fxLayoutAlign="space-around center"
-    >
-      <p>
-        please verify your email address
-      </p>
-      <button class="send-confirmation-btn" mat-button (click)="onResend()">RESEND</button>
-    </div>
+    <!--  Error Message -->
+    <ng-container *ngIf="authError$ | async as authError">
+      <div
+        [ngSwitch]="authError"
+        class="error-message"
+        fxLayout="row"
+        fxLayoutAlign="space-around center"
+      >
+        <!-- case 1: need email confirmation -->
+        <ng-container *ngSwitchCase="'Please verify your email address'">
+          <p>
+            please verify your email address
+          </p>
+          <button class="send-confirmation-btn" mat-button (click)="onResend()">RESEND</button>
+        </ng-container>
+        <!-- case default:  -->
+        <p *ngSwitchDefault>{{ authError }}</p>
+      </div>
+    </ng-container>
 
     <!-- Go-to Sign-Up Button -->
     <div fxFlex></div>

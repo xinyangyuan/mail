@@ -3,9 +3,9 @@ import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
 
-import { AuthService } from '../../auth/auth.service';
 import { MailState } from 'src/app/mails/store/mail.state';
 import * as MailActions from 'src/app/mails/store/mail.action';
+import * as AuthActios from 'src/app/auth/store/auth.action';
 
 @Component({
   selector: 'app-header',
@@ -14,15 +14,12 @@ import * as MailActions from 'src/app/mails/store/mail.action';
 })
 export class HeaderComponent implements OnInit {
   // Attributes:
-  isSender: boolean;
   @Select(MailState.selectMode) isSelectMode$: Observable<boolean>;
   @Output() sidenavToggle = new EventEmitter<void>();
 
-  constructor(private authService: AuthService, private router: Router, private store: Store) {}
+  constructor(private router: Router, private store: Store) {}
 
-  ngOnInit() {
-    this.isSender = this.authService.getSenderStatus();
-  }
+  ngOnInit() {}
 
   // Method: toggle side navigation
   onToggleSidenav() {
@@ -31,8 +28,9 @@ export class HeaderComponent implements OnInit {
 
   // Method: sign out
   onSignOut() {
-    this.authService.signOut();
-    this.router.navigate(['']);
+    this.store.dispatch(new AuthActios.SignOut()).subscribe(() => {
+      this.router.navigate(['']);
+    });
   }
 
   // Method: select all mails in view

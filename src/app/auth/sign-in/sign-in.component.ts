@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
 import { Store, Select } from '@ngxs/store';
 
 import { AuthState } from '../store/auth.state';
 import * as AuthAction from '../store/auth.action';
-import { AuthService } from '../auth.service';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-sign-in',
@@ -16,7 +15,7 @@ import { Observable } from 'rxjs';
 export class SignInComponent implements OnInit {
   // Attributes
   form: FormGroup;
-  @Select(AuthState.needConfirmation) needConfirmation$: Observable<boolean>;
+  @Select(AuthState.authError) authError$: Observable<string>;
 
   // Constructor
   constructor(private fb: FormBuilder, private routerService: Router, private store: Store) {}

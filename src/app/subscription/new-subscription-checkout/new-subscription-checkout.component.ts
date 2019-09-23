@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Select, Store } from '@ngxs/store';
@@ -20,7 +21,7 @@ export class NewSubscriptionCheckoutComponent implements OnInit {
   address$: Observable<Address>;
   mailboxNo$: Observable<number>;
 
-  constructor(private store: Store) {}
+  constructor(private store: Store, private router: Router) {}
 
   ngOnInit() {
     this.address$ = this.mailbox$.pipe(map(mailbox => mailbox.address));
@@ -30,9 +31,8 @@ export class NewSubscriptionCheckoutComponent implements OnInit {
   onPay(source: stripe.Source) {
     const plan = this.store.selectSnapshot(SubscriptionQuery.selectedPlan);
     const mailbox = this.store.selectSnapshot(SubscriptionQuery.selectedMailbox);
-    this.store.dispatch(new SubscriptionActions.CreateSubscription({ source, plan, mailbox })); // success or fail
+    this.store
+      .dispatch(new SubscriptionActions.CreateSubscription({ source, plan, mailbox }))
+      .subscribe(() => this.router.navigate(['mails']));
   }
 }
-
-// show loading
-// 3d secure

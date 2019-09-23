@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { MatDialog, MatDialogRef } from '@angular/material';
 import { Store } from '@ngxs/store';
 
 import { environment } from 'src/environments/environment';
 import * as PaymentActions from './state/payment.action';
+import { PaymentModalComponent } from './payment-modal/payment-modal.component';
 
 declare var Stripe: stripe.StripeStatic;
 
@@ -11,10 +14,37 @@ declare var Stripe: stripe.StripeStatic;
 })
 export class PaymentService {
   // Attributes:
-  stripe = Stripe(environment.stripeKey);
+  stripe: stripe.Stripe;
+  private stripeKey: string;
+  private paymentDialogRef: MatDialogRef<PaymentModalComponent>;
+  private BACKEND_URL = environment.serverURL + '/stripe-pk';
 
   // Constructor:
-  constructor(private store: Store) {}
+  constructor(private store: Store, private dialog: MatDialog, private http: HttpClient) {
+    this.http
+      .get<{ pk: string }>(this.BACKEND_URL)
+      .toPromise()
+      .then(response => {
+        this.stripeKey = response.pk; // get stripeKey from backend
+        this.stripe = Stripe(this.stripeKey);
+      });
+  }
+
+  /*
+    Method: open dialog
+  */
+
+  openDialog() {
+    this.paymentDialogRef = this.dialog.open(PaymentModalComponent);
+  }
+
+  /*
+    Method: close dialog
+  */
+
+  closeDialog() {
+    this.paymentDialogRef.close();
+  }
 
   /*
     $ Method: handle payment_intent
@@ -35,16 +65,15 @@ export class PaymentService {
         const { error, paymentIntent: result } = await this.stripe.handleCardAction(clientSecret);
         if (error) {
           this.store.dispatch(new PaymentActions.PaymentFailed({ error }));
-          console.log(error);
+          throw Error(error.message);
         } else {
           this.store.dispatch(new PaymentActions.PaymentSucceeded({ paymentIntent: result }));
-          console.log(result);
         }
         break;
       default:
         // default error payment intent
         this.store.dispatch(new PaymentActions.PaymentFailed({ paymentIntent }));
-        console.log(paymentIntent);
+        throw Error('Invalid paymentIntent status');
     }
   }
 }

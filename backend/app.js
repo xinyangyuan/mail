@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 
 const stripeWebhookRoutes = require('./routes/stripe-webhook');
@@ -35,25 +36,28 @@ mongoose
 
 app.use(bodyParser.json()); // json type data
 app.use(bodyParser.urlencoded({ extended: false })); // url encoded data
+app.use(cookieParser());
 
 /*
  cors settings
 */
 
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   );
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, PUT, OPTIONS');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
 });
 
 /*
- stripe webhook route
+ stripe publick key & webhook routes
 */
 
+app.get('/stripe-pk', (_, res) => res.status(200).json({ pk: process.env.STRIPE_PUB_KEY }));
 app.use('/stripe-webhook', stripeWebhookRoutes);
 
 /*
@@ -66,5 +70,9 @@ app.use('/api/mail', mailRoutes);
 app.use('/api/plan', planRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+
+/*
+ graphql
+*/
 
 module.exports = app;

@@ -27,6 +27,8 @@ const userSchema = mongoose.Schema({
   paymentSource: { type: String },
   isSender: { type: Boolean, required: true },
   isConfirmed: { type: Boolean, required: true }
+  // status: { type: String, enum: ['CREATED', 'CONFIRMED', 'ACTIVE'] },
+  // role: {}
 });
 
 /*
