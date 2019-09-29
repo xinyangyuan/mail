@@ -1,19 +1,21 @@
 const mongoose = require('mongoose');
-const timestampPlugin = require('./plugins/timestamp');
 
 /*
   Schema:
 */
 
-const paymentSchema = mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
-  stripeId: { type: String, required: true }, // payment_intent : 'pi_xxx'
-  stripeInvoiceUrl: { type: String, required: true },
-  reason: { type: String, required: true },
-  amount: { type: Number, required: true },
-  date: { type: Date, immutable: true, required: true }
-});
+const paymentSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
+    stripeId: { type: String, required: true }, // payment_intent : 'pi_xxx'
+    stripeInvoiceUrl: { type: String, required: true },
+    reason: { type: String, required: true },
+    amount: { type: Number, required: true },
+    date: { type: Date, immutable: true, required: true }
+  },
+  { timestamps: true }
+);
 
 /*
   Virtual Attribute:
@@ -75,13 +77,6 @@ paymentSchema.query.currentYear = function() {
     date: { $gte: new Date(year), $lt: new Date(year + 1) }
   });
 };
-
-/*
-  Plug-ins:
-*/
-
-// use timestamp plugin/pre-middleware
-paymentSchema.plugin(timestampPlugin);
 
 // export mongoose model
 module.exports = mongoose.model('Payment', paymentSchema, 'payments');

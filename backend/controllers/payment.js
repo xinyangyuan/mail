@@ -10,13 +10,13 @@ const AddressService = require('../services/address');
 const SubscriptionService = require('../services/subscription');
 
 /*
-  Function: get payment list [GET]
+  Controller: get payment list [GET]
 */
 
 exports.getPaymentList = async (req, res, next) => {};
 
 /*
-  Function: fetch single payment by id [GET]
+  Controller: fetch single payment by id [GET]
 */
 
 exports.getPayment = async (req, res, next) => {};

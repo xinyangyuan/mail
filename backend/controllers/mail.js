@@ -143,6 +143,9 @@ exports.updateMails = async (req, res) => {
 exports.updateMail = async (req, res) => {
   console.log('updateMail is called');
   try {
+    // req body obj destruction
+    const { flags: { read, star } = {}, status } = req.body;
+
     // query by user status
     const isSender = req.userData.isSender;
     const userId = req.userData.userId;
@@ -152,13 +155,13 @@ exports.updateMail = async (req, res) => {
     const options = { fields: { envelopKey: 0, contentPDFKey: 0 }, runValidators: true };
 
     // update
-    const isTerminated = req.body.status === 'COLLECTED' || req.body.status === 'TRASHED';
+    const isTerminated = status === 'COLLECTED' || req.body.status === 'TRASHED';
     const update = {
-      'flags.read': typeof req.body.flags !== 'undefined' ? req.body.flags.read : undefined,
-      'flags.star': typeof req.body.flags !== 'undefined' ? req.body.flags.star : undefined,
-      'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
-      'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
-      status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
+      status,
+      'flags.read': read,
+      'flags.star': star,
+      'flags.issue': status === 'RE_SCANNING' ? true : undefined,
+      'flags.terminated': isTerminated ? true : undefined
     };
     Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
 

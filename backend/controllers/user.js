@@ -10,7 +10,7 @@ const Token = require('../services/token');
 const Email = require('../services/email');
 
 /*
-  Function: get user
+  Controller: get user
 */
 
 exports.getUser = async (req, res) => {
@@ -25,7 +25,7 @@ exports.getUser = async (req, res) => {
       user: {
         name: user.name,
         email: user.email,
-        isSender: user.isSender
+        isSender: user.isSender // User virtual attribute
       }
     });
   } catch {
@@ -35,7 +35,7 @@ exports.getUser = async (req, res) => {
 };
 
 /*
-  Function: sign-up
+  Controller: sign-up
 */
 
 exports.userSignUp = async (req, res) => {
@@ -46,6 +46,7 @@ exports.userSignUp = async (req, res) => {
   if (!req.body.lastName) return res.status(401).json({ message: 'Please provide user lastName' });
   if (!req.body.email) return res.status(401).json({ message: 'Please provide user email' });
   if (!req.body.password) return res.status(401).json({ message: 'Please provide user password' });
+  if (!req.body.role) return res.status(401).json({ message: 'Please provide user role' });
 
   // start session and transaction
   const session = await mongoose.startSession();
@@ -65,8 +66,7 @@ exports.userSignUp = async (req, res) => {
       name: { first: req.body.firstName, last: req.body.lastName },
       email: req.body.email,
       password: hash,
-      isSender: req.body.isSender,
-      isConfirmed: false
+      role: req.body.role
     });
     const user = await user_.save(options);
 
@@ -98,8 +98,8 @@ exports.userSignUp = async (req, res) => {
     session.endSession();
 
     // error response
-    if (error.name === 'ValidatorError') {
-      res.status(401).json({ message: 'Email is already registered' });
+    if (error.name === 'ValidationError') {
+      res.status(401).json({ message: error.message });
     } else {
       res.status(500).json({ message: 'Unable to create new user' });
     }
@@ -107,7 +107,7 @@ exports.userSignUp = async (req, res) => {
 };
 
 /*
-  Function: sign-in
+  Controller: sign-in
 */
 
 exports.userSignIn = async (req, res) => {
@@ -120,7 +120,7 @@ exports.userSignIn = async (req, res) => {
     const user = await User.findOne(filter);
     if (!user) {
       return res.status(400).json({ message: 'Email is not associated with a user' });
-    } else if (!user.isConfirmed) {
+    } else if (user.status === 'UNCONFIRMED') {
       return res.status(400).json({ message: 'Please verify your email address' });
     }
 
@@ -140,7 +140,8 @@ exports.userSignIn = async (req, res) => {
       user: {
         name: user.name,
         email: user.email,
-        isSender: user.isSender
+        isSender: user.isSender, // User virtual attribute
+        isCustomer: user.isCustomer // User virtual attribute
       }
     });
   } catch {
@@ -150,7 +151,7 @@ exports.userSignIn = async (req, res) => {
 };
 
 /*
-  Function: refresh token
+  Controller: refresh token
 */
 
 exports.refreshToken = async (req, res) => {
@@ -181,7 +182,7 @@ exports.refreshToken = async (req, res) => {
 };
 
 /*
-  Function: sign-out
+  Controller: sign-out
 */
 
 exports.userSignOut = async (req, res) => {
@@ -197,7 +198,7 @@ exports.userSignOut = async (req, res) => {
 };
 
 /*
-  Function: (re)-send email verification
+  Controller: (re)-send email verification
 */
 
 exports.sendConfirmation = async (req, res) => {
@@ -210,7 +211,7 @@ exports.sendConfirmation = async (req, res) => {
     const user = await User.findOne(filter);
     if (!user) {
       return res.status(400).json({ message: 'Email is not associated with a user' });
-    } else if (user.isConfirmed) {
+    } else if (user.sataus !== 'CREATED') {
       return res.status(400).json({ message: 'Email is already verified' });
     }
 
@@ -226,7 +227,7 @@ exports.sendConfirmation = async (req, res) => {
 };
 
 /*
-  Function: confirm registered user's email
+  Controller: confirm registered user's email
 */
 
 exports.verifyConfirmation = async (req, res) => {
@@ -251,7 +252,7 @@ exports.verifyConfirmation = async (req, res) => {
 
     // $3: update user
     const filter = { _id: decodedToken.userId };
-    const update = { isConfirmed: true };
+    const update = { status: 'ACTIVE' };
     const options = { runValidators: true };
     await User.updateOne(filter, update, options);
 
@@ -264,7 +265,7 @@ exports.verifyConfirmation = async (req, res) => {
 };
 
 /*
-  Function: send password reset request to requested email
+  Controller: send password reset request to requested email
 */
 
 exports.resetPassword = async (req, res) => {
@@ -277,8 +278,8 @@ exports.resetPassword = async (req, res) => {
     const user = await User.findOne(filter);
     if (!user) {
       return res.status(400).json({ message: 'Email is not associated with a user' });
-    } else if (!user.isConfirmed) {
-      return res.status(400).json({ message: 'Need to confirm the email  before password reset' });
+    } else if (user.status === 'UNCONFIRMED') {
+      return res.status(400).json({ message: 'Need to confirm the email before password reset' });
     }
 
     // $2: email
@@ -293,7 +294,7 @@ exports.resetPassword = async (req, res) => {
 };
 
 /*
-  Function: verify password reset and update password field
+  Controller: verify password reset and update password field
 */
 
 exports.verifyReset = async (req, res) => {

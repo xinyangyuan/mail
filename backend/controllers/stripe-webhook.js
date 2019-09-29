@@ -8,7 +8,7 @@ const AddressService = require('../services/address');
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /*
-  Event Handler:
+  Event Handler Tree:
 */
 
 exports.eventHandler = async (req, res) => {
@@ -42,6 +42,10 @@ exports.eventHandler = async (req, res) => {
     console.log(error);
   }
 };
+
+/*
+  Handler: invoicePyamentSucceeded event
+*/
 
 const handleInvoicePaymentSucceeded = async stripeInvoice => {
   console.log('handleInvoicePaymentSucceeded is called');
@@ -128,6 +132,10 @@ const handleInvoicePaymentSucceeded = async stripeInvoice => {
   }
 };
 
+/*
+  Handler: customerSubcriptionCreated event
+*/
+
 const handleCustomerSubscriptionCreated = async stripeSubscription => {
   console.log('handleCustomerSubscriptionCreated is called');
   try {
@@ -154,9 +162,17 @@ const handleCustomerSubscriptionCreated = async stripeSubscription => {
   }
 };
 
+/*
+  Handler:
+*/
+
 const handleCustomerSubscriptionUpdated = async subscription => {
   // Possible values are incomplete, incomplete_expired, trialing, active, past_due, canceled, or unpaid
 };
+
+/*
+  Handler:
+*/
 
 const handleCustomerSubscriptionDeleted = async subscription => {
   // Possible values are incomplete, incomplete_expired, trialing, active, past_due, canceled, or unpaid

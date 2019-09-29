@@ -5,7 +5,10 @@ const StripeWehookController = require('../controllers/stripe-webhook');
 
 const router = express.Router();
 
-// stripe-webhook route
+/*
+   Stipe Endpoint
+*/
+
 router.post('', stripeWebhookVerify, StripeWehookController.eventHandler);
 
 module.exports = router;

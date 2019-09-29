@@ -1,18 +1,20 @@
 const mongoose = require('mongoose');
-const timestampPlugin = require('./plugins/timestamp');
 
 /*
   Schema:
 */
 
-const invoiceSchema = mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
-  mailIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }],
-  scanIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }],
-  startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true }
-});
+const invoiceSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
+    mailIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }],
+    scanIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }],
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true }
+  },
+  { timestamps: true }
+);
 
 /*
   Virtual Attributes:
@@ -55,13 +57,6 @@ invoiceSchema.query.currentPeriod = function() {
 invoiceSchema.query.byUser = function(userId) {
   return this.where({ userId: userId });
 };
-
-/*
-  Plug-ins:
-*/
-
-// use timestamp plugin/pre-middleware
-invoiceSchema.plugin(timestampPlugin);
 
 // export mongoose model
 module.exports = mongoose.model('Invoice', invoiceSchema, 'invoices');

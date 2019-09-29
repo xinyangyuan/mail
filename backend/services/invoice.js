@@ -4,6 +4,10 @@ const stripe = require('stripe')(process.env.STRIPE_KEY);
 const Invoice = require('../models/invoice');
 const Subscription = require('../models/subscription');
 
+/*
+  Service: create mail usage record
+*/
+
 exports.newMail = async (userId, mailId, session) => {
   // create session if none provided
   let isIsolateTransaction = false;
@@ -88,6 +92,10 @@ exports.newMail = async (userId, mailId, session) => {
     throw error;
   }
 };
+
+/*
+  Service: create scan usage record
+*/
 
 exports.newScan = async (userId, mailId, session) => {
   // create session if none provided

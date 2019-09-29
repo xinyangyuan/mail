@@ -150,4 +150,8 @@ export class AuthState {
       })
     );
   }
+
+  /*
+   Action: reset password request
+  */
 }

@@ -5,13 +5,28 @@ const SubscriptionController = require('../controllers/subscription');
 
 const router = express.Router();
 
-// Subscription api routes
+/*
+   [GET] Endpoints
+*/
+
 router.get('', AuthMiddleware.authVerify, SubscriptionController.getSubscriptionList);
 router.get('/:id', AuthMiddleware.authVerify, SubscriptionController.getSubscription);
 
+/*
+   [PATCH] Endpoint
+*/
+
+router.patch('/:id', AuthMiddleware.authVerify, SubscriptionController.updateSubscription);
+
+/*
+   [POST] Endpoint
+*/
+
 router.post('', AuthMiddleware.authVerify, SubscriptionController.createSubscription);
 
-router.patch('', AuthMiddleware.authVerify, SubscriptionController.getSubscription); // AUTO-RENEW, OVERAGE
+/*
+   [DEL] Endpoint
+*/
 
 router.delete('', AuthMiddleware.authVerify, SubscriptionController.getSubscription); // CANCEL
 

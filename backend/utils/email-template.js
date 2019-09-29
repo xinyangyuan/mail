@@ -2,7 +2,12 @@ const mailgen = require('mailgen');
 
 const SENDER_EMAIL = '"My Mail 📫" <sender@mail.com>';
 const REPLY_TO_EMAIL = '';
-const HOMPAGE_URL = 'http://localhost:4200';
+let HOMPAGE_URL;
+if (process.env.NODE_ENV === 'development') {
+  HOMPAGE_URL = 'http://localhost:4200';
+} else {
+  HOMPAGE_URL = 'https://app.shocks.today';
+}
 
 /*
   Mailgen Configuration: set email theme and product information

@@ -1,13 +1,11 @@
 const mongoose = require('mongoose');
 // const diffHistory = require('mongoose-diff-history/diffHistory');
 
-const timestampPlugin = require('./plugins/timestamp');
-
 /*
-  Schema:
+  Child Schema:
 */
 
-const mailFlagSchema = mongoose.Schema(
+const mailFlagSchema = new mongoose.Schema(
   {
     read: { type: Boolean, required: true },
     star: { type: Boolean, required: true },
@@ -17,37 +15,44 @@ const mailFlagSchema = mongoose.Schema(
   { _id: false }
 );
 
-const mailSchema = mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  content: { type: String, required: true },
-  senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  envelopKey: { type: String },
-  contentPDFKey: {
-    type: String,
-    required: function() {
-      return this.status !== 'CREATED' && this.status !== 'SCANNING';
+/*
+  Schema:
+*/
+
+const mailSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    content: { type: String, required: true },
+    senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    envelopKey: { type: String },
+    contentPDFKey: {
+      type: String,
+      required: function() {
+        return this.status !== 'CREATED' && this.status !== 'SCANNING';
+      }
+    },
+    flags: {
+      type: mailFlagSchema,
+      default: { read: false, star: false, issue: false, terminated: false }
+    },
+    status: {
+      type: String,
+      enum: [
+        'CREATED',
+        'SCANNING',
+        'SCANNED_ARCHIVED',
+        'UNSCANNED_ARCHIVED',
+        'RE_SCANNING',
+        'COLLECTED',
+        'TRASHED'
+      ],
+      required: true
     }
   },
-  flags: {
-    type: mailFlagSchema,
-    default: { read: false, star: false, issue: false, terminated: false }
-  },
-  status: {
-    type: String,
-    enum: [
-      'CREATED',
-      'SCANNING',
-      'SCANNED_ARCHIVED',
-      'UNSCANNED_ARCHIVED',
-      'RE_SCANNING',
-      'COLLECTED',
-      'TRASHED'
-    ],
-    required: true
-  }
-});
+  { timestamps: true }
+);
 
 /*
   Static Methods:
@@ -105,8 +110,6 @@ mailSchema.query.byUser = function(userId, isSender = false) {
 /*
   Plugins:
 */
-
-mailSchema.plugin(timestampPlugin); // use timestamp plugin/middleware
 
 // mailSchema.plugin(diffHistory.plugin, { omit: ['flags'] }); // diff history plugin/middleware
 

@@ -1,30 +1,31 @@
 const mongoose = require('mongoose');
 
-const timestampPlugin = require('./plugins/timestamp');
-
 const NUMBER_MAILBOXES = 500;
 
 /*
   Schema:
 */
 
-const addressSchema = mongoose.Schema({
-  line1: { type: String, required: true },
-  line2: { type: String },
-  city: { type: String, required: true },
-  zip: { type: String, required: true },
-  country: { type: String, required: true },
-  senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  receivers: [
-    mongoose.Schema(
-      {
-        mailboxNo: { type: Number, min: 1, max: NUMBER_MAILBOXES, required: true },
-        receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-      },
-      { _id: false }
-    )
-  ]
-});
+const addressSchema = new mongoose.Schema(
+  {
+    line1: { type: String, required: true },
+    line2: { type: String },
+    city: { type: String, required: true },
+    zip: { type: String, required: true },
+    country: { type: String, required: true },
+    senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    receivers: [
+      new mongoose.Schema(
+        {
+          mailboxNo: { type: Number, min: 1, max: NUMBER_MAILBOXES, required: true },
+          receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+        },
+        { _id: false }
+      )
+    ]
+  },
+  { timestamps: true }
+);
 
 /*
   Virtual Attributes:
@@ -55,13 +56,6 @@ addressSchema.query.byUser = function(userId, isSender) {
     return this.where({ receiverId: userId });
   }
 };
-
-/*
-  Plugins:
-*/
-
-// use timestamp plugin/middleware
-addressSchema.plugin(timestampPlugin);
 
 // Export mongoose model
 module.exports = mongoose.model('Address', addressSchema, 'addresses');

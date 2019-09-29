@@ -1,7 +1,7 @@
 const Plan = require('../models/plan');
 
 /*
-Function: get list of all plans [GET]
+  Controller: get list of all plans [GET]
 */
 
 exports.getPlanList = async (req, res) => {
@@ -22,7 +22,7 @@ exports.getPlanList = async (req, res) => {
 };
 
 /*
-Function: get one plan by id [GET]
+  Controller: get one plan by id [GET]
 */
 
 exports.getPlan = async (req, res) => {
@@ -46,7 +46,7 @@ exports.getPlan = async (req, res) => {
 };
 
 /*
-  Function: create one new plan [POST]
+  Controller: create one new plan [POST]
 */
 
 exports.createPlan = async (req, res) => {

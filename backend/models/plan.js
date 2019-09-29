@@ -1,13 +1,11 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 
-const timestampPlugin = require('./plugins/timestamp');
-
 /*
-  Schema:
+  Child Schema:
 */
 
-const intervalSchema = mongoose.Schema(
+const intervalSchema = new mongoose.Schema(
   {
     unit: { type: String, enum: ['month', 'year'], required: true },
     count: { type: Number, min: 0, validate: { validator: Number.isInteger }, required: true }
@@ -15,68 +13,75 @@ const intervalSchema = mongoose.Schema(
   { _id: false }
 );
 
-const planSchema = mongoose.Schema({
-  // standard
-  name: { type: String, required: true, unique: true },
-  description: { type: String, required: true },
-  product: { type: String, enum: ['mail', 'scan', 'delivery', 'translation'], required: true },
-  interval: { type: intervalSchema, required: true },
-  currency: { type: String, enum: ['usd', 'cny', 'gbp'], default: 'usd' },
-  flatRate: { type: Number, min: 0, validate: { validator: Number.isInteger }, required: true },
+/*
+  Schema:
+*/
 
-  // metered plan
-  isMetered: { type: Boolean, required: true },
-  unitPrice: {
-    type: Number,
-    min: 0,
-    validate: { validator: Number.isInteger },
-    required: function() {
-      return this.isMetered && !this.isTiered;
-    }
-  },
-  unitLimit: {
-    type: Number,
-    min: -1,
-    validate: { validator: Number.isInteger },
-    required: function() {
-      return this.isMetered && !this.isTiered;
-    }
-  },
-  flatCredit: { type: Number, min: -1, validate: { validator: Number.isInteger } },
+const planSchema = new mongoose.Schema(
+  {
+    // standard
+    name: { type: String, required: true, unique: true },
+    description: { type: String, required: true },
+    product: { type: String, enum: ['mail', 'scan', 'delivery', 'translation'], required: true },
+    interval: { type: intervalSchema, required: true },
+    currency: { type: String, enum: ['usd', 'cny', 'gbp'], default: 'usd' },
+    flatRate: { type: Number, min: 0, validate: { validator: Number.isInteger }, required: true },
 
-  // tiered plan
-  isTiered: { type: Boolean, required: true },
-  tierUnitPrices: [
-    {
+    // metered plan
+    isMetered: { type: Boolean, required: true },
+    unitPrice: {
       type: Number,
       min: 0,
       validate: { validator: Number.isInteger },
       required: function() {
-        return this.isTiered;
+        return this.isMetered && !this.isTiered;
       }
-    }
-  ],
-  tierUnitLimits: [
-    {
+    },
+    unitLimit: {
       type: Number,
       min: -1,
       validate: { validator: Number.isInteger },
       required: function() {
-        return this.isTiered;
+        return this.isMetered && !this.isTiered;
+      }
+    },
+    flatCredit: { type: Number, min: -1, validate: { validator: Number.isInteger } },
+
+    // tiered plan
+    isTiered: { type: Boolean, required: true },
+    tierUnitPrices: [
+      {
+        type: Number,
+        min: 0,
+        validate: { validator: Number.isInteger },
+        required: function() {
+          return this.isTiered;
+        }
+      }
+    ],
+    tierUnitLimits: [
+      {
+        type: Number,
+        min: -1,
+        validate: { validator: Number.isInteger },
+        required: function() {
+          return this.isTiered;
+        }
+      }
+    ],
+    // tierFlatPrices: [{ type: Number, min: 0, validate: { validator: Number.isInteger } }],
+
+    // stripe refs
+    usageStripeId: { type: String, required: true },
+    baseStripeId: {
+      type: String,
+      required: function() {
+        return this.flatRate !== 0; // pay-as-you-go plan does not have base plan sub
       }
     }
-  ],
-  // tierFlatPrices: [{ type: Number, min: 0, validate: { validator: Number.isInteger } }],
-
-  // stripe refs
-  usageStripeId: { type: String, required: true },
-  baseStripeId: {
-    type: String,
-    required: function() {
-      return this.flatRate !== 0; // pay-as-you-go plan does not have base plan sub
-    }
-  }
-});
+  },
+  { timestamps: true }
+);
 
 /*
   Virtual Attribute:
@@ -189,9 +194,6 @@ planSchema.path('tierUnitLimits').validate(function(tierUnitLimits) {
 
 // use unique validator plugin/middleware
 planSchema.plugin(uniqueValidator);
-
-// use timestamp plugin/pre-middleware
-planSchema.plugin(timestampPlugin);
 
 // export mongoose model
 module.exports = mongoose.model('Plan', planSchema, 'plans');

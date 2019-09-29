@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../auth.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-sign-up',
@@ -20,6 +20,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
   // Constructor
   constructor(
     private fb: FormBuilder,
+    private route: ActivatedRoute,
     private routerService: Router,
     private authService: AuthService
   ) {}
@@ -33,6 +34,9 @@ export class SignUpComponent implements OnInit, OnDestroy {
 
   // Init Method
   ngOnInit() {
+    // TEMP:
+    const permitedSender = this.route.snapshot.fragment !== '999888';
+
     // initialize the reactive form
     this.form = this.fb.group({
       firstName: ['', [Validators.required, Validators.pattern('^[a-zA-Zs\\-]*$')]],
@@ -46,7 +50,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
           Validators.pattern('^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$')
         ]
       ],
-      accountType: [{ value: 'user', disabled: true }, Validators.required],
+      accountType: [{ value: 'user', disabled: permitedSender }, Validators.required],
       isAgreed: [false, Validators.requiredTrue]
     });
 

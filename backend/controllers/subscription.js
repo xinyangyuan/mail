@@ -8,17 +8,20 @@ const User = require('../models/user');
 const SubscriptionService = require('../services/subscription');
 
 /*
-  Controller: get list of user's subscriptions [GET]
+  Controller: get all user's subscriptions [GET]
 */
 
 exports.getSubscriptionList = async (req, res) => {
   console.log('getSubscriptionList is called');
   try {
+    // query, userId
+    const userId = req.userData.userId;
+
     // projection
     const projection = { stripeId: 0, __v: 0 };
 
     // $1: subscription array
-    const subscriptions = await Subscription.find(filter, projection).byUser(req.userData.userId);
+    const subscriptions = await Subscription.find(filter, projection).byUser(userId);
 
     // success response
     res.status(200).json({ subscriptionList: subscriptions });
@@ -31,18 +34,21 @@ exports.getSubscriptionList = async (req, res) => {
 };
 
 /*
-  Controller: get specific user's subscription [GET]
+  Controller: get one subscription by id [GET]
 */
 
 exports.getSubscription = async (req, res) => {
   console.log('getSubscription is called');
   try {
+    //
+    const userId = req.userData.userId;
+
     // filter, projection
     const filter = { _id: req.params.id, userId: req.userData.userId };
     const projection = { stripeId: 0, __v: 0 };
 
     // $1: subscription array
-    const subscription = await Subscription.find(filter, projection);
+    const subscription = await Subscription.find(filter, projection).byUser(userId);
 
     // success response
     res.status(200).json({ subscription: subscription });
@@ -51,6 +57,44 @@ exports.getSubscription = async (req, res) => {
     res.status(500).json({
       message: 'Failed to fetch mails!'
     });
+  }
+};
+
+/*
+  Controller: update subscription [PATCH]
+*/
+
+exports.updateSubscription = async (req, res) => {
+  console.log('updateSubscription is Called');
+  try {
+    // retrive update
+    const userId = req.userData.userId;
+    const { isAutoRenew, isAllowOverage } = req.body;
+
+    // filter, options
+    const filter = { _id: req.params.id };
+    const options = { runValidators: true };
+
+    // update
+    const update = { $set: { isAutoRenew, isAllowOverage } };
+    for (const param in update) if (!update[param]) delete update[param];
+
+    // $1: update subscription
+    const result = await Subscription.updateOne(filter, update, options)
+      .byUser(userId)
+      .isActive();
+    if (result.n === 0) {
+      console.log('no mail is updated by the patch request');
+    }
+
+    // success response
+    res.status(201).json({
+      message: 'Subscription patched successfully',
+      subscription: result
+    });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Failed to patch subscription update' });
   }
 };
 
@@ -144,13 +188,6 @@ exports.createSubscription = async (req, res) => {
     res.status(401).json({ message: error.message });
   }
 };
-
-/*
-  Controller: update subscription [PATCH]
-*/
-
-// 1 - CHANGE ALLOW OVERAGE
-// 2 - CANCEL AUTO RENEW
 
 /*
   Controller: cancel subscription [DEL]

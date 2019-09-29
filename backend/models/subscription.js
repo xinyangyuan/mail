@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const timestampPlugin = require('./plugins/timestamp');
 
 /*
   Helper Functions:
@@ -13,15 +12,15 @@ function anchorDay() {
 }
 
 /*
-  Schema:
+  Child Schema:
 */
 
-const terminationSchema = mongoose.Schema({
+const terminationSchema = new mongoose.Schema({
   reason: { type: String, required: true },
   date: { type: Date, required: true }
 });
 
-const stripeItems = mongoose.Schema(
+const stripeItemsSchema = new mongoose.Schema(
   {
     stripeId: { type: String, required: true }, // subscription item si_xxx
     product: { type: String, enum: ['mail', 'scan', 'delivery', 'translation'], required: true },
@@ -30,35 +29,47 @@ const stripeItems = mongoose.Schema(
   { _id: false }
 );
 
-const subscriptionSchema = mongoose.Schema({
-  planIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true }],
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  addressId: { type: mongoose.Schema.Types.ObjectId, ref: 'Address', required: true },
-  stripeId: {
-    type: String,
-    required: function() {
-      return ['ACTIVE', 'PAST_DUE', 'CANCELED'].includes(this.status);
+/*
+  Schema:
+*/
+
+const subscriptionSchema = new mongoose.Schema(
+  {
+    planIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true }],
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    addressId: { type: mongoose.Schema.Types.ObjectId, ref: 'Address', required: true },
+    stripeId: {
+      type: String,
+      required: function() {
+        return ['ACTIVE', 'PAST_DUE', 'CANCELED'].includes(this.status);
+      }
+    },
+    stripeItems: [{ type: stripeItemsSchema }],
+    status: {
+      type: String,
+      enum: ['INCOMPLETE', 'ACTIVE', 'PAST_DUE', 'CANCELED'],
+      default: 'INCOMPLETE'
+    },
+    startDate: { type: Date, required: true, immutable: true },
+    anchorDay: { type: Number, default: anchorDay },
+    periodStartDate: {
+      type: Date,
+      default: function() {
+        return this.startDate;
+      }
+    },
+    periodEndDate: { type: Date, required: true },
+    isAutoRenew: { type: Boolean, default: true },
+    isAllowOverage: { type: Boolean, default: false },
+    termination: {
+      type: terminationSchema,
+      required: function() {
+        return this.status === 'CANCELED';
+      }
     }
   },
-  stripeItems: [{ type: stripeItems }],
-  status: {
-    type: String,
-    enum: ['INCOMPLETE', 'ACTIVE', 'PAST_DUE', 'CANCELED'],
-    default: 'INCOMPLETE'
-  },
-  startDate: { type: Date, required: true, immutable: true },
-  anchorDay: { type: Number, default: anchorDay },
-  periodStartDate: {
-    type: Date,
-    default: function() {
-      return this.startDate;
-    }
-  },
-  periodEndDate: { type: Date, required: true },
-  isAutoRenew: { type: Boolean, default: true },
-  isAllowOverage: { type: Boolean, default: false },
-  termination: { type: terminationSchema }
-});
+  { timestamps: true }
+);
 
 /*
   Virtual Attribute:
@@ -73,11 +84,11 @@ subscriptionSchema.virtual('endDate').get(function() {
 });
 
 subscriptionSchema.virtual('isTerminated').get(function() {
-  return typeof this.termination === 'undefined' || this.periodEndDate > Date.now();
+  return this.status === 'CANCELED' || this.periodEndDate < Date.now();
 });
 
 subscriptionSchema.virtual('isActive').get(function() {
-  return !(typeof this.termination === 'undefined' || this.periodEndDate > Date.now());
+  return this.status !== 'CANCELED' && this.periodEndDate > Date.now();
 });
 
 /*
@@ -85,7 +96,7 @@ subscriptionSchema.virtual('isActive').get(function() {
 */
 
 subscriptionSchema.query.isActive = function() {
-  return this.where({ periodEndDate: { $gt: Date.now() }, termination: { $exists: false } });
+  return this.where({ periodEndDate: { $gt: Date.now() }, status: { $ne: 'CANCELED' } });
 };
 
 subscriptionSchema.query.byPlan = function(planId) {
@@ -99,13 +110,6 @@ subscriptionSchema.query.byUser = function(userId) {
 subscriptionSchema.query.byAddress = function(addressId) {
   return this.where({ addressId: addressId });
 };
-
-/*
-  Plug-ins:
-*/
-
-// use timestamp plugin/pre-middleware
-subscriptionSchema.plugin(timestampPlugin);
 
 // export mongoose model
 module.exports = mongoose.model('Subscription', subscriptionSchema, 'subscriptions');

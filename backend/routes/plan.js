@@ -4,10 +4,17 @@ const PlanController = require('../controllers/plan');
 
 const router = express.Router();
 
-// Address api routes
+/*
+   [GET] Endpoints
+*/
+
 router.get('', PlanController.getPlanList); // PUBLIC ACCESSIBLE
 router.get('/:id', PlanController.getPlan); // PUBLIC ACCESSIBLE
 
-router.post('', PlanController.createPlan);
+/*
+   [POST] Endpoint
+*/
+
+// router.post('', PlanController.createPlan);
 
 module.exports = router;

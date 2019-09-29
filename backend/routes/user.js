@@ -4,7 +4,10 @@ const router = express.Router();
 const AuthMiddleware = require('../middlewares/auth-verify');
 const UserController = require('../controllers/user');
 
-// user api routes
+/*
+  Endpoints
+*/
+
 router.get('/self', AuthMiddleware.authVerify, UserController.getUser);
 
 router.post('/signin', UserController.userSignIn);

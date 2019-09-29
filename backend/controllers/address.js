@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
 
 const Address = require('../models/address');
-
 const AddressService = require('../services/address');
 
 /*
-Function: get list of all addresses [GET]
+  Controller: get list of all addresses [GET]
 */
 
 exports.getAddressList = async (req, res) => {
@@ -28,7 +27,40 @@ exports.getAddressList = async (req, res) => {
 };
 
 /*
-  Function: get one address by id [GET]
+  Controller: get one address by receiverId [GET]
+*/
+
+exports.getAddressByReceiverId = async (req, res) => {
+  console.log('getAddress is called');
+  try {
+    // validation
+    if (req.userData.userId !== req.params.receiverId) {
+      return res.status(404).json({ message: '' });
+    }
+
+    // filter, projection
+    const filter = { 'receivers.reiverId': req.params.receiverId };
+    const projection = { senderId: 0, receivers: 0, __v: 0 };
+
+    // $1: get address
+    const address = await Address.findOne(filter, projection)
+      .lean()
+      .exec();
+
+    if (!address) {
+      return res.status(400).json({ message: 'Cannot find the address' });
+    }
+
+    // success response
+    res.status(200).json({ message: 'success', address });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Failed to find the address' });
+  }
+};
+
+/*
+  Controller: get one address by id [GET]
 */
 
 exports.getAddress = async (req, res) => {
@@ -55,7 +87,7 @@ exports.getAddress = async (req, res) => {
 };
 
 /*
-  Function: get one address's receivers filed by id [GET]
+  Controller: get one address's receivers filed by id [GET]
 */
 
 exports.getAddressReceivers = async (req, res) => {
@@ -83,7 +115,7 @@ exports.getAddressReceivers = async (req, res) => {
 };
 
 /*
-  Function: get one address's vacantMailboxNos virtual filed by id [GET]
+  Controller: get one address's vacantMailboxNos virtual filed by id [GET]
 */
 
 exports.getVacantMailboxNos = async (req, res) => {
@@ -108,7 +140,7 @@ exports.getVacantMailboxNos = async (req, res) => {
 };
 
 /*
-  Function: create one new address [POST]
+  Controller: create one new address [POST]
 */
 
 exports.createAddress = async (req, res) => {
@@ -134,7 +166,7 @@ exports.createAddress = async (req, res) => {
 };
 
 /*
-  Function: add one extra receiver to an address [PATCH]
+  Controller: add one extra receiver to an address [PATCH]
 */
 
 exports.addReceiver = async (req, res) => {
