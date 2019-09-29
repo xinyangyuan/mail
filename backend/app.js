@@ -20,6 +20,7 @@ const app = express();
 mongoose.set('useNewUrlParser', true); // deprecation
 mongoose.set('useFindAndModify', false); // deprecation
 mongoose.set('useCreateIndex', true); // deprecation
+mongoose.set('useUnifiedTopology', true); // deprecation
 
 mongoose
   .connect(process.env.MONGO_ATLAS)

@@ -1,6 +1,6 @@
 const http = require('http');
 const debug = require('debug')('node-angular');
-const app = require('./backend/app'); // express app
+const app = require('./app'); // express app
 
 // Normalize a port into a number, string, or false.
 const normalizePort = val => {

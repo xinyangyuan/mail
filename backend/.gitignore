@@ -7,3 +7,6 @@ Thumbs.db
 
 # data files
 /data
+
+# env variables
+nodemon.json

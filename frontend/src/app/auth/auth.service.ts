@@ -64,8 +64,11 @@ export class AuthService {
     password: string,
     isSender: boolean
   ): Observable<{ message: string }> {
+    // role
+    const role = isSender ? 'SENDER' : 'USER';
+
     // pack all required post data
-    const authData = { firstName, lastName, email, password, isSender };
+    const authData = { firstName, lastName, email, password, role };
 
     // send user sign-up request to backend server
     return this.http.post<{ message: string }>(this.BACKEND_URL + 'signup', authData);

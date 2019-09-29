@@ -6,6 +6,7 @@ import { SignInComponent } from './sign-in/sign-in.component';
 import { SignUpComponent } from './sign-up/sign-up.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { SignUpConfirmationComponent } from './sign-up-confirmation/sign-up-confirmation.component';
 
 const routes: Routes = [
   {
@@ -16,7 +17,8 @@ const routes: Routes = [
       { path: 'signin', component: SignInComponent },
       { path: 'signup', component: SignUpComponent },
       { path: 'forgot-password', component: ForgotPasswordComponent },
-      { path: 'reset-password/:emailToken', component: ResetPasswordComponent }
+      { path: 'reset-password/:emailToken', component: ResetPasswordComponent },
+      { path: 'confirmation/:accountType/:emailToken', component: SignUpConfirmationComponent }
     ]
   }
 ];
