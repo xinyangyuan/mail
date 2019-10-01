@@ -5,12 +5,14 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile.dev
+    image: mail-nginx:dev
     ports:
       - '4200:80'
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
+    image: mail-frontend:dev
     volumes:
       - /usr/app/node_modules
       - ./frontend:/usr/app
@@ -18,6 +20,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
+    image: mail-backend:dev
     volumes:
       - /usr/app/node_modules
       - ./backend:/usr/app

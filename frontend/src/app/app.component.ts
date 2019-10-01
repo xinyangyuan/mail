@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 
 import * as AuthActions from './auth/store/auth.action';
-import { environment } from 'src/environments/environment.prod';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +15,6 @@ export class AppComponent implements OnInit {
 
   // OnInit:
   ngOnInit() {
-    console.log(environment);
     this.store.dispatch(new AuthActions.AutoSignIn());
   }
 }
