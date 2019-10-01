@@ -17,7 +17,7 @@ export class PaymentService {
   stripe: stripe.Stripe;
   private stripeKey: string;
   private paymentDialogRef: MatDialogRef<PaymentModalComponent>;
-  private BACKEND_URL = environment.serverURL + '/stripe-pk';
+  private BACKEND_URL = environment.apiURL + '/stripe-pk';
 
   // Constructor:
   constructor(private store: Store, private dialog: MatDialog, private http: HttpClient) {

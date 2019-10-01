@@ -1,0 +1,5 @@
+# Base image
+FROM nginx
+
+# Default conf (over-written file default.conf)
+COPY default.conf /etc/nginx/conf.d/default.conf

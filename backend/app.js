@@ -58,11 +58,11 @@ app.use((req, res, next) => {
  stripe publick key & webhook routes
 */
 
-app.get('/stripe-pk', (_, res) => res.status(200).json({ pk: process.env.STRIPE_PUB_KEY }));
-app.use('/stripe-webhook', stripeWebhookRoutes);
+app.get('/api/stripe-pk', (_, res) => res.status(200).json({ pk: process.env.STRIPE_PUB_KEY }));
+app.use('/api/stripe-webhook', stripeWebhookRoutes);
 
 /*
- api routes
+ rest api routes
 */
 
 app.use('/api/user', userRoutes);
@@ -73,7 +73,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 
 /*
- graphql
+ graphql api route
 */
 
 module.exports = app;

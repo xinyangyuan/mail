@@ -2,7 +2,9 @@
   "name": "mail",
   "version": "0.0.0",
   "scripts": {
-    "start:client": "cd frontend && ng serve",
-    "start:server": "cd backend && npm run start"
+    "start:frontend": "cd frontend && ng serve",
+    "start:backend": "cd backend && npm run start",
+    "start:client": "npm run start:frontend",
+    "start:server": "npm run start:backend"
   }
 }

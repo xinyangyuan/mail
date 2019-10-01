@@ -15,6 +15,7 @@ export class MailExpansionListItemComponent implements OnChanges {
   // Attributes:
   @Input() mail: Mail;
   @Input() imageURL: SafeUrl;
+  panelOpenState: boolean;
   // @Output() AUTOCOMPLETE_PANEL_HEIGHT;
 
   // Constructor:
