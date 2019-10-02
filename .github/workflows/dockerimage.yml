@@ -3,7 +3,7 @@ name: Docker Image CI
 on:
   push:
     branches:
-    - master
+      - 'releases/**'
 
 jobs:
   build:
@@ -12,8 +12,8 @@ jobs:
       DOCKER_ID: ${{ secrets.DOCKER_ID }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     steps:
-    - uses: actions/checkout@v1
-    - name: docker login
-      run: docker login -u $DOCKER_ID -p $DOCKER_PASSWORD
-    - name: docker build and docker push
-      run: bash docker-build.sh
+      - uses: actions/checkout@v1
+      - name: docker login
+        run: docker login -u $DOCKER_ID -p $DOCKER_PASSWORD
+      - name: docker build and docker push
+        run: bash docker-build.sh
