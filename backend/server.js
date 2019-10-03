@@ -1,6 +1,9 @@
+process.env.NODE_ENV || require('dotenv').config();
 const http = require('http');
 const debug = require('debug')('node-angular');
 const app = require('./app'); // express app
+
+console.log(process.env.AWS_REGION);
 
 // Normalize a port into a number, string, or false.
 const normalizePort = val => {

@@ -1,19 +1,28 @@
-name: Docker Image CI
+name: Dcoker Build
 
 on:
   push:
     branches:
+      - 'master'
       - 'releases/**'
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
     env:
-      DOCKER_ID: ${{ secrets.DOCKER_ID }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      GITHUB_ID: ${{ secrets.GITHUB_ID }}
+      GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }}
     steps:
       - uses: actions/checkout@v1
-      - name: docker login
-        run: docker login -u $DOCKER_ID -p $DOCKER_PASSWORD
-      - name: docker build and docker push
+      - name: Build images
         run: bash docker-build.sh
+      - name: Push images to GPR
+        run: |
+          docker login docker.pkg.github.com -u $GITHUB_ID -p $GITHUB_PACKAGE_REGISTRY_TOKEN
+          docker tag xinyangyuan/mail-nginx docker.pkg.github.com/xinyangyuan/mail/nginx:latest
+          docker tag xinyangyuan/mail-frontend docker.pkg.github.com/xinyangyuan/mail/frontend:latest
+          docker tag xinyangyuan/mail-backend docker.pkg.github.com/xinyangyuan/mail/nginx:latest
+          docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest
+          docker push docker.pkg.github.com/xinyangyuan/mail/frontend:latest
+          docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest

@@ -9,6 +9,7 @@ services:
     ports:
       - '4200:80'
   frontend:
+    restart: always
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -17,6 +18,7 @@ services:
       - /usr/app/node_modules
       - ./frontend:/usr/app
   backend:
+    restart: always
     build:
       context: ./backend
       dockerfile: Dockerfile.dev

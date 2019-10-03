@@ -1,0 +1,42 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "frontend",
+      "image": "xinyangyuan/multi-frontend",
+      "repositoryCredentials": {
+        "credentialsParameter": "arn:aws:secretsmanager:region:aws_account_id:secret:secret_name"
+      },
+      "hostname": "frontend",
+      "essential": false,
+      "memory": 256
+    },
+    {
+      "name": "backend",
+      "image": "xinyangyuan/multi-server",
+      "repositoryCredentials": {
+        "credentialsParameter": "arn:aws:secretsmanager:region:aws_account_id:secret:secret_name"
+      },
+      "hostname": "backend",
+      "essential": false,
+      "memory": 256
+    },
+    {
+      "name": "nginx",
+      "image": "xinyangyuan/multi-nginx",
+      "repositoryCredentials": {
+        "credentialsParameter": "arn:aws:secretsmanager:region:aws_account_id:secret:secret_name"
+      },
+      "hostname": "nginx",
+      "essential": true,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 80
+        }
+      ],
+      "links": ["frontend", "backend"],
+      "memory": 128
+    }
+  ]
+}
