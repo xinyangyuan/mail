@@ -22,7 +22,7 @@ jobs:
           docker login docker.pkg.github.com -u $GITHUB_ID -p $GITHUB_PACKAGE_REGISTRY_TOKEN
           docker tag xinyangyuan/mail-nginx docker.pkg.github.com/xinyangyuan/mail/nginx:latest
           docker tag xinyangyuan/mail-frontend docker.pkg.github.com/xinyangyuan/mail/frontend:latest
-          docker tag xinyangyuan/mail-backend docker.pkg.github.com/xinyangyuan/mail/nginx:latest
+          docker tag xinyangyuan/mail-backend docker.pkg.github.com/xinyangyuan/mail/backend:latest
           docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest
           docker push docker.pkg.github.com/xinyangyuan/mail/frontend:latest
-          docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest
+          docker push docker.pkg.github.com/xinyangyuan/mail/backend:latest
