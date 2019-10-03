@@ -28,12 +28,12 @@ jobs:
       #   docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest
       #   docker push docker.pkg.github.com/xinyangyuan/mail/frontend:latest
       #   docker push docker.pkg.github.com/xinyangyuan/mail/backend:latest
-      - name: Push images to Dockerhub
+      - name: Push images to dockerhub
         run: |
           docker login -u $DOCKER_ID -p $DOCKER_PASSWORD
           docker tag xinyangyuan/mail-nginx xinyangyuan/mail:nginx
           docker tag xinyangyuan/mail-frontend xinyangyuan/mail:frontend
           docker tag xinyangyuan/mail-backend xinyangyuan/mail:backend
-          docker push xinyangyuan/mail-nginx xinyangyuan/mail:nginx
-          docker push xinyangyuan/mail-frontend xinyangyuan/mail:frontend
-          docker push xinyangyuan/mail-backend xinyangyuan/mail:backend
+          docker push xinyangyuan/mail:nginx
+          docker push xinyangyuan/mail:frontend
+          docker push xinyangyuan/mail:backend
