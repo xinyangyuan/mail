@@ -1,32 +1,27 @@
 {
   "AWSEBDockerrunVersion": 2,
+  "authentication": {
+    "bucket": "xinyang-gpr",
+    "key": "index.docker.io/.dockercfg"
+  },
   "containerDefinitions": [
     {
       "name": "frontend",
-      "image": "xinyangyuan/multi-frontend",
-      "repositoryCredentials": {
-        "credentialsParameter": "arn:aws:secretsmanager:region:aws_account_id:secret:secret_name"
-      },
+      "image": "xinyangyuan/mail:frontend",
       "hostname": "frontend",
       "essential": false,
       "memory": 256
     },
     {
       "name": "backend",
-      "image": "xinyangyuan/multi-server",
-      "repositoryCredentials": {
-        "credentialsParameter": "arn:aws:secretsmanager:region:aws_account_id:secret:secret_name"
-      },
+      "image": "xinyangyuan/mail:backend",
       "hostname": "backend",
       "essential": false,
       "memory": 256
     },
     {
       "name": "nginx",
-      "image": "xinyangyuan/multi-nginx",
-      "repositoryCredentials": {
-        "credentialsParameter": "arn:aws:secretsmanager:region:aws_account_id:secret:secret_name"
-      },
+      "image": "xinyangyuan/mail:nginx",
       "hostname": "nginx",
       "essential": true,
       "portMappings": [

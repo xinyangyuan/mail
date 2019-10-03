@@ -1,6 +1,8 @@
 # Env
 .env
+.dockercfg
 
 # System Files
 .DS_Store
 Thumbs.db
+

@@ -13,16 +13,27 @@ jobs:
     env:
       GITHUB_ID: ${{ secrets.GITHUB_ID }}
       GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }}
+      DOCKER_ID: ${{ secrets.DOCKER_ID }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     steps:
       - uses: actions/checkout@v1
       - name: Build images
         run: bash docker-build.sh
-      - name: Push images to GPR
+      # - name: Push images to GPR
+      # run: |
+      #   docker login docker.pkg.github.com -u $GITHUB_ID -p $GITHUB_PACKAGE_REGISTRY_TOKEN
+      #   docker tag xinyangyuan/mail-nginx docker.pkg.github.com/xinyangyuan/mail/nginx:latest
+      #   docker tag xinyangyuan/mail-frontend docker.pkg.github.com/xinyangyuan/mail/frontend:latest
+      #   docker tag xinyangyuan/mail-backend docker.pkg.github.com/xinyangyuan/mail/backend:latest
+      #   docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest
+      #   docker push docker.pkg.github.com/xinyangyuan/mail/frontend:latest
+      #   docker push docker.pkg.github.com/xinyangyuan/mail/backend:latest
+      - name: Push images to Dockerhub
         run: |
-          docker login docker.pkg.github.com -u $GITHUB_ID -p $GITHUB_PACKAGE_REGISTRY_TOKEN
-          docker tag xinyangyuan/mail-nginx docker.pkg.github.com/xinyangyuan/mail/nginx:latest
-          docker tag xinyangyuan/mail-frontend docker.pkg.github.com/xinyangyuan/mail/frontend:latest
-          docker tag xinyangyuan/mail-backend docker.pkg.github.com/xinyangyuan/mail/backend:latest
-          docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest
-          docker push docker.pkg.github.com/xinyangyuan/mail/frontend:latest
-          docker push docker.pkg.github.com/xinyangyuan/mail/backend:latest
+          docker login -u $DOCKER_ID -p $DOCKER_PASSWORD
+          docker tag xinyangyuan/mail-nginx xinyangyuan/mail:nginx
+          docker tag xinyangyuan/mail-frontend xinyangyuan/mail:frontend
+          docker tag xinyangyuan/mail-backend xinyangyuan/mail:backend
+          docker push xinyangyuan/mail-nginx xinyangyuan/mail:nginx
+          docker push xinyangyuan/mail-frontend xinyangyuan/mail:frontend
+          docker push xinyangyuan/mail-backend xinyangyuan/mail:backend
