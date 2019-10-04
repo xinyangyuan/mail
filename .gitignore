@@ -1,8 +1,7 @@
-# Env
-*.env
-*.dockercfg
-
 # System Files
 .DS_Store
 Thumbs.db
 
+# Env
+*.env
+*.dockercfg

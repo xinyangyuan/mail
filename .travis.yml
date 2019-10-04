@@ -7,13 +7,13 @@ services:
 # images already built in github package repository
 deploy:
   on:
-    branch: release
+    branch: master
   provider: elasticbeanstalk
-  region: 'us-east-1'
-  app: 'example-app-name'
-  env: 'example-app-environment'
-  bucket_name: 'the-target-S3-bucket'
+  region: 'ap-northeast-1'
+  app: 'Mail App'
+  env: 'MailApp-env'
+  bucket_name: 'elasticbeanstalk-ap-northeast-1-263985093748'
   access_key_id:
-    secure: 'Encrypted <access-key-id>='
+    secure: $ACCESS_KEY_ID
   secret_access_key:
-    secure: 'Encypted <secret-access-key>='
+    secure: $SECRET_ACCESS_KEY

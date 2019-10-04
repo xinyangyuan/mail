@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  serverURL: '',
-  apiURL: '/api'
+  serverURL: 'http://mailapp-env.wmwa3umiti.ap-northeast-1.elasticbeanstalk.com',
+  apiURL: 'http://mailapp-env.wmwa3umiti.ap-northeast-1.elasticbeanstalk.com/api'
 };

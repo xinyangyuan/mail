@@ -7,21 +7,21 @@
   "containerDefinitions": [
     {
       "name": "frontend",
-      "image": "xinyangyuan/mail:frontend",
+      "image": "docker.pkg.github.com/xinyangyuan/mail/frontend:latest",
       "hostname": "frontend",
       "essential": false,
       "memory": 256
     },
     {
       "name": "backend",
-      "image": "xinyangyuan/mail:backend",
+      "image": "docker.pkg.github.com/xinyangyuan/mail/backend:latest",
       "hostname": "backend",
       "essential": false,
       "memory": 256
     },
     {
       "name": "nginx",
-      "image": "xinyangyuan/mail:nginx",
+      "image": "docker.pkg.github.com/xinyangyuan/mail/nginx:latest",
       "hostname": "nginx",
       "essential": true,
       "portMappings": [
