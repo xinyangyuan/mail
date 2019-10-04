@@ -9,9 +9,13 @@ RUN apk --no-cache add --virtual native-deps \
 # Container working directory
 WORKDIR /usr/app
 
+# Port
+EXPOSE 3000
+
 # Install dependencies
 COPY package*.json ./
 RUN npm install
+
 
 # Copy directory
 COPY . .
