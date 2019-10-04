@@ -1,6 +1,6 @@
 # Env
-.env
-.dockercfg
+*.env
+*.dockercfg
 
 # System Files
 .DS_Store

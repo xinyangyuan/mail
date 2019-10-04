@@ -1,19 +1,19 @@
-# sudo: required
+sudo: required
 
-# # not really necessary
-# services:
-#   - docker
+# not really necessary
+services:
+  - docker
 
-# # images already built in github package repository
-# deploy:
-#   on:
-#     branch: master
-#   provider: elasticbeanstalk
-#   region: us-west-1
-#   app: multi-docker
-#   env: MultiDocker-env
-#   bucket_name: elasticbeanstalk-us-west-1-306476627547
-#   bucket_path: docker-multi
-#   access_key_id: $AWS_ACCESS_KEY
-#   secret_access_key:
-#     secure: $AWS_SECRET_KEY
+# images already built in github package repository
+deploy:
+  on:
+    branch: release
+  provider: elasticbeanstalk
+  region: 'us-east-1'
+  app: 'example-app-name'
+  env: 'example-app-environment'
+  bucket_name: 'the-target-S3-bucket'
+  access_key_id:
+    secure: 'Encrypted <access-key-id>='
+  secret_access_key:
+    secure: 'Encypted <secret-access-key>='

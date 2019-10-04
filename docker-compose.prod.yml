@@ -1,0 +1,19 @@
+version: '3'
+services:
+  nginx:
+    image: xinyangyuan/mail-nginx
+    restart: always
+    build:
+      context: ./nginx
+    ports:
+      - '80:80'
+  frontend:
+    image: xinyangyuan/mail-frontend
+    restart: always
+    build:
+      context: ./frontend
+  backend:
+    image: xinyangyuan/mail-backend
+    restart: always
+    build:
+      context: ./backend
