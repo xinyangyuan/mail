@@ -17,8 +17,8 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
+      - uses: actions/checkout@v1
       - name: Build images
-      # - uses: actions/checkout@v1
       #   run: bash docker-build.sh
 
       # - name: Push images to GPR
