@@ -2,7 +2,7 @@
   "AWSEBDockerrunVersion": 2,
   "authentication": {
     "bucket": "xinyang-gpr",
-    "key": "index.docker.io/.dockercfg"
+    "key": "docker/.dockercfg"
   },
   "containerDefinitions": [
     {
