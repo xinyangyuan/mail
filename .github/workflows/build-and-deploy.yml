@@ -15,10 +15,12 @@ jobs:
       GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
     steps:
-      - uses: actions/checkout@v1
-      # - name: Build images
+      - name: Build images
+      # - uses: actions/checkout@v1
       #   run: bash docker-build.sh
+
       # - name: Push images to GPR
       #   run: |
       #     docker login docker.pkg.github.com -u $GITHUB_ID -p $GITHUB_PACKAGE_REGISTRY_TOKEN
@@ -28,8 +30,6 @@ jobs:
       #     docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest
       #     docker push docker.pkg.github.com/xinyangyuan/mail/frontend:latest
       #     docker push docker.pkg.github.com/xinyangyuan/mail/backend:latest
-      - name: Zip Dockerrun.aws.json
-        run: zip deploy.zip Dockerrun.aws.json
 
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v1
@@ -38,6 +38,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: Mail
           environment_name: Mail-env
-          version_label: 3
+          version_label: 5
           region: ap-northeast-1
-          deployment_package: deploy.zip
+          deployment_package: Dockerrun.aws.json
