@@ -1,7 +1,7 @@
 const mime = require('mime');
 const transporter = require('../utils/nodemailer');
 
-const Token = require('../services/token');
+const Token = require('./token');
 const EmailTemplate = require('../utils/email-template');
 
 /*

@@ -19,5 +19,5 @@ testem.log
 /typings
 
 # env variables
-.env
+*.env
 nodemon.json
