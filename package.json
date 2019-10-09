@@ -5,6 +5,8 @@
     "start:frontend": "cd frontend && ng serve",
     "start:backend": "cd backend && npm run dev",
     "start:client": "npm run start:frontend",
-    "start:server": "npm run start:backend"
+    "start:server": "npm run start:backend",
+    "release:frontend": "cd frontend && release-it",
+    "release:backend": "cd backend && release-it"
   }
 }

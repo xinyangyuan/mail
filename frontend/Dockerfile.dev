@@ -12,4 +12,4 @@ RUN npm install
 COPY . .
 
 # Default command
-CMD [ "npm", "run", "docker"]
+CMD [ "npm", "run", "start:docker"]

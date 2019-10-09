@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../auth.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-sign-up',
@@ -23,7 +24,9 @@ export class SignUpComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private routerService: Router,
     private authService: AuthService
-  ) {}
+  ) {
+    console.log(environment.version);
+  }
 
   // Static method
   static titleCase(text: string) {

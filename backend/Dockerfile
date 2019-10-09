@@ -11,7 +11,7 @@ WORKDIR /usr/app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --only=production
 
 # Copy directory
 COPY . .
