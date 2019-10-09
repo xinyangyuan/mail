@@ -6,6 +6,7 @@ const crypto = require('../utils/encrypt');
 const User = require('../models/user');
 const Mail = require('../models/mail');
 
+const UserService = require('../services/user');
 const Token = require('../services/token');
 const Email = require('../services/email');
 
@@ -40,33 +41,27 @@ exports.getUser = async (req, res) => {
 
 exports.userSignUp = async (req, res) => {
   console.log('userSignUp is called');
-  // validation
-  if (!req.body.firstName)
-    return res.status(401).json({ message: 'Please provide user firstName' });
-  if (!req.body.lastName) return res.status(401).json({ message: 'Please provide user lastName' });
-  if (!req.body.email) return res.status(401).json({ message: 'Please provide user email' });
-  if (!req.body.password) return res.status(401).json({ message: 'Please provide user password' });
-  if (!req.body.role) return res.status(401).json({ message: 'Please provide user role' });
 
   // start session and transaction
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    // options
+    // request, options
+    const { firstName, lastName, email, password, role } = req.body;
     const options = { session: session };
 
     // $1: bcrypt
     // saltRounds really mean cost factor, pick the cost according to the server setup
     // https://security.stackexchange.com/questions/3959/recommended-of-iterations-when-using-pkbdf2-sha256/3993#3993
-    const hash = await bcrypt.hash(req.body.password, 10);
+    const hash = await bcrypt.hash(password, 10);
 
     // $2: create user
     const user_ = new User({
-      name: { first: req.body.firstName, last: req.body.lastName },
-      email: req.body.email,
+      name: { first: firstName, last: lastName },
+      email: email,
       password: hash,
-      role: req.body.role
+      role: role
     });
     const user = await user_.save(options);
 

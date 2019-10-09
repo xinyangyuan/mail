@@ -11,7 +11,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 })
 export class SignUpComponent implements OnInit, OnDestroy {
   // Attributes
-  accountTypes = ['user', 'sender'];
+  accountTypes = ['USER', 'SENDER'];
   hide = true;
   form: FormGroup;
   firstNameSub: Subscription;
@@ -34,8 +34,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
 
   // Init Method
   ngOnInit() {
-    // TEMP:
-    const permitedSender = this.route.snapshot.fragment !== '999888';
+    const senderDisabled = this.route.snapshot.fragment.length < 5; // code is needed
 
     // initialize the reactive form
     this.form = this.fb.group({
@@ -50,7 +49,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
           Validators.pattern('^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$')
         ]
       ],
-      accountType: [{ value: 'user', disabled: permitedSender }, Validators.required],
+      accountType: [{ value: 'USER', disabled: senderDisabled }, Validators.required],
       isAgreed: [false, Validators.requiredTrue]
     });
 
@@ -74,7 +73,8 @@ export class SignUpComponent implements OnInit, OnDestroy {
         this.lastName.value,
         this.email.value,
         this.password.value,
-        this.accountType.value === 'sender'
+        this.accountType.value,
+        this.route.snapshot.fragment
       )
       .toPromise();
 

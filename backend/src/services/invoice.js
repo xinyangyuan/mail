@@ -76,8 +76,6 @@ exports.newMail = async (userId, mailId, session) => {
       action: 'increment'
     });
 
-    console.log('invoice updated');
-
     // Complete Transaction:
     if (isIsolateTransaction) {
       await session.commitTransaction();
@@ -164,8 +162,6 @@ exports.newScan = async (userId, mailId, session) => {
       timestamp: Math.floor(now.getTime() / 1000), // stripe timestamp is in sec
       action: 'increment'
     });
-
-    console.log('record updated');
 
     // Complete Transaction:
     if (isIsolateTransaction) {
