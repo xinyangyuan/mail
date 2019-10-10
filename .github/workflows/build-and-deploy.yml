@@ -16,7 +16,6 @@ jobs:
       GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }}
 
     steps:
-      - name: Checkout source code
       - uses: actions/checkout@v1
 
       - name: Build images
