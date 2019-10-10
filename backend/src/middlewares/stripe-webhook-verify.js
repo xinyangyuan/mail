@@ -1,5 +1,5 @@
 const stripe = require('stripe')(process.env.STRIPE_KEY);
-const endpointSecret = process.env.STRIPE_KEY; // webhook secret
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET; // webhook secret
 
 const stripeWebhookVerify = (req, res, next) => {
   // dev environment: unsigned webhook
