@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { AuthData, User } from './auth-data.model';
+import { AuthData, User } from './auth.model';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -20,7 +20,27 @@ export class AuthService {
   */
 
   _signIn(email: string, password: string): Observable<{ ok: boolean; token: string; user: User }> {
+    // log-in authData
     const authData: AuthData = { email, password };
+
+    return this.http.post<{ ok: boolean; token: string; user: User }>(
+      this.BACKEND_URL + 'signin',
+      authData,
+      { withCredentials: true }
+    );
+  }
+
+  /*
+    $ Method: sign-in by userId
+  */
+
+  _signInById(
+    userId: string,
+    password: string
+  ): Observable<{ ok: boolean; token: string; user: User }> {
+    // log-in authData
+    const authData = { userId, password };
+
     return this.http.post<{ ok: boolean; token: string; user: User }>(
       this.BACKEND_URL + 'signin',
       authData,

@@ -1,3 +1,5 @@
+import { SignUpData } from '../auth.model';
+
 export class SignIn {
   static readonly type = '[Sign In Page] Sign In';
   constructor(public payload: { email: string; password: string }) {}
@@ -13,15 +15,7 @@ export class RefreshToken {
 
 export class SignUp {
   static readonly type = '[Sign Up Page] Sign Up';
-  constructor(
-    public payload: {
-      firstName: string;
-      lastName: string;
-      email: string;
-      password: string;
-      isSender: boolean;
-    }
-  ) {}
+  constructor(public payload: SignUpData) {}
 }
 
 export class SignOut {
@@ -35,7 +29,7 @@ export class ResendEmailConfirmation {
 
 export class VerifyEmailConfirmation {
   static readonly type = '[Sign Up Confirmation Page] Verify Email Confirmation';
-  constructor(public payload: string) {} // payload: password
+  constructor(public payload: { password: string; emailToken: string }) {} // payload: password
 }
 
 export class ResetPassword {

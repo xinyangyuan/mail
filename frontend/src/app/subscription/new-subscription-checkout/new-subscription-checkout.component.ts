@@ -31,8 +31,7 @@ export class NewSubscriptionCheckoutComponent implements OnInit {
   onPay(source: stripe.Source) {
     const plan = this.store.selectSnapshot(SubscriptionQuery.selectedPlan);
     const mailbox = this.store.selectSnapshot(SubscriptionQuery.selectedMailbox);
-    this.store
-      .dispatch(new SubscriptionActions.CreateSubscription({ source, plan, mailbox }))
-      .subscribe(() => this.router.navigate(['mails']));
+    //   this.store.dispatch(new SubscriptionActions.CreateSubscription({ source, plan, mailbox }));
+    //   // .subscribe(() => this.router.navigate(['mails']));
   }
 }

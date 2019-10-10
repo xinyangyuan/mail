@@ -1,20 +1,13 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { UiModule } from '../ui/ui.module';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import { AngularMaterialModule } from '../core/angular-material/angular-material.module';
+import { CoreModule } from '../core/core.module';
+import { NgxsModule } from '@ngxs/store';
 
+import { PasswordlessSate } from './store/passwordless.state';
 import { PasswordlessRoutingModule } from './passwordless-routing.module';
 import { PasswordlessMailUpdateComponent } from './passwordless-mail-update/passwordless-mail-update.component';
 
 @NgModule({
   declarations: [PasswordlessMailUpdateComponent],
-  imports: [
-    PasswordlessRoutingModule,
-    CommonModule,
-    UiModule,
-    FlexLayoutModule,
-    AngularMaterialModule
-  ]
+  imports: [PasswordlessRoutingModule, CoreModule, NgxsModule.forFeature([PasswordlessSate])]
 })
 export class PasswordlessModule {}

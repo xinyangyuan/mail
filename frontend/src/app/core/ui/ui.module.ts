@@ -7,8 +7,8 @@ import { ImageLoadingSpinnerComponent } from './image-loading-spinner/image-load
 import { LoadingSpinnerCubeComponent } from './loading-spinner-cube/loading-spinner-cube.component';
 
 @NgModule({
-  declarations: [CardInlineComponent, ImageLoadingSpinnerComponent, LoadingSpinnerCubeComponent],
   imports: [CommonModule, FlexLayoutModule],
+  declarations: [CardInlineComponent, ImageLoadingSpinnerComponent, LoadingSpinnerCubeComponent],
   exports: [CardInlineComponent, ImageLoadingSpinnerComponent, LoadingSpinnerCubeComponent]
 })
 export class UiModule {}

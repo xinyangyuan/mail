@@ -5,20 +5,20 @@
 
   <!-- Create Address Form -->
   <form [formGroup]="form" (submit)="onSubmit()" class="address-create-form" fxLayout="column">
-    <!-- address form control -->
+    <!-- line1 form control -->
     <mat-form-field appearance="standard">
       <mat-label>Line 1</mat-label>
-      <input matInput formControlName="address" />
-      <mat-error *ngIf="address.invalid && address.touched">
-        Please enter a valid address
+      <input matInput formControlName="line1" />
+      <mat-error *ngIf="line1.invalid && line1.touched">
+        Please enter a valid line1
       </mat-error>
     </mat-form-field>
 
-    <!-- address2 form control -->
+    <!-- line2 form control -->
     <mat-form-field appearance="standard">
       <mat-label>Line 2</mat-label>
-      <input matInput formControlName="address2" />
-      <mat-error *ngIf="address2.invalid && address2.touched">
+      <input matInput formControlName="line2" />
+      <mat-error *ngIf="line2.invalid && line2.touched">
         Please enter a valid address
       </mat-error>
     </mat-form-field>
@@ -32,11 +32,11 @@
       </mat-error>
     </mat-form-field>
 
-    <!-- zip code form control -->
+    <!-- zip / postal code form control -->
     <mat-form-field appearance="standard">
       <mat-label>Zip / Postal Code</mat-label>
-      <input matInput formControlName="zipCode" />
-      <mat-error *ngIf="zipCode.invalid && zipCode.touched">
+      <input matInput formControlName="zip" />
+      <mat-error *ngIf="zip.invalid && zip.touched">
         Please enter a valid zip / postal-code
       </mat-error>
     </mat-form-field>

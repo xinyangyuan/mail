@@ -104,13 +104,15 @@ export class AddressService {
 
   _createAddress(
     line1: string,
-    line2: string,
     city: string,
     zip: string,
-    country: string
+    country: string,
+    line2?: string
   ): Observable<{ address: Address }> {
     // pack all required post data
-    const addressData = { line1, line2, city, zip, country };
+    const addressData = line2
+      ? { line1, line2, city, zip, country }
+      : { line1, city, zip, country };
 
     return (
       this.http

@@ -1,12 +1,11 @@
 import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { CoreModule } from '../core/core.module';
 
 import { UserListComponent } from './user-list/user-list.component';
-import { AngularMaterialModule } from '../core/angular-material/angular-material.module';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 
 @NgModule({
-  imports: [CommonModule, RouterModule, AngularMaterialModule],
+  imports: [RouterModule, CoreModule],
   exports: [],
   declarations: [UserListComponent],
   providers: []

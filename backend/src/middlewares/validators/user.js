@@ -1,4 +1,4 @@
-const { check, body } = require('express-validator');
+const { check, body, oneOf } = require('express-validator');
 
 const { validationResultHandler } = require('./validation-result-handler');
 const User = require('../../models/user');
@@ -8,7 +8,13 @@ const UserService = require('../../services/user');
   Validator Middleware: signIn
 */
 
-exports.signIn = [check('email').isEmail(), check('password').exists(), validationResultHandler];
+exports.signIn = [
+  oneOf([
+    [check('email').isEmail(), check('password').isString()],
+    [check('userId').isMongoId(), check('password').isString()]
+  ]),
+  validationResultHandler
+];
 
 /*
   Validator Middleware: signUp

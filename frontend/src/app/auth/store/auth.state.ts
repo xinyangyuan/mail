@@ -1,8 +1,9 @@
 import { State, Selector, Action, StateContext } from '@ngxs/store';
 import { tap } from 'rxjs/operators';
+import * as jwtDecode from 'jwt-decode';
 
 import * as AuthActions from './auth.action';
-import { User } from '../auth-data.model';
+import { User } from '../auth.model';
 import { AuthService } from '../auth.service';
 
 /*
@@ -131,6 +132,29 @@ export class AuthState {
         });
       })
     );
+  }
+
+  /*
+   Action: verify email address
+  */
+
+  @Action(AuthActions.VerifyEmailConfirmation)
+  async verifyEmailConfirmation(
+    ctx: StateContext<AuthStateModel>,
+    action: AuthActions.VerifyEmailConfirmation
+  ) {
+    // action payloads
+    const { password, emailToken } = action.payload;
+
+    // call api to complete email address verification
+    await this.authService._verifyEmailConfirmation(password, emailToken).toPromise();
+
+    // call api to log-in user
+    const { userId } = jwtDecode(emailToken);
+    const { token, user } = await this.authService._signInById(userId, password).toPromise();
+
+    // update auth store
+    ctx.patchState({ token, user });
   }
 
   /*

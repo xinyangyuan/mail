@@ -37,7 +37,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
 
   // Init Method
   ngOnInit() {
-    const senderDisabled = this.route.snapshot.fragment.length < 5; // code is needed
+    const senderEnabled = this.route.snapshot.fragment && this.route.snapshot.fragment.length > 5;
 
     // initialize the reactive form
     this.form = this.fb.group({
@@ -52,7 +52,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
           Validators.pattern('^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$')
         ]
       ],
-      accountType: [{ value: 'USER', disabled: senderDisabled }, Validators.required],
+      accountType: [{ value: 'USER', disabled: !senderEnabled }, Validators.required],
       isAgreed: [false, Validators.requiredTrue]
     });
 

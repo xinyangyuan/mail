@@ -77,6 +77,7 @@
       <app-payment-request
         [amount]="data.plan.price"
         [label]="data.plan.name + ' ' + data.plan.type"
+        (source)="onPay($event)"
       ></app-payment-request>
 
       <!-- Back & Next Button -->

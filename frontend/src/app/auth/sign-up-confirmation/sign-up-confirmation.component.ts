@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Store } from '@ngxs/store';
+
 import { AuthService } from '../auth.service';
+import * as AuthActions from '../store/auth.action';
 
 @Component({
   selector: 'app-sign-up-confirmation',
@@ -20,7 +23,8 @@ export class SignUpConfirmationComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    public authService: AuthService
+    public authService: AuthService,
+    private store: Store
   ) {}
 
   // Init Method
@@ -40,8 +44,13 @@ export class SignUpConfirmationComponent implements OnInit {
   // Method: call signUp serivce
   async onConfirm() {
     // async request: send email confirmation request to server
-    await this.authService
-      ._verifyEmailConfirmation(this.password.value, this.emailToken)
+    await this.store
+      .dispatch(
+        new AuthActions.VerifyEmailConfirmation({
+          password: this.password.value as string,
+          emailToken: this.emailToken
+        })
+      )
       .toPromise();
 
     // redirect user to pick address or create address

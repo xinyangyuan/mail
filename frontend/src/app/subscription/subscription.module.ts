@@ -1,16 +1,14 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { AngularMaterialModule } from '../core/angular-material/angular-material.module';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import { UiSwitchModule } from 'ngx-ui-switch';
-
+import { NgxsModule } from '@ngxs/store';
+import { CoreModule } from '../core/core.module';
 import { SubscriptionRoutingModule } from './subscription-routing.module';
+
 import { PaymentModule } from '../payment/payment.module';
-import { UiModule } from '../ui/ui.module';
 import { PlanModule } from '../plans/plan.module';
 import { AddressModule } from '../addresses/address.module';
 
+import { SubscriptionState } from './store/subscription.state';
 import { NewSubscriptionCheckoutComponent } from './new-subscription-checkout/new-subscription-checkout.component';
 import { NewSubscriptionComponent } from './new-subscription/new-subscription.component';
 import { NewSubscriptionSelectAddressComponent } from './new-subscription-select-address/new-subscription-select-address.component';
@@ -24,16 +22,13 @@ import { NewSubscriptionSelectPlanComponent } from './new-subscription-select-pl
     NewSubscriptionCheckoutComponent
   ],
   imports: [
-    CommonModule,
     PaymentModule,
     PlanModule,
     AddressModule,
     ReactiveFormsModule,
-    FlexLayoutModule,
-    UiSwitchModule,
-    UiModule,
-    AngularMaterialModule,
-    SubscriptionRoutingModule
+    SubscriptionRoutingModule,
+    CoreModule,
+    NgxsModule.forFeature([SubscriptionState])
   ],
   entryComponents: [
     NewSubscriptionSelectPlanComponent,

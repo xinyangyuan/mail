@@ -1,16 +1,15 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import { AngularMaterialModule } from '../core/angular-material/angular-material.module';
 import { ReactiveFormsModule } from '@angular/forms';
+import { NgxsModule } from '@ngxs/store';
+import { CoreModule } from '../core/core.module';
 
-import { UiModule } from '../ui/ui.module';
+import { PlanState } from './store/plan.state';
 import { PlanCardComponent } from './plan-card/plan-card.component';
 import { PlanListComponent } from './plan-list/plan-list.component';
 
 @NgModule({
   declarations: [PlanCardComponent, PlanListComponent],
-  imports: [CommonModule, ReactiveFormsModule, UiModule, FlexLayoutModule, AngularMaterialModule],
+  imports: [ReactiveFormsModule, CoreModule, NgxsModule.forFeature([PlanState])],
   exports: [PlanListComponent]
 })
 export class PlanModule {}

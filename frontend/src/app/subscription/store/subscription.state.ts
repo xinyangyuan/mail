@@ -44,8 +44,9 @@ export class SubscriptionState {
   ) {
     // rest api call
     const { source, plan, mailbox } = action.payload;
-    const createSubscription$ = this.subscriptionService._createSubscription(plan, source, mailbox);
-    const { paymentIntent } = await createSubscription$.toPromise();
+    const { paymentIntent } = await this.subscriptionService
+      ._createSubscription(plan, source, mailbox)
+      .toPromise();
 
     // handle paymentIntent result [3d secure modal for require_actions]
     await this.paymentService._handlePaymentIntent(paymentIntent);

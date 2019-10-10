@@ -1,10 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
-
-import { AngularMaterialModule } from '../core/angular-material/angular-material.module';
 import { AuthRoutingModule } from './auth-routing.module';
+import { CoreModule } from '../core/core.module';
 
 import { SignInComponent } from './sign-in/sign-in.component';
 import { SignUpComponent } from './sign-up/sign-up.component';
@@ -20,12 +18,6 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
     ForgotPasswordComponent,
     ResetPasswordComponent
   ],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FlexLayoutModule,
-    AngularMaterialModule,
-    AuthRoutingModule
-  ]
+  imports: [CommonModule, ReactiveFormsModule, AuthRoutingModule, CoreModule]
 })
 export class AuthModule {}

@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
-import { AngularMaterialModule } from '../core/angular-material/angular-material.module';
+import { CoreModule } from '../core/core.module';
+import { MailRoutingModule } from './mail-routing.module';
+import { NgxsModule } from '@ngxs/store';
 
-import { DebounceClickDirective } from '../core/directives/debounce-click.directive';
-
+import { MailState } from './store/mail.state';
 import { MailListComponent } from './mail-list/mail-list.component';
 import { MailCreateComponent } from './mail-create/mail-create.component';
 import { MailExpansionListItemComponent } from './mail-expansion-list-item/mail-expansion-list-item.component';
@@ -10,15 +11,10 @@ import { MailCardGridItemComponent } from './mail-card-grid-item/mail-card-grid-
 import { MailCardListItemComponent } from './mail-card-list-item/mail-card-list-item.component';
 import { MailUpdateComponent } from './mail-update/mail-update.component';
 import { MailItemActionBarComponent } from './mail-item-action-bar/mail-item-action-bar.component';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { UiModule } from '../ui/ui.module';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import { MailRoutingModule } from './mail-routing.module';
 
 @NgModule({
   declarations: [
-    DebounceClickDirective,
     MailListComponent,
     MailCreateComponent,
     MailExpansionListItemComponent,
@@ -27,14 +23,7 @@ import { MailRoutingModule } from './mail-routing.module';
     MailUpdateComponent,
     MailItemActionBarComponent
   ],
-  imports: [
-    MailRoutingModule,
-    CommonModule,
-    ReactiveFormsModule,
-    UiModule,
-    FlexLayoutModule,
-    AngularMaterialModule
-  ],
+  imports: [MailRoutingModule, ReactiveFormsModule, CoreModule, NgxsModule.forFeature([MailState])],
   exports: []
 })
 export class MailModule {}

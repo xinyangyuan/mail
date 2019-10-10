@@ -23,10 +23,10 @@ export class AddressCreateComponent implements OnInit {
   ngOnInit() {
     // reactive form
     this.form = this.fb.group({
-      address: ['', [Validators.required]],
-      address2: ['', [Validators.required]],
+      line1: ['', [Validators.required]],
+      line2: [''],
       city: ['', [Validators.required]],
-      zipCode: ['', [Validators.required]],
+      zip: ['', [Validators.required]],
       country: ['US', Validators.required]
     });
   }
@@ -35,30 +35,30 @@ export class AddressCreateComponent implements OnInit {
   onSubmit() {
     this.addressService
       ._createAddress(
-        this.address.value,
-        this.address2.value,
+        this.line1.value,
         this.city.value,
-        this.zipCode.value,
-        this.country.value
+        this.zip.value,
+        this.country.value,
+        this.line2.value
       )
       .subscribe(_ => this.router.navigate(['mails']));
   }
 
   // Getters:
-  get address() {
-    return this.form.get('address');
+  get line1() {
+    return this.form.get('line1');
   }
 
-  get address2() {
-    return this.form.get('address2');
+  get line2() {
+    return this.form.get('line2');
   }
 
   get city() {
     return this.form.get('city');
   }
 
-  get zipCode() {
-    return this.form.get('zipCode');
+  get zip() {
+    return this.form.get('zip');
   }
 
   get country() {

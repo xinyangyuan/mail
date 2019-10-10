@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { Plan } from '../plans/plan.model';
 import { Mailbox } from '../addresses/address.model';
+import { tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -23,10 +24,19 @@ export class SubscriptionService {
     // pack all required post data
     const { address, mailboxNo } = mailbox;
     const subscriptionData = { source, mailboxNo, addressId: address._id, planIds: plan.ids };
+
+    console.log(subscriptionData);
+
     // post api call
-    return this.http.post<{ message: string; paymentIntent: stripe.paymentIntents.PaymentIntent }>(
-      this.BACKEND_URL,
-      subscriptionData
-    );
+    return this.http
+      .post<{ message: string; paymentIntent: stripe.paymentIntents.PaymentIntent }>(
+        this.BACKEND_URL,
+        subscriptionData
+      )
+      .pipe(
+        tap(response => {
+          console.log(response);
+        })
+      );
   }
 }

@@ -73,8 +73,8 @@ exports.userSignUp = async (req, res) => {
       senderId: mongoose.Types.ObjectId(user._id),
       receiverId: mongoose.Types.ObjectId(user._id),
       status: 'SCANNED_ARCHIVED',
-      envelopKey: crypto.encrypt('hello.jpg'),
-      contentPDFKey: crypto.encrypt('hello.pdf')
+      envelopKey: crypto.encrypt('welcome.jpg'),
+      contentPDFKey: crypto.encrypt('welcome.pdf')
     });
     await mail.save(options);
 
@@ -109,12 +109,15 @@ exports.userSignIn = async (req, res) => {
   console.log('userSignIn is called');
   try {
     // filter
-    const filter = { email: req.body.email };
+    const { email, userId } = req.body;
+    const filter = userId ? { _id: userId } : { email };
 
     // $1: find user
     const user = await User.findOne(filter);
     if (!user) {
-      return res.status(400).json({ message: 'Email is not associated with a user' });
+      return userId
+        ? res.status(400).json({ message: 'UserId is not associated with a user' })
+        : res.status(400).json({ message: 'Email is not associated with a user' });
     } else if (user.status === 'UNCONFIRMED') {
       return res.status(400).json({ message: 'Please verify your email address' });
     }
