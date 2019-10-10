@@ -5,6 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxsModule } from '@ngxs/store';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 
+import { CoreModule } from './core/core.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthModule } from './auth/auth.module';
 import { SubscriptionModule } from './subscription/subscription.module';
@@ -26,7 +27,6 @@ import { NavigationListComponent } from './navigation/navigation-list/navigation
 import { DashboardPageComponent } from './layout/dashboard-page/dashboard-page.component';
 import { HeaderPublicComponent } from './navigation/header-public/header-public.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
-import { CoreModule } from './core/core.module';
 
 @NgModule({
   declarations: [

@@ -1,5 +1,12 @@
 version: '3'
 services:
+  # Stripe Cli (forward stripe webhooks events to backend)
+  # stripe:
+  #   restart: always
+  #   image: stripe/stripe-cli
+  # stripe listen --forward-to localhost:3000/api/stripe-webhook
+
+  # Nginx
   nginx:
     restart: always
     build:
@@ -8,6 +15,8 @@ services:
     image: mail-nginx:dev
     ports:
       - '4200:80'
+
+  # Frontend
   frontend:
     restart: always
     build:
@@ -17,6 +26,8 @@ services:
     volumes:
       - /usr/app/node_modules
       - ./frontend:/usr/app
+
+  # Backend
   backend:
     restart: always
     build:

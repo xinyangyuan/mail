@@ -6,7 +6,7 @@ let HOMPAGE_URL;
 if (process.env.NODE_ENV === 'development') {
   HOMPAGE_URL = 'http://localhost:4200';
 } else {
-  HOMPAGE_URL = 'https://app.shocks.today';
+  HOMPAGE_URL = 'http://mail-env.9kc4f5k7dp.ap-northeast-1.elasticbeanstalk.com';
 }
 
 /*
