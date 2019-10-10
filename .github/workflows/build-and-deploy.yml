@@ -13,7 +13,7 @@ jobs:
 
     env:
       GITHUB_ID: ${{ secrets.GITHUB_ID }}
-      GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }
+      GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }}
 
     steps:
       - uses: actions/checkout@v1
