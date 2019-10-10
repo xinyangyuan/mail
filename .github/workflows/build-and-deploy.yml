@@ -16,7 +16,9 @@ jobs:
       GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }}
 
     steps:
+      - name: Checkout source code
       - uses: actions/checkout@v1
+
       - name: Build images
         run: bash docker-build.sh
 
@@ -37,6 +39,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: Mail
           environment_name: Mail-env
-          version_label: 6
+          version_label: 7
           region: ap-northeast-1
           deployment_package: Dockerrun.aws.json

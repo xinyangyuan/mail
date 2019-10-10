@@ -4,7 +4,8 @@ services:
   # stripe:
   #   restart: always
   #   image: stripe/stripe-cli
-  # stripe listen --forward-to localhost:3000/api/stripe-webhook
+  # stripe login
+  # stripe listen --forward-to backend/api/stripe-webhook
 
   # Nginx
   nginx:
