@@ -10,8 +10,8 @@ const stripeWebhookVerify = (req, res, next) => {
 
   // prod environment: signed webhook
   try {
-    const signature = request.headers['stripe-signature'];
-    req.stripeEvent = stripe.webhooks.constructEvent(request.body, signature, endpointSecret);
+    const signature = req.headers['stripe-signature'];
+    req.stripeEvent = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
     next();
   } catch (err) {
     res.status(400).send(`Webhook Error: ${err.message}`);
