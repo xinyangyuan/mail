@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     name: Build and Deploy
+
     runs-on: ubuntu-latest
 
     env:
@@ -17,10 +18,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-
       - name: Build images
         run: bash docker-build.sh
-
       - name: Push images to GPR
         run: |
           docker login docker.pkg.github.com -u $GITHUB_ID -p $GITHUB_PACKAGE_REGISTRY_TOKEN
@@ -30,7 +29,6 @@ jobs:
           docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest
           docker push docker.pkg.github.com/xinyangyuan/mail/frontend:latest
           docker push docker.pkg.github.com/xinyangyuan/mail/backend:latest
-
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v1
         with:
