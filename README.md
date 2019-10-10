@@ -5,7 +5,8 @@ This project is build with node-js, express, and mongdb (backend), and angular f
 ## Getting Started
 
 <pre>
-Visit our website: <a href="https://www.shockmail.today" title="Dockerrun.aws.json File">shockmail.today</a>
+Visit our website: <a href="https://www.shockmail.today" title="website">shockmail.today</a>
+Visit internal testing site: <a href="http://mail-env.9kc4f5k7dp.ap-northeast-1.elasticbeanstalk.com" title="testing website">shockmail.test</a>
 </pre>
 
 
