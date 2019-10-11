@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Select, Store } from '@ngxs/store';
 
-import { Plan } from 'src/app/plans/plan.model';
+import { Plan } from 'src/app/plan/plan.model';
 import { SubscriptionQuery } from '../store/subscription.query';
 
 @Component({

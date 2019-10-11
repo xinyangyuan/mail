@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from 'src/environments/environment';
-import { Plan } from '../plans/plan.model';
-import { Mailbox } from '../addresses/address.model';
+import { Plan } from '../plan/plan.model';
+import { Mailbox } from '../address/models/mailbox.model';
 import { tap } from 'rxjs/operators';
 
 @Injectable({

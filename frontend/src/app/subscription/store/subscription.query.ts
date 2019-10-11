@@ -1,7 +1,7 @@
 import { Selector } from '@ngxs/store';
 
-import { PlanState, PlanStateModel } from 'src/app/plans/store/plan.state';
-import { AddressState, AddressStateModel } from 'src/app/addresses/store/address.state';
+import { PlanState, PlanStateModel } from 'src/app/plan/store/plan.state';
+import { AddressState, AddressStateModel } from 'src/app/address/store/address.state';
 
 export class SubscriptionQuery {
   // Query: selectedPlan from plan store

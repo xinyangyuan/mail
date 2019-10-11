@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Store } from '@ngxs/store';
+import { MatProgressButtonOptions } from 'mat-progress-buttons';
 
 import { MailService } from '../mail.service';
-import { AddressService } from 'src/app/addresses/address.service';
-import { Router } from '@angular/router';
-import { MatProgressButtonOptions } from 'mat-progress-buttons';
+import * as AddressActions from '../../address/store/address.action';
 
 @Component({
   selector: 'app-mail-create',
@@ -33,16 +34,13 @@ export class MailCreateComponent implements OnInit {
   constructor(
     private mailService: MailService,
     private fb: FormBuilder,
-    private addressService: AddressService,
-    private routerService: Router
+    private routerService: Router,
+    private store: Store
   ) {}
 
   // Init Method
   ngOnInit() {
     // get the list of receivers
-    // this.addressService._getMyAddressInfo().subscribe(res => {
-    //   // this.receiverList = res.addressInfo.receiverIds;
-    // });
 
     // initialize the reactive form
     this.form = this.fb.group({

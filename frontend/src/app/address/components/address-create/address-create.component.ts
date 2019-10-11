@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AddressService } from '../address.service';
+import { AddressService } from '../../address.service';
 
 @Component({
   selector: 'app-address-create',

@@ -4,8 +4,9 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Select, Store } from '@ngxs/store';
 
-import { Plan } from 'src/app/plans/plan.model';
-import { Address, Mailbox } from 'src/app/addresses/address.model';
+import { Plan } from 'src/app/plan/plan.model';
+import { Address } from 'src/app/address/models/address.model';
+import { Mailbox } from 'src/app/address/models/mailbox.model';
 import { SubscriptionQuery } from '../store/subscription.query';
 import * as SubscriptionActions from '../store/subscription.action';
 

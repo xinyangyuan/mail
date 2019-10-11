@@ -1,4 +1,5 @@
-import { Address, Receivers } from '../address.model';
+import { Address } from '../models/address.model';
+import { Receivers } from '../models/receivers.model';
 import { State, Selector, Action, StateContext } from '@ngxs/store';
 
 import * as AddressActions from './address.action';

@@ -12,9 +12,9 @@ import { Observable, Subscription, combineLatest } from 'rxjs';
 import { tap, map, startWith } from 'rxjs/operators';
 import { Select, Store } from '@ngxs/store';
 
-import { Address } from '../address.model';
-import { AddressState } from '../store/address.state';
-import * as AddressActions from '../store/address.action';
+import { Address } from '../../models/address.model';
+import { AddressState } from '../../store/address.state';
+import * as AddressActions from '../../store/address.action';
 
 @Component({
   selector: 'app-address-select-form',

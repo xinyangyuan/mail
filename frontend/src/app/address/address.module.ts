@@ -5,9 +5,9 @@ import { AddressRoutingModule } from './address-routing.module';
 import { CoreModule } from '../core/core.module';
 
 import { AddressState } from './store/address.state';
-import { AddressCardComponent } from './address-card/address-card.component';
-import { AddressCreateComponent } from './address-create/address-create.component';
-import { AddressSelectFormComponent } from './address-select-form/address-select-form.component';
+import { AddressCardComponent } from './components/address-card/address-card.component';
+import { AddressCreateComponent } from './components/address-create/address-create.component';
+import { AddressSelectFormComponent } from './components/address-select-form/address-select-form.component';
 
 @NgModule({
   declarations: [AddressCardComponent, AddressCreateComponent, AddressSelectFormComponent],

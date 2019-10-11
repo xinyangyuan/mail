@@ -10,13 +10,23 @@ const router = express.Router();
 */
 
 router.get('', AddressController.getAddressList); // PUBLIC ACCESSIBLE
+
+router.get(
+  '/senderId/:senderId',
+  AuthMiddleware.authVerify,
+  AddressController.getAddressBySenderId
+);
+
 router.get(
   '/receivers/receiverId/:receiverId',
   AuthMiddleware.authVerify,
   AddressController.getAddressByReceiverId
 );
+
 router.get('/:id', AddressController.getAddress); // PUBLIC ACCESSIBLE
+
 router.get('/:id/vacantMailboxNos', AddressController.getVacantMailboxNos); // PUBLIC ACCESSIBLE
+
 router.get('/:id/receivers', AuthMiddleware.senderVerify, AddressController.getAddressReceivers);
 
 /*

@@ -1,5 +1,5 @@
-import { Plan } from 'src/app/plans/plan.model';
-import { Mailbox } from 'src/app/addresses/address.model';
+import { Plan } from 'src/app/plan/plan.model';
+import { Mailbox } from 'src/app/address/models/mailbox.model';
 
 export class CreateSubscription {
   static readonly type = '[New Subscription Checkout Component] Create Subscription';

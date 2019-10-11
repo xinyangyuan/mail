@@ -3,8 +3,8 @@ import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
 
-import { MailState } from 'src/app/mails/store/mail.state';
-import * as MailActions from 'src/app/mails/store/mail.action';
+import { MailState } from 'src/app/mail/store/mail.state';
+import * as MailActions from 'src/app/mail/store/mail.action';
 import * as AuthActios from 'src/app/auth/store/auth.action';
 
 @Component({

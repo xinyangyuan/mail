@@ -5,8 +5,8 @@ import { CoreModule } from '../core/core.module';
 import { SubscriptionRoutingModule } from './subscription-routing.module';
 
 import { PaymentModule } from '../payment/payment.module';
-import { PlanModule } from '../plans/plan.module';
-import { AddressModule } from '../addresses/address.module';
+import { PlanModule } from '../plan/plan.module';
+import { AddressModule } from '../address/address.module';
 
 import { SubscriptionState } from './store/subscription.state';
 import { NewSubscriptionCheckoutComponent } from './new-subscription-checkout/new-subscription-checkout.component';

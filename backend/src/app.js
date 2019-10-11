@@ -35,9 +35,18 @@ mongoose
  parse data stream to data object
 */
 
-app.use(bodyParser.json()); // json type data
+app.use(cookieParser()); // cookie
 app.use(bodyParser.urlencoded({ extended: false })); // url encoded data
-app.use(cookieParser());
+app.use(
+  bodyParser.json({
+    verify: function(req, res, buf) {
+      const url = req.originalUrl;
+      if (url === '/api/stripe-webhook') {
+        req.rawBody = buf.toString(); // stripe requires raw
+      }
+    }
+  })
+);
 
 /*
  cors settings

@@ -27,6 +27,36 @@ exports.getAddressList = async (req, res) => {
 };
 
 /*
+  Controller: get one address by senderId [GET]
+*/
+
+exports.getAddressBySenderId = async (req, res) => {
+  console.log('getAddressBySenderId is called');
+  try {
+    // validation
+    if (req.userData.userId !== req.params.senderId) {
+      return res.status(404).json({ message: '' });
+    }
+
+    // filter
+    const filter = { senderId: req.params.senderId };
+
+    // $1: get address
+    const address = await Address.findOne(filter).lean();
+
+    if (!address) {
+      return res.status(400).json({ message: 'Cannot find the address' });
+    }
+
+    // success response
+    res.status(200).json({ message: 'success', address });
+  } catch {
+    // error response
+    res.status(500).json({ message: 'Failed to find the address' });
+  }
+};
+
+/*
   Controller: get one address by receiverId [GET]
 */
 

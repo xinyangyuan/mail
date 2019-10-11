@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { MainLayoutComponent } from '../layout/main-layout/main-layout.component';
 
-import { AddressCreateComponent } from './address-create/address-create.component';
+import { AddressCreateComponent } from './components/address-create/address-create.component';
 
 const routes: Routes = [
   {

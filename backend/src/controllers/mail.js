@@ -362,7 +362,7 @@ exports.createMail = async (req, res, next) => {
     const optionsPop = {
       path: 'receivers.receiverId',
       match: { _id: receiverId },
-      select: ' name email'
+      select: 'name email'
     };
 
     // $1: check receiver belongs to sender
@@ -390,8 +390,12 @@ exports.createMail = async (req, res, next) => {
     await Mail.updateOne(filterUpdate, update, options);
 
     // $5: send email
-    const receiver = address.receivers[0].receiverId;
-    await EmailService.mailReceivedNotification(receiver, mail, file);
+    const receiver = address.receivers
+      // [{receiverId: {}, mailboxNo: xx}, {receiverId: null, mailboxNo: xx}, ...] => [{name: {}, email}, null, null]
+      .map(receiver => receiver.receiverId)
+      // [{name: {}, email}, null, null]  => [{name: {}, email}]
+      .filter(receiver => (receiver ? receiver._id.toString() === receiverId.toString() : false));
+    await EmailService.mailReceivedNotification(receiver[0], mail, file);
 
     // complete transaction and closes session
     await session.commitTransaction();

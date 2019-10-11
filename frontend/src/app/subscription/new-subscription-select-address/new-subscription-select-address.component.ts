@@ -4,7 +4,7 @@ import { take } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { Select } from '@ngxs/store';
 
-import { Address } from 'src/app/addresses/address.model';
+import { Address } from 'src/app/address/models/address.model';
 import { SubscriptionQuery } from '../store/subscription.query';
 
 @Component({

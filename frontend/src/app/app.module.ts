@@ -10,9 +10,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { AuthModule } from './auth/auth.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { PaymentModule } from './payment/payment.module';
-import { PlanModule } from './plans/plan.module';
-import { AddressModule } from './addresses/address.module';
-import { MailModule } from './mails/mail.module';
+import { PlanModule } from './plan/plan.module';
+import { AddressModule } from './address/address.module';
+import { MailModule } from './mail/mail.module';
 import { PasswordlessModule } from './passwordless/passwordless.module';
 
 import { ngxsConfig } from './store/ngxs.config';

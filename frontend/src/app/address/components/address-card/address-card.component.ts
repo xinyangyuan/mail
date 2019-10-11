@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { Address } from '../address.model';
+import { Address } from '../../models/address.model';
 
 @Component({
   selector: 'app-address-card',
