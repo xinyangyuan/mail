@@ -1,8 +1,0 @@
-div .mail-list {
-  width: 95%;
-  margin: 0rem auto;
-}
-
-mat-paginator {
-  background-color: rgba(245, 245, 245, 1);
-}

@@ -1,0 +1,16 @@
+/* Mail Create Page */
+.mail-create-page {
+  height: 100%;
+}
+
+/* Go-back Button */
+.btn-dark {
+  width: 250px;
+  background-color: rgb(15, 102, 189);
+  color: white;
+}
+
+/* Mail Create Component Container */
+.container {
+  height: calc(100vh - 70px);
+}

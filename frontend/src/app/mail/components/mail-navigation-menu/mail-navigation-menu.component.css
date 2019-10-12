@@ -1,0 +1,26 @@
+/* Menu Button */
+.btn-blue {
+  background-color: dodgerblue;
+  color: white;
+}
+
+/* Menu */
+::ng-deep .menuuu {
+  margin-top: 16px;
+  padding: 0 10px;
+  width: 230px;
+}
+
+/* Menu item text */
+.mat-menu-item span {
+  /* font */
+  color: rgb(0, 0, 0, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+
+  /* align with material icon */
+  vertical-align: middle;
+}

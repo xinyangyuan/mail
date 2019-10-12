@@ -24,7 +24,8 @@ import {
   MatCheckboxModule,
   MatAutocompleteModule,
   MatSlideToggleModule,
-  MatDialogModule
+  MatDialogModule,
+  MatTooltipModule
 } from '@angular/material';
 
 @NgModule({
@@ -53,7 +54,8 @@ import {
     MatProgressButtonsModule,
     MatAutocompleteModule,
     MatSlideToggleModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltipModule
   ],
   providers: [{ provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 1500 } }]
 })

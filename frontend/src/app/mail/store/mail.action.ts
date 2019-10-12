@@ -1,7 +1,8 @@
 import { Data } from '@angular/router';
 import { FormGroup } from '@angular/forms';
 
-import { Mail, MailStatus } from '../mail.model';
+import { Mail } from '../models/mail.model';
+import { MailStatus } from '../models/mail-status.model';
 
 /*
     Action: get mail or mail resource from API [GET]

@@ -1,0 +1,29 @@
+<!-- New Mail Page -->
+<div fxLayout="row" fxLayout.lt-md="column" fxLayoutWrap calss="mail-create-page">
+  <!-- Side Navigation -->
+  <div
+    fxFlex="none"
+    fxLayout="column"
+    fxLayoutAlign="start center"
+    [ngStyle.gt-md]="{ 'padding-left': '2rem' }"
+  >
+    <!-- top padding [for desktop screen] -->
+    <div fxHide.lt-md style="height: 3rem;"></div>
+
+    <!-- go-back button -->
+    <button mat-raised-button class="btn-dark" routerLink="/mails">
+      <div fxLayout="row" fxLayoutAlign="space-between center">
+        <mat-icon>chevron_left</mat-icon>
+        <span>GO BACK</span>
+      </div>
+    </button>
+
+    <!-- bottom padding [for mobole screen] -->
+    <div fxHide.gt-md style="height: 2rem;"></div>
+  </div>
+
+  <!-- Mail Create Component -->
+  <div fxFlex fxLayout="row" fxLayoutAlign="space-around center" class="container">
+    <app-mail-create></app-mail-create>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+/* Header */
+.header {
+  width: 100vw;
+  height: 70px;
+  background-color: rgb(226, 232, 239);
+}
+
+/* Header Content */
+.container {
+  width: 95%;
+}
+
+/* Menu */
+span {
+  /* font */
+  color: rgb(0, 0, 0, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  -webkit-font-smoothing: antialiased;
+
+  /* align with material icon */
+  vertical-align: middle;
+}

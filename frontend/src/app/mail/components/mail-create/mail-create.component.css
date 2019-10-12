@@ -1,0 +1,31 @@
+/* Material Card */
+mat-card {
+  padding-top: 2rem;
+  padding-bottom: 1rem;
+  max-width: 500px;
+  min-width: 400px;
+}
+
+/* Textfield */
+mat-form-field,
+textarea {
+  width: 100%;
+}
+
+/* Image Upload Button */
+.image-upload-btn {
+  text-align: center;
+}
+
+.image-upload-btn button {
+  width: 100%;
+}
+
+/* hide HTML file picker button */
+input[type='file'] {
+  visibility: hidden;
+}
+
+div {
+  margin: 1rem auto;
+}

@@ -1,0 +1,47 @@
+<!-- Header -->
+<div fxLayout="row" fxLayoutAlign="center" class="header">
+  <div fxLayout="row" fxLayoutAlign="start center" class="container">
+    <!-- Logo -->
+    <img src="../../../assets/img/logo.svg" alt="Logo" style="height:100px; margin: -16px" />
+
+    <!-- Action Buttons -->
+    <div fxFlex></div>
+    <div fxLayout="row" fxLayoutAlign="center center">
+      <!-- help button-->
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="helpMenu"
+        matTooltip="We are implementing this feature 🚀"
+        aria-label="button to show help menu"
+      >
+        <mat-icon>info</mat-icon>
+      </button>
+
+      <!-- sign-out button -->
+      <div style="width: 0.5rem;"></div>
+      <button mat-icon-button [matMenuTriggerFor]="powerMenu" matTooltip="Sign out">
+        <mat-icon>power_settings_new</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Help Menu -->
+<mat-menu #helpMenu="matMenu" xPosition="before">
+  <button mat-menu-item>
+    <mat-icon style="margin: 0 16px 0 0; color: rgba(0, 0, 0, 0.65);">menu_book</mat-icon>
+    <span>Documentation</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon style="margin: 0 16px 0 0; color: rgba(0, 0, 0, 0.65);">help_outline</mat-icon>
+    <span>Support</span>
+  </button>
+</mat-menu>
+
+<!-- Sign-out Menu-->
+<mat-menu #powerMenu="matMenu" xPosition="before">
+  <button mat-menu-item (click)="onSignOut()">
+    <span>Sign out</span>
+    <mat-icon style="margin: 0 0 0 16px; color: rgba(0, 0, 0, 0.65);">exit_to_app</mat-icon>
+  </button>
+</mat-menu>

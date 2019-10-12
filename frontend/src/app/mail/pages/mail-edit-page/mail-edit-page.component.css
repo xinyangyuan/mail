@@ -1,0 +1,17 @@
+/* Mail Create Page */
+.mail-edit-page {
+  height: 100%;
+}
+
+/* Cancel Button */
+.btn-warn {
+  width: 250px;
+  background-color: rgb(189, 15, 58);
+  color: white;
+}
+
+/* Mail Update Component Container */
+.container {
+  height: calc(100vh - 70px);
+  padding-top: 5rem;
+}

@@ -4,7 +4,9 @@ import { catchError, tap, map, mergeMap, concatMap, flatMap } from 'rxjs/operato
 import { HttpClient } from '@angular/common/http';
 import { Store } from '@ngxs/store';
 
-import { Mail, MailStatus } from './mail.model';
+import { Mail } from './models/mail.model';
+import { MailStatus } from './models/mail-status.model';
+
 import * as MailActions from './store/mail.action';
 import { environment } from 'src/environments/environment';
 

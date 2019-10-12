@@ -12,7 +12,8 @@ import { takeUntil, tap } from 'rxjs/operators';
 import { Data } from '@angular/router';
 import { SafeUrl, DomSanitizer } from '@angular/platform-browser';
 
-import { Mail, MailStatus } from '../mail.model';
+import { Mail } from '../models/mail.model';
+import { MailStatus } from '../models/mail-status.model';
 import * as MailActions from './mail.action';
 import { MailService } from '../mail.service';
 

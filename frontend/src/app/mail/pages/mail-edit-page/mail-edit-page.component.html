@@ -1,0 +1,30 @@
+<!-- New Mail Page -->
+<div fxLayout="row" fxLayout.lt-md="column" fxLayoutWrap calss="mail-edit-page">
+  <!-- Side Navigation -->
+  <div
+    fxFlex="none"
+    fxLayout="column"
+    fxLayoutAlign="start center"
+    style="height: 100%;"
+    [ngStyle.gt-md]="{ 'padding-left': '2rem' }"
+  >
+    <!-- top padding [for desktop screen] -->
+    <div fxHide.lt-md style="height: 3rem;"></div>
+
+    <!-- go-back button -->
+    <button mat-raised-button class="btn-warn" (click)="onCancel()">
+      <div fxLayout="row" fxLayoutAlign="space-between center">
+        <mat-icon>chevron_left</mat-icon>
+        <span>CANCEL</span>
+      </div>
+    </button>
+
+    <!-- bottom padding [for mobole screen] -->
+    <div fxHide.gt-md style="height: 2rem;"></div>
+  </div>
+
+  <!-- Mail Update Component  -->
+  <div fxFlex fxLayout="column" fxLayoutAlign="start center" class="container">
+    <app-mail-update></app-mail-update>
+  </div>
+</div>

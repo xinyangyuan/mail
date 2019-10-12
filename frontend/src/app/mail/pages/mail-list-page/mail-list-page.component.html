@@ -1,0 +1,27 @@
+<!-- Mail List Page -->
+<div fxLayout="row" fxLayout.lt-md="column" fxLayoutWrap calss="mail-list-page">
+  <!-- Navigation Menu -->
+  <div
+    fxFlex="none"
+    fxLayout="column"
+    fxLayoutAlign="start center"
+    [ngStyle.gt-md]="{ 'padding-left': '2rem' }"
+  >
+    <!-- top padding [for desktop screen] -->
+    <div fxHide.lt-md style="height: 3rem;"></div>
+    <!-- navigation menu button -->
+    <app-mail-navigation-menu></app-mail-navigation-menu>
+    <!-- bottom padding [for mobole screen] -->
+    <div fxHide.gt-md style="height: 2rem;"></div>
+  </div>
+
+  <!-- Mail List  -->
+  <div
+    fxFlex
+    fxLayout="column"
+    [ngStyle.gt-md]="{ height: 'calc(100vh - 70px)' }"
+    [ngStyle.lt-md]="{ height: 'calc(100vh - 140px)' }"
+  >
+    <app-mail-list style="overflow: auto;"></app-mail-list>
+  </div>
+</div>

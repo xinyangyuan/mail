@@ -15,6 +15,10 @@ const router = express.Router();
 */
 
 router.get('', AuthMiddleware.authVerify, queryCheck, MailController.getMailList);
+
+// router.get('/senderId/:senderId', AuthMiddleware.minSecurityLevel())
+// router.get('/receiverId/:receiverId', AuthMiddleware.minSecurityLevel())
+
 router.get('/:id', AuthMiddleware.authVerify, MailController.getMail);
 router.get('/:id/envelop', AuthMiddleware.authVerify, MailController.getEnvelop);
 router.get('/:id/contentPDF', AuthMiddleware.authVerify, MailController.getContentPDF);

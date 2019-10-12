@@ -1,0 +1,16 @@
+mat-card {
+  padding-top: 2rem;
+  padding-bottom: 1rem;
+  max-width: 500px;
+  min-width: 400px;
+}
+
+mat-form-field,
+textarea {
+  width: 100%;
+}
+
+/* hide HTML file picker button */
+input[type='file'] {
+  visibility: hidden;
+}
