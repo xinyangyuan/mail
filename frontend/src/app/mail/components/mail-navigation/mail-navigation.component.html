@@ -1,0 +1,19 @@
+<ng-container [ngSwitch]="userRole$ | async">
+  <!-- Mail Navigation [User] -->
+  <div *ngSwitchCase="'USER'">
+    <!-- navigation menu -->
+    <app-mail-navigation-menu></app-mail-navigation-menu>
+  </div>
+
+  <!-- Mail Navigation [Sender] -->
+  <div fxLayout="column" fxLayoutGap="1rem" *ngSwitchCase="'SENDER'">
+    <!-- create button -->
+    <button mat-raised-button class="btn-gradient" routerLink="/create">
+      <div fxLayout="row" fxLayoutAlign="center center">
+        <span>NEW</span>
+      </div>
+    </button>
+    <!-- navigation menu -->
+    <app-mail-navigation-menu></app-mail-navigation-menu>
+  </div>
+</ng-container>

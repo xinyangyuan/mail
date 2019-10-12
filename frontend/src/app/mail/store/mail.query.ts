@@ -65,20 +65,20 @@ export class MailQuery {
       {
         userRole: 'USER',
         routes: [
-          { name: 'Inbox', routerLink: '', icon: 'inbox' },
-          { name: 'Starred', routerLink: '', icon: 'star_border' },
-          { name: 'Scanning', routerLink: '', icon: 'directions_run' },
-          { name: 'Scanned', routerLink: '', icon: 'drafts' },
-          { name: 'Scan rejected', routerLink: '', icon: 'mail' }
+          { name: 'Inbox', routerLink: '/mails', icon: 'inbox' },
+          { name: 'Starred', routerLink: '/stared', icon: 'star_border' },
+          { name: 'Scanning', routerLink: '/scanning', icon: 'directions_run' },
+          { name: 'Scanned', routerLink: '/scanned', icon: 'drafts' },
+          { name: 'Scan rejected', routerLink: '/skip-scanned', icon: 'mail' }
         ]
       },
       {
         userRole: 'SENDER',
         routes: [
-          { name: 'Send', routerLink: '', icon: 'send' },
-          { name: 'Waiting for scan', routerLink: '', icon: 'directions_run' },
-          { name: 'Scanned', routerLink: '', icon: 'drafts' },
-          { name: 'Scan rejected', routerLink: '', icon: 'mail' }
+          { name: 'Send', routerLink: '/mails', icon: 'send' },
+          { name: 'Waiting for scan', routerLink: '/scanning', icon: 'directions_run' },
+          { name: 'Scanned', routerLink: '/scanned', icon: 'drafts' },
+          { name: 'Scan rejected', routerLink: '/skip-scanned', icon: 'mail' }
         ]
       }
     ];
@@ -86,5 +86,13 @@ export class MailQuery {
     // Routes for current user
     const userRole = isSender ? 'SENDER' : 'USER';
     return routesList.find(routes => routes.userRole === userRole).routes;
+  }
+
+  /*
+   Selector: user role
+  */
+  @Selector([AuthState.isSender])
+  static userRole(isSender: boolean) {
+    return isSender ? 'SENDER' : 'USER';
   }
 }

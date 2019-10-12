@@ -16,6 +16,7 @@ import { MailNavigationMenuComponent } from './components/mail-navigation-menu/m
 import { MailListPageComponent } from './pages/mail-list-page/mail-list-page.component';
 import { MailCreatePageComponent } from './pages/mail-create-page/mail-create-page.component';
 import { MailEditPageComponent } from './pages/mail-edit-page/mail-edit-page.component';
+import { MailNavigationComponent } from './components/mail-navigation/mail-navigation.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { MailEditPageComponent } from './pages/mail-edit-page/mail-edit-page.com
     MailNavigationMenuComponent,
     MailListPageComponent,
     MailCreatePageComponent,
-    MailEditPageComponent
+    MailEditPageComponent,
+    MailNavigationComponent
   ],
   imports: [MailRoutingModule, ReactiveFormsModule, CoreModule, NgxsModule.forFeature([MailState])],
   exports: []

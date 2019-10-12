@@ -1,17 +1,20 @@
-<!-- Menu Button -->
-<button mat-raised-button [matMenuTriggerFor]="menu" class="btn-blue" style="width: 250px;">
-  <div fxLayout="row" fxLayoutAlign="center center">
-    <mat-icon>inbox</mat-icon>
-    <span fxFlex>INBOX</span>
-    <mat-icon>more_vert</mat-icon>
-  </div>
-</button>
+<ng-container *ngIf="routes$ | async as routes">
+  <!-- Menu Button -->
+  <button mat-raised-button [matMenuTriggerFor]="menu" class="btn-blue" style="width: 250px;">
+    <div fxLayout="row" fxLayoutAlign="center center" class="menu-button">
+      <mat-icon>{{ currentRoute.icon }}</mat-icon>
+      <span fxFlex>{{ currentRoute.name | uppercase }}</span>
+      <mat-icon>more_vert</mat-icon>
+    </div>
+  </button>
 
-<mat-menu #menu="matMenu" class="menuuu">
-  <ng-container *ngFor="let route of routes$ | async">
-    <button mat-menu-item routerLink="route.routerLink">
-      <mat-icon>{{ route.icon }}</mat-icon>
-      <span>{{ route.name }}</span>
-    </button>
-  </ng-container>
-</mat-menu>
+  <!-- Menu -->
+  <mat-menu #menu="matMenu" class="menuuu">
+    <ng-container *ngFor="let route of routes">
+      <button mat-menu-item [routerLink]="[route.routerLink]">
+        <mat-icon>{{ route.icon }}</mat-icon>
+        <span>{{ route.name }}</span>
+      </button>
+    </ng-container>
+  </mat-menu>
+</ng-container>
