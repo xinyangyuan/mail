@@ -1,7 +1,7 @@
-export class Receivers {
-  _id: string;
-  name: { first: string; last: string };
-  get fullname() {
-    return this.name.first + this.name.last;
-  }
+export interface Receiver {
+  mailboxNo: string;
+  receiverId: {
+    _id: string;
+    name: { first: string; last: string };
+  };
 }

@@ -1,21 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngxs/store';
+import * as jwtDecode from 'jwt-decode';
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
 
 import { MailService } from '../../mail.service';
-import * as AddressActions from '../../../address/store/address.action';
+import { AddressService } from 'src/app/address/address.service';
+import { AuthState } from 'src/app/auth/store/auth.state';
+import { Receiver } from 'src/app/address/models/receivers.model';
 
 @Component({
   selector: 'app-mail-create',
   templateUrl: './mail-create.component.html',
   styleUrls: ['./mail-create.component.css']
 })
-export class MailCreateComponent implements OnInit {
+export class MailCreateComponent implements OnInit, AfterViewInit {
   // Attributes
   public form: FormGroup;
-  public receiverList: [{ _id: string; name: { first: string; last: string } }];
+  public receiverList: Receiver[];
 
   // Mat-Progress Button Option:
   sendBtn: MatProgressButtonOptions = {
@@ -32,16 +35,15 @@ export class MailCreateComponent implements OnInit {
 
   // Constructor Method
   constructor(
-    private mailService: MailService,
     private fb: FormBuilder,
+    private store: Store,
     private routerService: Router,
-    private store: Store
+    private mailService: MailService,
+    private addressService: AddressService
   ) {}
 
   // Init Method
   ngOnInit() {
-    // get the list of receivers
-
     // initialize the reactive form
     this.form = this.fb.group({
       recipient: ['', Validators.required],
@@ -50,6 +52,17 @@ export class MailCreateComponent implements OnInit {
       content: ['', [Validators.required]],
       envelop: ['', [Validators.required]]
     });
+  }
+
+  async ngAfterViewInit() {
+    // Get the list of receivers TEMP: TO REMOVE
+    const token = this.store.selectSnapshot(AuthState.token);
+    const { userId } = jwtDecode(token);
+    const { address: addresss } = await this.addressService
+      ._getAddressBySenderId(userId)
+      .toPromise();
+    const { address } = await this.addressService._getReceivers(addresss).toPromise();
+    this.receiverList = address.receivers;
   }
 
   // Call mail-service to create new mail
@@ -69,7 +82,7 @@ export class MailCreateComponent implements OnInit {
       });
   }
 
-  // add envelop image to the form-controll
+  // Add envelop image to the form-controll
   onImagePicked(event: Event) {
     const file = (event.target as HTMLInputElement).files[0];
     this.envelop.setValue(file);

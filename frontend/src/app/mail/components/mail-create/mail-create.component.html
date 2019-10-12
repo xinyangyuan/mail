@@ -1,55 +1,57 @@
-<mat-card>
-  <form [formGroup]="form" (submit)="onAddMail()">
-    <!-- recipient -->
-    <mat-form-field appearance="outline">
-      <mat-select formControlName="recipient" placeholder="Recipient">
-        <mat-option *ngFor="let reciever of receiverList" [value]="reciever._id">
-          {{ reciever.name.first + ' ' + reciever.name.last }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+<ng-container *ngIf="receiverList">
+  <mat-card>
+    <form [formGroup]="form" (submit)="onAddMail()">
+      <!-- recipient -->
+      <mat-form-field appearance="outline">
+        <mat-select formControlName="recipient" placeholder="Recipient">
+          <mat-option *ngFor="let reciever of receiverList" [value]="reciever.receiverId._id">
+            {{ reciever.receiverId.name.first + ' ' + reciever.receiverId.name.last }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-    <!-- mail title -->
-    <mat-form-field appearance="outline">
-      <mat-label>Mail Title</mat-label>
-      <input matInput formControlName="title" placeholder="Mail:" />
-      <mat-error *ngIf="title.invalid && title.touched">
-        Your title does not look right
-      </mat-error>
-    </mat-form-field>
+      <!-- mail title -->
+      <mat-form-field appearance="outline">
+        <mat-label>Mail Title</mat-label>
+        <input matInput formControlName="title" placeholder="Mail:" />
+        <mat-error *ngIf="title.invalid && title.touched">
+          Your title does not look right
+        </mat-error>
+      </mat-form-field>
 
-    <!-- mail decription -->
-    <mat-form-field appearance="outline">
-      <mat-label>Mail Description</mat-label>
-      <input matInput formControlName="description" />
-      <mat-error *ngIf="description.invalid && description.touched">
-        That content sucks...
-      </mat-error>
-    </mat-form-field>
+      <!-- mail decription -->
+      <mat-form-field appearance="outline">
+        <mat-label>Mail Description</mat-label>
+        <input matInput formControlName="description" />
+        <mat-error *ngIf="description.invalid && description.touched">
+          That content sucks...
+        </mat-error>
+      </mat-form-field>
 
-    <!-- mail content -->
-    <mat-form-field appearance="outline">
-      <mat-label>Content</mat-label>
-      <input matInput formControlName="content" placeholder="e.g. BANK STATEMENT" />
-      <mat-error *ngIf="content.invalid && content.touched">
-        That content sucks...
-      </mat-error>
-    </mat-form-field>
+      <!-- mail content -->
+      <mat-form-field appearance="outline">
+        <mat-label>Content</mat-label>
+        <input matInput formControlName="content" placeholder="e.g. BANK STATEMENT" />
+        <mat-error *ngIf="content.invalid && content.touched">
+          That content sucks...
+        </mat-error>
+      </mat-form-field>
 
-    <!-- mail envelop image upload button -->
-    <div class="image-upload-btn">
-      <button mat-stroked-button type="button" (click)="imagePicker.click()">
-        Pick Envelop Image
-      </button>
-      <input type="file" #imagePicker (change)="onImagePicked($event)" />
-    </div>
+      <!-- mail envelop image upload button -->
+      <div class="image-upload-btn">
+        <button mat-stroked-button type="button" (click)="imagePicker.click()">
+          Pick Envelop Image
+        </button>
+        <input type="file" #imagePicker (change)="onImagePicked($event)" />
+      </div>
 
-    <!-- submit button -->
-    <mat-card-actions style="text-align: center">
-      <mat-spinner-button
-        type="submit"
-        [options]="form.invalid ? sendBtnDisabled : sendBtn"
-      ></mat-spinner-button>
-    </mat-card-actions>
-  </form>
-</mat-card>
+      <!-- submit button -->
+      <mat-card-actions style="text-align: center">
+        <mat-spinner-button
+          type="submit"
+          [options]="form.invalid ? sendBtnDisabled : sendBtn"
+        ></mat-spinner-button>
+      </mat-card-actions>
+    </form>
+  </mat-card>
+</ng-container>

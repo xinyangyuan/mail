@@ -14,8 +14,10 @@ export class AppComponent implements OnInit, AfterViewInit {
   constructor(private store: Store, private router: Router) {}
 
   // OnInit:
-  ngOnInit() {
-    this.store.dispatch(new AuthActions.AutoSignIn());
+  async ngOnInit() {
+    // this.store.dispatch(new AuthActions.AutoSignIn()).subscribe(() => {
+    //   this.router.navigate(['/mails']);
+    // });
   }
 
   ngAfterViewInit() {}

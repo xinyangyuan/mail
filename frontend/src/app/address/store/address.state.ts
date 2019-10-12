@@ -1,5 +1,5 @@
 import { Address } from '../models/address.model';
-import { Receivers } from '../models/receivers.model';
+import { Receiver } from '../models/receivers.model';
 import { State, Selector, Action, StateContext } from '@ngxs/store';
 
 import * as AddressActions from './address.action';
@@ -17,7 +17,7 @@ export interface AddressStateModel {
     address: Address;
     mailboxNo: number;
   };
-  receivers: Receivers[];
+  receivers: Receiver[];
   vacantMailboxNos: number[];
 }
 
@@ -91,7 +91,7 @@ export class AddressState {
   @Action(AddressActions.GetAddress, { cancelUncompleted: true })
   async getAddress(ctx: StateContext<AddressStateModel>, action: AddressActions.GetAddress) {
     // async service call
-    const result = await this.addressService._getAddress(action.payload).toPromise();
+    const result = await this.addressService._getAddressById(action.payload).toPromise();
 
     // return new state
     ctx.patchState({ address: result.address });

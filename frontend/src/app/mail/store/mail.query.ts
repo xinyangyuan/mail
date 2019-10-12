@@ -91,6 +91,7 @@ export class MailQuery {
   /*
    Selector: user role
   */
+
   @Selector([AuthState.isSender])
   static userRole(isSender: boolean) {
     return isSender ? 'SENDER' : 'USER';

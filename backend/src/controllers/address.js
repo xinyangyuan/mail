@@ -136,6 +136,9 @@ exports.getAddressReceivers = async (req, res) => {
       return res.status(400).json({ message: `Cannot find the address` });
     }
 
+    // filter guard [when user is delted will cause null in receiverId]
+    // const addressFilter = address.receivers
+
     // success response
     res.status(200).json({ message: 'success', address });
   } catch {

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Address } from './models/address.model';
-import { Receivers } from './models/receivers.model';
+import { Receiver } from './models/receivers.model';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
@@ -41,11 +41,51 @@ export class AddressService {
     $ Method: get address by id [GET]
   */
 
-  _getAddress(id: string): Observable<{ address: Address }> {
+  _getAddressById(id: string): Observable<{ address: Address }> {
     return (
       // fetch address from the RESTapi
       this.http
         .get<{ message: string; address: Address }>(this.BACKEND_URL + id)
+        // insert extra operations
+        .pipe(
+          tap(
+            () => console.log('Get address successfuly.'),
+            () => console.log('Failed to fetch the address.')
+          ),
+          catchError(error => throwError(error))
+        )
+    );
+  }
+
+  /*
+    $ Method: get address by senderId [GET]
+  */
+
+  _getAddressBySenderId(id: string): Observable<{ address: Address }> {
+    return (
+      // fetch address from the RESTapi
+      this.http
+        .get<{ message: string; address: Address }>(this.BACKEND_URL + `senderId/${id}`)
+        // insert extra operations
+        .pipe(
+          tap(
+            () => console.log('Get address successfuly.'),
+            () => console.log('Failed to fetch the address.')
+          ),
+          catchError(error => throwError(error))
+        )
+    );
+  }
+
+  /*
+    $ Method: get address by receiverId [GET]
+  */
+
+  _getAddressByReceiverId(id: string): Observable<{ address: Address }> {
+    return (
+      // fetch address from the RESTapi
+      this.http
+        .get<{ message: string; address: Address }>(this.BACKEND_URL + `receivers/receiverId/${id}`)
         // insert extra operations
         .pipe(
           tap(
@@ -81,11 +121,11 @@ export class AddressService {
 
   _getReceivers(
     address: Address
-  ): Observable<{ message: string; address: { _id: string; receivers: Receivers[] } }> {
+  ): Observable<{ message: string; address: { _id: string; receivers: Receiver[] } }> {
     return (
       // fetch my address from the RESTapi
       this.http
-        .get<{ message: string; address: { _id: string; receivers: Receivers[] } }>(
+        .get<{ message: string; address: { _id: string; receivers: Receiver[] } }>(
           this.BACKEND_URL + address._id + '/receivers'
         )
         // insert extra operations
