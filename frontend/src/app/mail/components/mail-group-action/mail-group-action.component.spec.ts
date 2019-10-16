@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NavigationListComponent } from './navigation-list.component';
+import { MailGroupActionComponent } from './mail-group-action.component';
 
-describe('NavigationListComponent', () => {
-  let component: NavigationListComponent;
-  let fixture: ComponentFixture<NavigationListComponent>;
+describe('MailGroupActionComponent', () => {
+  let component: MailGroupActionComponent;
+  let fixture: ComponentFixture<MailGroupActionComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ NavigationListComponent ]
+      declarations: [ MailGroupActionComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(NavigationListComponent);
+    fixture = TestBed.createComponent(MailGroupActionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

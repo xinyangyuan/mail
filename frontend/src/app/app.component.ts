@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 
 import * as AuthActions from './auth/store/auth.action';
+// import * as AccountActions from './account/store/account.acion';
 
 @Component({
   selector: 'app-root',

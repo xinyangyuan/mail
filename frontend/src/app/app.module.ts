@@ -23,8 +23,6 @@ import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './navigation/header/header.component';
-import { NavigationListComponent } from './navigation/navigation-list/navigation-list.component';
-import { DashboardPageComponent } from './layout/dashboard-page/dashboard-page.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { HeaderNewComponent } from './navigation/header-new/header-new.component';
 import { DashboardLayoutComponent } from './layout/dashboard-layout/dashboard-layout.component';
@@ -33,10 +31,8 @@ import { DashboardLayoutComponent } from './layout/dashboard-layout/dashboard-la
   declarations: [
     AppComponent,
     HeaderComponent,
-    NavigationListComponent,
-    DashboardPageComponent,
-    MainLayoutComponent,
     HeaderNewComponent,
+    MainLayoutComponent,
     DashboardLayoutComponent
   ],
   imports: [

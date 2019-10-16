@@ -4,6 +4,6 @@ div .mail-list {
 }
 
 mat-paginator {
-  background-color: rgb(226, 232, 239);
+  background-color: #e3f2fd;
   /* background-color: rgba(245, 245, 245); */
 }

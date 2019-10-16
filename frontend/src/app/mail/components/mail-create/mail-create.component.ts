@@ -20,6 +20,10 @@ export class MailCreateComponent implements OnInit, AfterViewInit {
   public form: FormGroup;
   public receiverList: Receiver[];
 
+  // File upload button ui
+  public fileAttached = false;
+  public fileBtnHovered = false;
+
   // Mat-Progress Button Option:
   sendBtn: MatProgressButtonOptions = {
     text: 'SEND',
@@ -44,7 +48,7 @@ export class MailCreateComponent implements OnInit, AfterViewInit {
 
   // Init Method
   ngOnInit() {
-    // initialize the reactive form
+    // Initialize the reactive form
     this.form = this.fb.group({
       recipient: ['', Validators.required],
       title: ['', [Validators.required, Validators.minLength(3)]],
@@ -84,10 +88,14 @@ export class MailCreateComponent implements OnInit, AfterViewInit {
 
   // Add envelop image to the form-controll
   onImagePicked(event: Event) {
+    // get uploaded file
     const file = (event.target as HTMLInputElement).files[0];
-    this.envelop.setValue(file);
     // notice form of the update
+    this.envelop.setValue(file);
     this.envelop.updateValueAndValidity();
+    // notify file is uploaded
+    console.log(this.envelop);
+    this.fileAttached = true;
   }
 
   // Getters

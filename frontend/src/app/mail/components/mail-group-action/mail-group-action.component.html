@@ -1,0 +1,51 @@
+<div fxLayout="column" fxLayoutGap="1rem">
+  <!-- Cancel button -->
+  <button mat-raised-button class="btn-dark" (click)="onCancel()">
+    <div fxLayout="row" fxLayoutAlign="space-between center">
+      <mat-icon>chevron_left</mat-icon>
+      <span>CANCEL</span>
+    </div>
+  </button>
+
+  <!-- Spacer -->
+  <div class="spacer"></div>
+
+  <!-- Star button -->
+  <button
+    mat-raised-button
+    class="btn-yellow"
+    (click)="onStar()"
+    matTooltip="Star all selected mails"
+    [matTooltipPosition]="'after'"
+  >
+    <div fxLayout="row" fxLayoutAlign="center center">
+      <span>STAR</span>
+    </div>
+  </button>
+
+  <!-- Scan button -->
+  <button
+    mat-raised-button
+    class="btn-blue"
+    (click)="onScan()"
+    matTooltip="Order all un-scaned mails to scanning INCLUDE previous SCAN-REJECTED mails"
+    [matTooltipPosition]="'after'"
+  >
+    <div fxLayout="row" fxLayoutAlign="center center">
+      <span>SCAN</span>
+    </div>
+  </button>
+
+  <!-- Rejct-scan button -->
+  <button
+    mat-raised-button
+    class="btn-warn"
+    (click)="onRejectScan()"
+    matTooltip="Archive mails without scanning"
+    [matTooltipPosition]="'after'"
+  >
+    <div fxLayout="row" fxLayoutAlign="center center">
+      <span>REJECT SCAN</span>
+    </div>
+  </button>
+</div>

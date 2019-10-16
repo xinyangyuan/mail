@@ -1,0 +1,37 @@
+/* Cancell Button */
+.btn-dark {
+  width: 250px;
+  color: white;
+  background-color: rgb(15, 102, 189);
+}
+
+.spacer {
+  height: 2rem;
+}
+
+/* Star Button */
+.btn-yellow {
+  width: 250px;
+  color: rgb(0, 0, 0);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  background-color: yellow;
+}
+
+/* Scan Button */
+.btn-blue {
+  width: 250px;
+  color: white;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  background-color: dodgerblue;
+}
+
+/* Reject Scan Button */
+.btn-warn {
+  width: 250px;
+  color: white;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  background-color: rgb(189, 15, 58);
+}

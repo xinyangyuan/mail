@@ -39,8 +39,27 @@
 
       <!-- mail envelop image upload button -->
       <div class="image-upload-btn">
-        <button mat-stroked-button type="button" (click)="imagePicker.click()">
-          Pick Envelop Image
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="imagePicker.click()"
+          style="padding: 0;"
+          (mouseover)="fileBtnHovered = true"
+          (mouseout)="fileBtnHovered = false"
+        >
+          <!-- case 1: no file attatched -->
+          <span *ngIf="!fileAttached">
+            Pick Envelop Image
+          </span>
+          <!-- case 2: file attached -->
+          <div *ngIf="fileAttached">
+            <!-- case 2-1: file attached and !hover -->
+            <span *ngIf="!fileBtnHovered" class="file-attched">{{ envelop.value.name }}</span>
+            <!-- case 2-2: file attaced and hover -->
+            <span *ngIf="fileBtnHovered" class="file-attched">
+              CLICK TO REPLACE FILE
+            </span>
+          </div>
         </button>
         <input type="file" #imagePicker (change)="onImagePicked($event)" />
       </div>

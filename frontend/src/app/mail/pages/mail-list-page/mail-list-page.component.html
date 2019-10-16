@@ -9,9 +9,12 @@
   >
     <!-- top padding [for desktop screen] -->
     <div fxHide.lt-md style="height: 3rem;"></div>
+
     <!-- navigation menu -->
-    <!-- <app-mail-navigation-menu></app-mail-navigation-menu> -->
-    <app-mail-navigation></app-mail-navigation>
+    <app-mail-navigation *ngIf="!(isSelectMode$ | async)"></app-mail-navigation>
+    <!-- action menu -->
+    <app-mail-group-action *ngIf="isSelectMode$ | async"></app-mail-group-action>
+
     <!-- bottom padding [for mobole screen] -->
     <div fxHide.gt-md style="height: 2rem;"></div>
   </div>

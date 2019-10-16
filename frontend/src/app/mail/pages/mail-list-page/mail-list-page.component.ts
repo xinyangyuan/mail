@@ -1,4 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Select } from '@ngxs/store';
+import { Observable } from 'rxjs';
+
+import { MailState } from '../../store/mail.state';
 
 @Component({
   selector: 'app-mail-list-page',
@@ -6,6 +10,9 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./mail-list-page.component.css']
 })
 export class MailListPageComponent implements OnInit {
+  // Attributes:
+  @Select(MailState.selectMode) isSelectMode$: Observable<boolean>;
+
   constructor() {}
 
   ngOnInit() {}

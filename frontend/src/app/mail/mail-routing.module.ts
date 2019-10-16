@@ -3,7 +3,6 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { MailStatus } from './models/mail-status.model';
 
-import { DashboardPageComponent } from '../layout/dashboard-page/dashboard-page.component';
 import { DashboardLayoutComponent } from '../layout/dashboard-layout/dashboard-layout.component';
 
 import { MailListComponent } from './components/mail-list/mail-list.component';

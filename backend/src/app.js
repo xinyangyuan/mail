@@ -1,4 +1,5 @@
 const express = require('express');
+const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
@@ -32,7 +33,13 @@ mongoose
   });
 
 /*
- parse data stream to data object
+  protect express app by helmet-js
+*/
+
+app.use(helmet({ hsts: false }));
+
+/*
+  parse data stream to data object
 */
 
 app.use(cookieParser()); // cookie

@@ -1,17 +1,17 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
-import { MailNavigationMenuComponent } from './mail/components/mail-navigation-menu/mail-navigation-menu.component';
 import { DashboardLayoutComponent } from './layout/dashboard-layout/dashboard-layout.component';
+import { MailGroupActionComponent } from './mail/components/mail-group-action/mail-group-action.component';
+import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 
 const routes: Routes = [{ path: '', redirectTo: 'signin', pathMatch: 'full' }];
 
 // const routes: Routes = [
 //   {
 //     path: '',
-//     component: DashboardPageComponent,
-//     children: [{ path: '', component: MailListComponent }]
+//     component: MainLayoutComponent,
+//     children: [{ path: '', component: MailGroupActionComponent }]
 //   }
 // ];
 

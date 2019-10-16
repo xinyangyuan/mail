@@ -1,6 +1,7 @@
 .dashboard {
   height: 100%;
-  background-color: rgb(226, 232, 239);
+  /* background-color: rgb(226, 232, 239); */
+  background-color: #e3f2fd;
 }
 
 .dashboard-layout-main {
