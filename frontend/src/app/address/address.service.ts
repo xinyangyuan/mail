@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Address } from './models/address.model';
 import { Receiver } from './models/receivers.model';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, tap, map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -119,17 +119,17 @@ export class AddressService {
     $ Method: get address's receivers [GET]: senders only
   */
 
-  _getReceivers(
-    address: Address
-  ): Observable<{ message: string; address: { _id: string; receivers: Receiver[] } }> {
+  _getReceivers(address: Address): Observable<{ receivers: Receiver[] }> {
     return (
       // fetch my address from the RESTapi
       this.http
         .get<{ message: string; address: { _id: string; receivers: Receiver[] } }>(
           this.BACKEND_URL + address._id + '/receivers'
         )
-        // insert extra operations
         .pipe(
+          map(result => {
+            return { receivers: result.address.receivers };
+          }),
           tap(
             () => console.log('Get receivers successfuly.'),
             () => console.log('Failed to fetch the receivers data.')

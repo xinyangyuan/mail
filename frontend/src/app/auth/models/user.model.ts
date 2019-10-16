@@ -1,4 +1,5 @@
 export class User {
+  _id: string;
   name: { first: string; last: string };
   email: string;
   status: 'UNCONFIRMED' | 'ACTIVE' | 'BLOCKED';

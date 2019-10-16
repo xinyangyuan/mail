@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material';
-import { Actions, ofActionSuccessful, ofActionDispatched } from '@ngxs/store';
+import { Actions, ofActionDispatched } from '@ngxs/store';
 
 import * as PaymentActions from './payment.action';
-import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
+import { PaymentModalComponent } from '../components/payment-modal/payment-modal.component';
 
 @Injectable({
   providedIn: 'root'

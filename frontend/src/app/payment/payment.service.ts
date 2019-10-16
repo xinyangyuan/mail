@@ -4,8 +4,8 @@ import { MatDialog, MatDialogRef } from '@angular/material';
 import { Store } from '@ngxs/store';
 
 import { environment } from 'src/environments/environment';
-import * as PaymentActions from './state/payment.action';
-import { PaymentModalComponent } from './payment-modal/payment-modal.component';
+import * as PaymentActions from './store/payment.action';
+import { PaymentModalComponent } from './components/payment-modal/payment-modal.component';
 
 declare var Stripe: stripe.StripeStatic;
 

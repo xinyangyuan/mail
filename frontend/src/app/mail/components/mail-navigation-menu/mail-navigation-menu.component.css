@@ -20,7 +20,14 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
   -webkit-font-smoothing: antialiased;
-
   /* align with material icon */
   vertical-align: middle;
+}
+
+.active span {
+  color: dodgerblue;
+}
+
+.active mat-icon {
+  color: dodgerblue;
 }

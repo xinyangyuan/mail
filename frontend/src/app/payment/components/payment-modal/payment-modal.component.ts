@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogRef, MatDialog } from '@angular/material';
 import { Observable } from 'rxjs';
 import { Select } from '@ngxs/store';
 
-import { PaymentStateModel } from '../state/payment.state';
+import { PaymentStateModel } from '../../store/payment.state';
 import { skipWhile } from 'rxjs/operators';
 
 @Component({

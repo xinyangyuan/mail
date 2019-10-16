@@ -2,9 +2,9 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngxs/store';
 
-import { Plan } from '../plan.model';
-import { PlanState } from '../store/plan.state';
-import * as PlanActions from '../store/plan.action';
+import { Plan } from '../../plan.model';
+import { PlanState } from '../../store/plan.state';
+import * as PlanActions from '../../store/plan.action';
 
 @Component({
   selector: 'app-plan-list',

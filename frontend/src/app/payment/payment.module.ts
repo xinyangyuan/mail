@@ -2,10 +2,10 @@ import { NgModule } from '@angular/core';
 import { NgxsModule } from '@ngxs/store';
 import { CoreModule } from '../core/core.module';
 
-import { PaymentState } from './state/payment.state';
-import { PaymentRequestComponent } from './payment-request/payment-request.component';
-import { PaymentModalComponent } from './payment-modal/payment-modal.component';
-import { PaymentCheckoutComponent } from './payment-checkout/payment-checkout.component';
+import { PaymentState } from './store/payment.state';
+import { PaymentRequestComponent } from './components/payment-request/payment-request.component';
+import { PaymentModalComponent } from './components/payment-modal/payment-modal.component';
+import { PaymentCheckoutComponent } from './components/payment-checkout/payment-checkout.component';
 
 @NgModule({
   declarations: [PaymentRequestComponent, PaymentModalComponent, PaymentCheckoutComponent],

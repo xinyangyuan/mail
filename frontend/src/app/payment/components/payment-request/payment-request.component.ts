@@ -3,9 +3,9 @@ import { Observable } from 'rxjs';
 import { skipWhile } from 'rxjs/operators';
 import { Store, Select } from '@ngxs/store';
 
-import { PaymentService } from '../payment.service';
-import { PaymentState, PaymentStateModel } from '../state/payment.state';
-import * as PaymentActions from '../state/payment.action';
+import { PaymentService } from '../../payment.service';
+import { PaymentState, PaymentStateModel } from '../../store/payment.state';
+import * as PaymentActions from '../../store/payment.action';
 
 @Component({
   selector: 'app-payment-request',

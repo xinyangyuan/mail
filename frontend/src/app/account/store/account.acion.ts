@@ -3,9 +3,5 @@
 */
 
 export class GetAccountInfo {
-  static readonly type = '[Sign In Page] Get Account Information';
+  static readonly type = '[Account Resolver] Get Account Information';
 }
-
-// export class Auth service {
-//   static readonly type = '[Sign In Page] Get Account Information';
-// }

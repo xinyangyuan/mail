@@ -10,7 +10,6 @@ import { AddressService } from '../address.service';
 */
 
 export interface AddressStateModel {
-  // Address
   address: Address;
   addresses: Address[];
   selectedMailbox: {
@@ -107,7 +106,7 @@ export class AddressState {
     const result = await this.addressService._getReceivers(action.payload).toPromise();
 
     // return new state
-    ctx.patchState({ receivers: result.address.receivers });
+    ctx.patchState({ receivers: result.receivers });
   }
 
   /*

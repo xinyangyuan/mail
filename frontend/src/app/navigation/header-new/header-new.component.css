@@ -18,7 +18,6 @@ span {
   font-weight: 500;
   letter-spacing: 0.5px;
   -webkit-font-smoothing: antialiased;
-
   /* align with material icon */
   vertical-align: middle;
 }

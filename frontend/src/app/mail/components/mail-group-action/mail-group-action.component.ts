@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Store } from '@ngxs/store';
+import { Store, Select } from '@ngxs/store';
 
 import { MailState } from '../../store/mail.state';
 import * as MailActions from '../../store/mail.action';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-mail-group-action',
@@ -10,6 +11,9 @@ import * as MailActions from '../../store/mail.action';
   styleUrls: ['./mail-group-action.component.css']
 })
 export class MailGroupActionComponent implements OnInit {
+  // Attributes:
+  @Select(state => state.account.user.role) userRole$: Observable<'USER' | 'SENDER'>;
+
   // Constructor:
   constructor(private store: Store) {}
 

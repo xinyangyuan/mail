@@ -1,12 +1,12 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { MatSnackBar } from '@angular/material';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 
 import { Mail } from '../../models/mail.model';
 import { MailStatus } from '../../models/mail-status.model';
+import { MailQuery } from '../../store/mail.query';
 import * as MailActions from '../../store/mail.action';
-import { AuthState } from 'src/app/auth/store/auth.state';
-import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'app-mail-item-action-bar',
@@ -31,7 +31,7 @@ export class MailItemActionBarComponent implements OnInit {
 
   // Init Method:
   ngOnInit() {
-    this.isSender = this.store.selectSnapshot(AuthState.isSender);
+    this.isSender = this.store.selectSnapshot(MailQuery.userRole) === 'SENDER';
     this.generateView();
   }
 

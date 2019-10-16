@@ -48,7 +48,7 @@ export class AuthState {
 
   @Selector()
   static isAuthenticated(state: AuthStateModel) {
-    return state.token !== undefined;
+    return state.token !== null;
   }
 
   /*
@@ -110,14 +110,13 @@ export class AuthState {
   */
 
   @Action(AuthActions.AutoSignIn)
-  autoSignIn(ctx: StateContext<AuthStateModel>) {
-    return this.authService._refreshToken().pipe(
-      tap(result => {
-        ctx.patchState({
-          token: result.token
-        });
-      })
-    );
+  async autoSignIn(ctx: StateContext<AuthStateModel>) {
+    const { ok, token } = await this.authService._refreshToken().toPromise();
+    if (ok) {
+      ctx.patchState({ token });
+    } else {
+      throw Error();
+    }
   }
 
   /*

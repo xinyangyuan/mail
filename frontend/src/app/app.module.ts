@@ -17,6 +17,7 @@ import { PasswordlessModule } from './passwordless/passwordless.module';
 
 import { ngxsConfig } from './store/ngxs.config';
 import { AuthState } from './auth/store/auth.state';
+import { AccountState } from './account/store/account.state';
 
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
@@ -26,6 +27,7 @@ import { HeaderComponent } from './navigation/header/header.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { HeaderNewComponent } from './navigation/header-new/header-new.component';
 import { DashboardLayoutComponent } from './layout/dashboard-layout/dashboard-layout.component';
+import { AccountModule } from './account/account.module';
 
 @NgModule({
   declarations: [
@@ -41,6 +43,7 @@ import { DashboardLayoutComponent } from './layout/dashboard-layout/dashboard-la
     HttpClientModule,
     AppRoutingModule,
     AuthModule,
+    AccountModule,
     PaymentModule,
     PlanModule,
     SubscriptionModule,
@@ -48,7 +51,7 @@ import { DashboardLayoutComponent } from './layout/dashboard-layout/dashboard-la
     MailModule,
     PasswordlessModule,
     CoreModule,
-    NgxsModule.forRoot([AuthState], ngxsConfig),
+    NgxsModule.forRoot([AuthState, AccountState], ngxsConfig),
     NgxsLoggerPluginModule.forRoot()
   ],
   providers: [

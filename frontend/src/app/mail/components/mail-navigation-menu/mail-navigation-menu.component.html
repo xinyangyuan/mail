@@ -11,7 +11,7 @@
   <!-- Menu -->
   <mat-menu #menu="matMenu" class="menuuu">
     <ng-container *ngFor="let route of routes">
-      <button mat-menu-item [routerLink]="[route.routerLink]">
+      <button mat-menu-item routerLinkActive="active" [routerLink]="[route.routerLink]">
         <mat-icon>{{ route.icon }}</mat-icon>
         <span>{{ route.name }}</span>
       </button>

@@ -2,9 +2,9 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngxs/store';
 
-import { Plan } from '../plan.model';
-import * as PlanActions from '../store/plan.action';
-import { PlanState } from '../store/plan.state';
+import { Plan } from '../../plan.model';
+import * as PlanActions from '../../store/plan.action';
+import { PlanState } from '../../store/plan.state';
 
 @Component({
   selector: 'app-plan-card',

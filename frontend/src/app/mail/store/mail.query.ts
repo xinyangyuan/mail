@@ -2,8 +2,8 @@ import { Selector } from '@ngxs/store';
 
 import { MailState, MailStateModel } from './mail.state';
 import { Mail } from '../models/mail.model';
-import { AuthState } from 'src/app/auth/store/auth.state';
 import { MailRoutes } from '../models/mail-route.model';
+import { AccountState } from 'src/app/account/store/account.state';
 
 export class MailQuery {
   /*
@@ -58,8 +58,8 @@ export class MailQuery {
    Selector: mail routes for current sign-in user role
   */
 
-  @Selector([AuthState.isSender])
-  static routes(isSender: boolean) {
+  @Selector([AccountState.userRole])
+  static routes(userRole: 'USER' | 'SENDER') {
     // Routes
     const routesList: MailRoutes[] = [
       {
@@ -84,7 +84,6 @@ export class MailQuery {
     ];
 
     // Routes for current user
-    const userRole = isSender ? 'SENDER' : 'USER';
     return routesList.find(routes => routes.userRole === userRole).routes;
   }
 
@@ -92,8 +91,12 @@ export class MailQuery {
    Selector: user role
   */
 
-  @Selector([AuthState.isSender])
-  static userRole(isSender: boolean) {
-    return isSender ? 'SENDER' : 'USER';
+  @Selector([AccountState.userRole])
+  static userRole(userRole: 'SENDER' | 'USER') {
+    return userRole;
   }
+
+  /*
+   Selector: receivers
+  */
 }

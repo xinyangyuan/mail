@@ -1,4 +1,4 @@
 export interface Address {
-  addressId: string; // mongoId
+  addressId: string;
   mailboxNo: number;
 }

@@ -1,28 +1,26 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Store } from '@ngxs/store';
-import * as jwtDecode from 'jwt-decode';
+import { Router } from '@angular/router';
+import { Store, Select } from '@ngxs/store';
+import { Observable } from 'rxjs';
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
 
-import { MailService } from '../../mail.service';
-import { AddressService } from 'src/app/address/address.service';
-import { AuthState } from 'src/app/auth/store/auth.state';
 import { Receiver } from 'src/app/address/models/receivers.model';
+import { MailService } from '../../mail.service';
 
 @Component({
   selector: 'app-mail-create',
   templateUrl: './mail-create.component.html',
   styleUrls: ['./mail-create.component.css']
 })
-export class MailCreateComponent implements OnInit, AfterViewInit {
+export class MailCreateComponent implements OnInit {
   // Attributes
-  public form: FormGroup;
-  public receiverList: Receiver[];
+  form: FormGroup;
+  @Select(state => state.account.receivers) receiverList$: Observable<Receiver[]>;
 
   // File upload button ui
-  public fileAttached = false;
-  public fileBtnHovered = false;
+  fileAttached = false;
+  fileBtnHovered = false;
 
   // Mat-Progress Button Option:
   sendBtn: MatProgressButtonOptions = {
@@ -42,8 +40,7 @@ export class MailCreateComponent implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private store: Store,
     private routerService: Router,
-    private mailService: MailService,
-    private addressService: AddressService
+    private mailService: MailService
   ) {}
 
   // Init Method
@@ -56,17 +53,6 @@ export class MailCreateComponent implements OnInit, AfterViewInit {
       content: ['', [Validators.required]],
       envelop: ['', [Validators.required]]
     });
-  }
-
-  async ngAfterViewInit() {
-    // Get the list of receivers TEMP: TO REMOVE
-    const token = this.store.selectSnapshot(AuthState.token);
-    const { userId } = jwtDecode(token);
-    const { address: addresss } = await this.addressService
-      ._getAddressBySenderId(userId)
-      .toPromise();
-    const { address } = await this.addressService._getReceivers(addresss).toPromise();
-    this.receiverList = address.receivers;
   }
 
   // Call mail-service to create new mail
