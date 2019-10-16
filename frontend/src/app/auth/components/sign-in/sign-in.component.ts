@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Store, Select } from '@ngxs/store';
 
-import { AuthState } from '../store/auth.state';
-import * as AuthAction from '../store/auth.action';
+import { AuthState } from '../../store/auth.state';
+import * as AuthAction from '../../store/auth.action';
 
 @Component({
   selector: 'app-sign-in',

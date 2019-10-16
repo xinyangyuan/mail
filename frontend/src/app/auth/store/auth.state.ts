@@ -3,7 +3,6 @@ import { tap } from 'rxjs/operators';
 import * as jwtDecode from 'jwt-decode';
 
 import * as AuthActions from './auth.action';
-import { User } from '../auth.model';
 import { AuthService } from '../auth.service';
 
 /*
@@ -11,7 +10,6 @@ import { AuthService } from '../auth.service';
 */
 
 export interface AuthStateModel {
-  user: User;
   token: string;
   authError: string;
 }
@@ -21,7 +19,6 @@ export interface AuthStateModel {
 */
 
 const initialState: AuthStateModel = {
-  user: null,
   token: null,
   authError: null
 };
@@ -38,21 +35,6 @@ export class AuthState {
   /*
     Selectors:
   */
-
-  @Selector()
-  static user(state: AuthStateModel) {
-    return state.user;
-  }
-
-  @Selector()
-  static email(state: AuthStateModel) {
-    return state.user.email;
-  }
-
-  @Selector()
-  static isSender(state: AuthStateModel) {
-    return state.user.isSender;
-  }
 
   @Selector()
   static token(state: AuthStateModel) {
@@ -79,8 +61,7 @@ export class AuthState {
       tap(
         result => {
           ctx.patchState({
-            token: result.token,
-            user: result.user
+            token: result.token
           });
         },
         error => {
@@ -93,12 +74,35 @@ export class AuthState {
   }
 
   /*
+   Action: sign up
+  */
+
+  @Action(AuthActions.SignUp)
+  signUp(ctx: StateContext<AuthStateModel>, action: AuthActions.SignUp) {
+    const { firstName, lastName, email, password, role, code } = action.payload;
+    return this.authService._signUp(firstName, lastName, email, password, role, code);
+  }
+
+  /*
    Action: sign out
   */
 
   @Action(AuthActions.SignOut)
   signOut(ctx: StateContext<AuthStateModel>) {
-    return this.authService._signOut();
+    return this.authService._signOut().pipe(
+      tap(
+        result => {
+          ctx.patchState({
+            token: null
+          });
+        },
+        error => {
+          ctx.patchState({
+            authError: error.error.message
+          });
+        }
+      )
+    );
   }
 
   /*
@@ -106,17 +110,14 @@ export class AuthState {
   */
 
   @Action(AuthActions.AutoSignIn)
-  async autoSignIn(ctx: StateContext<AuthStateModel>) {
-    // get new access token
-    const { ok, token } = await this.authService._refreshToken().toPromise();
-    if (!ok) {
-      return;
-    }
-    ctx.patchState({ token });
-
-    // get user
-    const { user } = await this.authService._getUser().toPromise();
-    ctx.patchState({ user });
+  autoSignIn(ctx: StateContext<AuthStateModel>) {
+    return this.authService._refreshToken().pipe(
+      tap(result => {
+        ctx.patchState({
+          token: result.token
+        });
+      })
+    );
   }
 
   /*
@@ -149,12 +150,12 @@ export class AuthState {
     // call api to complete email address verification
     await this.authService._verifyEmailConfirmation(password, emailToken).toPromise();
 
-    // call api to log-in user
+    // call api to log-in user [NEED ERROR HANDLING]
     const { userId } = jwtDecode(emailToken);
-    const { token, user } = await this.authService._signInById(userId, password).toPromise();
+    const { token } = await this.authService._signInById(userId, password).toPromise();
 
     // update auth store
-    ctx.patchState({ token, user });
+    ctx.patchState({ token });
   }
 
   /*
@@ -178,4 +179,23 @@ export class AuthState {
   /*
    Action: reset password request
   */
+
+  @Action(AuthActions.ResetPassword)
+  resetPassword(ctx: StateContext<AuthStateModel>, action: AuthActions.ResetPassword) {
+    const email = action.payload;
+    return this.authService._resetPassword(email);
+  }
+
+  /*
+   Action: reset password request [SHOULD auto-log-in user]
+  */
+
+  @Action(AuthActions.VerifyPasswordReset)
+  async verifyPasswordReset(
+    ctx: StateContext<AuthStateModel>,
+    action: AuthActions.VerifyPasswordReset
+  ) {
+    const { password, emailToken } = action.payload;
+    return this.authService._verifyPasswordReset(password, emailToken);
+  }
 }

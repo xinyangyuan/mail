@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../auth.service';
+import { Store } from '@ngxs/store';
+
+import * as AuthActions from '../../store/auth.action';
 
 @Component({
   selector: 'app-forgot-password',
@@ -13,7 +15,7 @@ export class ForgotPasswordComponent implements OnInit {
   form: FormGroup;
 
   // Constructor
-  constructor(private fb: FormBuilder, private router: Router, public authService: AuthService) {}
+  constructor(private fb: FormBuilder, private router: Router, public store: Store) {}
 
   // Init Method
   ngOnInit() {
@@ -24,11 +26,10 @@ export class ForgotPasswordComponent implements OnInit {
   }
 
   // Method: call signUp serivce
-  async onSubmit() {
-    // async request: send email confirmation request to server
-    await this.authService._resetPassword(this.email.value).subscribe(_ => {
-      this.router.navigate(['']);
-    });
+  onSubmit() {
+    this.store
+      .dispatch(new AuthActions.ResetPassword(this.email.value))
+      .subscribe(() => this.router.navigate(['']));
   }
 
   // Getters

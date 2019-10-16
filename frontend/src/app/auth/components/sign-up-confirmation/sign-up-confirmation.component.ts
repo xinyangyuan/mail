@@ -3,8 +3,8 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngxs/store';
 
-import { AuthService } from '../auth.service';
-import * as AuthActions from '../store/auth.action';
+import { AuthService } from '../../auth.service';
+import * as AuthActions from '../../store/auth.action';
 
 @Component({
   selector: 'app-sign-up-confirmation',

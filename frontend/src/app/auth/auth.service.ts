@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { AuthData, User } from './auth.model';
 import { environment } from 'src/environments/environment';
+import { SignInWithEmail, SignInWithUserId } from './models/sign-in-data.model';
+import { User } from './models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,40 +17,29 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   /*
-    $ Method: sign-in
+    $ Method: sign-in [POST]
   */
 
-  _signIn(email: string, password: string): Observable<{ ok: boolean; token: string; user: User }> {
-    // log-in authData
-    const authData: AuthData = { email, password };
-
-    return this.http.post<{ ok: boolean; token: string; user: User }>(
-      this.BACKEND_URL + 'signin',
-      authData,
-      { withCredentials: true }
-    );
+  _signIn(email: string, password: string): Observable<{ ok: boolean; token: string }> {
+    const authData: SignInWithEmail = { email, password };
+    return this.http.post<{ ok: boolean; token: string }>(this.BACKEND_URL + 'signin', authData, {
+      withCredentials: true
+    });
   }
 
   /*
-    $ Method: sign-in by userId
+    $ Method: sign-in by userId [POST]
   */
 
-  _signInById(
-    userId: string,
-    password: string
-  ): Observable<{ ok: boolean; token: string; user: User }> {
-    // log-in authData
-    const authData = { userId, password };
-
-    return this.http.post<{ ok: boolean; token: string; user: User }>(
-      this.BACKEND_URL + 'signin',
-      authData,
-      { withCredentials: true }
-    );
+  _signInById(userId: string, password: string): Observable<{ ok: boolean; token: string }> {
+    const authData: SignInWithUserId = { userId, password };
+    return this.http.post<{ ok: boolean; token: string }>(this.BACKEND_URL + 'signin', authData, {
+      withCredentials: true
+    });
   }
 
   /*
-    $ Method: refresh access token
+    $ Method: refresh access token [POST]
   */
 
   _refreshToken(): Observable<{ ok: boolean; token: string }> {
@@ -61,11 +51,10 @@ export class AuthService {
   }
 
   /*
-    Method: sign-out
+    Method: sign-out [POST]
   */
 
-  _signOut() {
-    console.log('You have been logged out!');
+  _signOut(): Observable<{ ok: boolean }> {
     return this.http.post<{ ok: boolean }>(
       this.BACKEND_URL + 'signout',
       {},
@@ -74,7 +63,7 @@ export class AuthService {
   }
 
   /*
-     $ Method: sign-up
+     $ Method: sign-up [POST]
   */
 
   _signUp(
@@ -85,32 +74,28 @@ export class AuthService {
     role: 'SENDER' | 'USER',
     code?: string
   ): Observable<{ message: string }> {
-    // pack all required post data
     const authData = { firstName, lastName, email, password, role, code };
-
-    // send user sign-up request to backend server
     return this.http.post<{ message: string }>(this.BACKEND_URL + 'signup', authData);
   }
 
   /*
-    $ Method: get user info
+    $ Method: get my account user info [GET]
   */
 
-  _getUser() {
-    return this.http.get<{ user: User }>(this.BACKEND_URL + 'self');
+  _getMyInfo(): Observable<{ ok: boolean; user: User }> {
+    return this.http.get<{ ok: boolean; user: User }>(this.BACKEND_URL + 'self');
   }
 
   /*
-    $ Method: request server to send new verification email
+    $ Method: request server to send new verification email [GET]
   */
 
   _sendEmailConfirmation(email: string): Observable<{ message: string }> {
-    // request user to send new verification email
     return this.http.get<{ message: string }>(this.BACKEND_URL + 'confirmation/' + email);
   }
 
   /*
-    $ Method: request server to verify the user's email address
+    $ Method: request server to verify the user's email address [POST]
   */
 
   _verifyEmailConfirmation(password: string, emailToken: string): Observable<{ token: string }> {
@@ -121,20 +106,18 @@ export class AuthService {
   }
 
   /*
-    $ Method: send password reset request
+    $ Method: send password reset request [GET]
   */
 
   _resetPassword(email: string): Observable<{ message: string }> {
-    // send password reset request to backend server
     return this.http.get<{ message: string }>(this.BACKEND_URL + 'reset/' + email);
   }
 
   /*
-    $ Method: update user's account with new password
+    $ Method: update user's account with new password [POST]
   */
 
-  _verifyReset(password: string, emailToken: string): Observable<{ token: string }> {
-    // send password reset request to backend server
+  _verifyPasswordReset(password: string, emailToken: string): Observable<{ token: string }> {
     return this.http.post<{ ok: boolean; token: string }>(
       this.BACKEND_URL + 'reset/' + emailToken,
       { password }

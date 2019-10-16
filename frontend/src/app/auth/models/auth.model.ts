@@ -1,3 +1,8 @@
+export interface Auth {
+  token: string;
+}
+
+// Legacies:
 export interface AuthData {
   email: string;
   password?: string;

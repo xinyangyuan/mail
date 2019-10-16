@@ -1,4 +1,8 @@
-import { SignUpData } from '../auth.model';
+import { SignUpData } from '../models/sign-up-data.model';
+
+/*
+   Core:
+*/
 
 export class SignIn {
   static readonly type = '[Sign In Page] Sign In';
@@ -22,6 +26,10 @@ export class SignOut {
   static readonly type = '[Dashboard Header] Sign Out';
 }
 
+/*
+   Email Verification:
+*/
+
 export class ResendEmailConfirmation {
   static readonly type = '[Sign In Page] Resend Email Confirmation';
   constructor(public payload: string) {} // payload: email
@@ -29,8 +37,12 @@ export class ResendEmailConfirmation {
 
 export class VerifyEmailConfirmation {
   static readonly type = '[Sign Up Confirmation Page] Verify Email Confirmation';
-  constructor(public payload: { password: string; emailToken: string }) {} // payload: password
+  constructor(public payload: { password: string; emailToken: string }) {}
 }
+
+/*
+  Password Reset:
+*/
 
 export class ResetPassword {
   static readonly type = '[Forgot Password Page] Reset Password';
@@ -39,5 +51,5 @@ export class ResetPassword {
 
 export class VerifyPasswordReset {
   static readonly type = '[Reset Password Page] Verify Password Reset';
-  constructor(public payload: string) {} // payload: new password
+  constructor(public payload: { password: string; emailToken: string }) {}
 }

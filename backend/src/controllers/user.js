@@ -26,7 +26,8 @@ exports.getUser = async (req, res) => {
       user: {
         name: user.name,
         email: user.email,
-        isSender: user.isSender // User virtual attribute
+        role: user.role,
+        status: user.status
       }
     });
   } catch {

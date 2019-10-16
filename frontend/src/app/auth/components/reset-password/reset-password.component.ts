@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AuthService } from '../auth.service';
+import { Store } from '@ngxs/store';
+
+import * as AuthActions from '../../store/auth.action';
 
 @Component({
   selector: 'app-reset-password',
@@ -19,15 +21,17 @@ export class ResetPasswordComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    public authService: AuthService
+    private store: Store
   ) {}
 
   // Init Method
   ngOnInit() {
     // get url parameters
-    this.route.paramMap.subscribe(paramsMap => {
-      this.emailToken = paramsMap.get('emailToken');
-    });
+    this.emailToken = this.route.snapshot.paramMap.get('emailToken');
+    console.log(this.emailToken);
+    // this.route.paramMap.subscribe(paramsMap => {
+    //   this.emailToken = paramsMap.get('emailToken');
+    // });
 
     // reactive form
     this.form = this.fb.group({
@@ -42,11 +46,15 @@ export class ResetPasswordComponent implements OnInit {
     });
   }
 
-  // Method: call signUp serivce
-  async onReset() {
-    // async request: send email confirmation request to server
-    await this.authService
-      ._verifyReset(this.password.value, this.emailToken)
+  // Method: verify password reset
+  onReset() {
+    this.store
+      .dispatch(
+        new AuthActions.VerifyPasswordReset({
+          password: this.password.value,
+          emailToken: this.emailToken
+        })
+      )
       .subscribe(() => this.router.navigate(['mails']));
   }
 

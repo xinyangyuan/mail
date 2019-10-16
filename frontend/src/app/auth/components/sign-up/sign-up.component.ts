@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { AuthService } from '../auth.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { environment } from 'src/environments/environment';
+import { Store } from '@ngxs/store';
+import { Subscription } from 'rxjs';
+
+import * as AuthActions from '../../store/auth.action';
 
 @Component({
   selector: 'app-sign-up',
@@ -13,20 +14,20 @@ import { environment } from 'src/environments/environment';
 export class SignUpComponent implements OnInit, OnDestroy {
   // Attributes
   accountTypes = ['USER', 'SENDER'];
-  hide = true;
   form: FormGroup;
   firstNameSub: Subscription;
   lastNameSub: Subscription;
+
+  // ui:
+  hide = true;
 
   // Constructor
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private routerService: Router,
-    private authService: AuthService
-  ) {
-    console.log(environment.version);
-  }
+    private store: Store
+  ) {}
 
   // Static method
   static titleCase(text: string) {
@@ -37,6 +38,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
 
   // Init Method
   ngOnInit() {
+    // activate sender account registration
     const senderEnabled = this.route.snapshot.fragment && this.route.snapshot.fragment.length > 5;
 
     // initialize the reactive form
@@ -67,25 +69,23 @@ export class SignUpComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Method: call signUp serivce
-  async onSignUp() {
-    // async operations: add user and add user to the address receiver list
-    this.authService
-      ._signUp(
-        this.firstName.value,
-        this.lastName.value,
-        this.email.value,
-        this.password.value,
-        this.accountType.value,
-        this.route.snapshot.fragment
+  // Method: dispatch sign-up action
+  onSignUp() {
+    this.store
+      .dispatch(
+        new AuthActions.SignUp({
+          firstName: this.firstName.value,
+          lastName: this.lastName.value,
+          email: this.email.value,
+          password: this.password.value,
+          role: this.accountType.value,
+          code: this.route.snapshot.fragment
+        })
       )
-      .toPromise();
-
-    // immediately re-direct the user to sign-in page without listening to the server cb
-    this.routerService.navigate(['']);
+      .subscribe(() => this.routerService.navigate(['']));
   }
 
-  // Destroy Method
+  // Destroy Method:
   ngOnDestroy() {
     this.firstNameSub.unsubscribe();
     this.lastNameSub.unsubscribe();
