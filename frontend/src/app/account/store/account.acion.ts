@@ -3,5 +3,5 @@
 */
 
 export class GetAccountInfo {
-  static readonly type = '[Account Resolver] Get Account Information';
+  static readonly type = '[Dashboard Layout Component] Get Account Information';
 }

@@ -29,14 +29,6 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     // case 3:
-    // return this.authService._refreshToken().pipe(
-    //   mergeMap(result => {
-    //     const authRequest = req.clone({ setHeaders: { Authorization: 'Bearer ' + result.token } });
-    //     return next.handle(authRequest);
-    //   })
-    // );
-
-    // case 3:
     return this.store.dispatch(new AuthActions.RefreshToken()).pipe(
       mergeMap(() => {
         return next.handle(this.generateAuthRequest(req));

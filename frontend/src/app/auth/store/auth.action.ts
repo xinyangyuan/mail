@@ -14,7 +14,7 @@ export class AutoSignIn {
 }
 
 export class RefreshToken {
-  static readonly type = '[Auth Interceptor] Refresh Token';
+  static readonly type = '[Auth Interceptor] Refresh Token'; // auth guard calls it as well
 }
 
 export class SignUp {

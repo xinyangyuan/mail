@@ -48,7 +48,7 @@ export class AuthState {
 
   @Selector()
   static isAuthenticated(state: AuthStateModel) {
-    return state.token !== null;
+    return typeof state.token === 'string' && state.token.length;
   }
 
   /*
@@ -114,8 +114,6 @@ export class AuthState {
     const { ok, token } = await this.authService._refreshToken().toPromise();
     if (ok) {
       ctx.patchState({ token });
-    } else {
-      throw Error();
     }
   }
 

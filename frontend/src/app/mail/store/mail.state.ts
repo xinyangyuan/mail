@@ -840,7 +840,7 @@ export class MailState {
   }
 
   /*
-   Action: un-select all mails | also fire when single mail state is updated
+   Action: un-select all mails | also fire when mail(s) state is updated
   */
 
   @Action([
@@ -851,6 +851,11 @@ export class MailState {
     MailActions.DeleteMail,
     MailActions.ScanMail,
     MailActions.UnscanMail,
+    MailActions.StarredMails,
+    MailActions.UnstarredMails,
+    MailActions.ReadMails,
+    MailActions.ScanMails,
+    MailActions.UnscanMails,
     MailActions.GetEnvelopImage,
     MailActions.GetContentPdf,
     MailActions.ChangePage

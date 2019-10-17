@@ -52,7 +52,7 @@ import { AccountModule } from './account/account.module';
     PasswordlessModule,
     CoreModule,
     NgxsModule.forRoot([AuthState, AccountState], ngxsConfig),
-    NgxsLoggerPluginModule.forRoot()
+    NgxsLoggerPluginModule.forRoot({ disabled: process.env.NODE_ENV === 'production' })
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

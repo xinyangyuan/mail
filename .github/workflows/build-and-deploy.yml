@@ -17,9 +17,12 @@ jobs:
       GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v1
+      - name: Pull source
+        uses: actions/checkout@v1
+
       - name: Build images
         run: bash docker-build.sh
+
       - name: Push images to GPR
         run: |
           docker login docker.pkg.github.com -u $GITHUB_ID -p $GITHUB_PACKAGE_REGISTRY_TOKEN
@@ -29,6 +32,7 @@ jobs:
           docker push docker.pkg.github.com/xinyangyuan/mail/nginx:latest
           docker push docker.pkg.github.com/xinyangyuan/mail/frontend:latest
           docker push docker.pkg.github.com/xinyangyuan/mail/backend:latest
+
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v1
         with:
@@ -36,6 +40,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: Mail
           environment_name: Mail-env
-          version_label: 10
+          version_label: 11
           region: ap-northeast-1
           deployment_package: Dockerrun.aws.json

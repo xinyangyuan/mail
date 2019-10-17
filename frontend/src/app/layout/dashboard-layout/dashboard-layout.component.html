@@ -1,5 +1,8 @@
+<!-- Loading View -->
+<div *ngIf="isLoading" fxLayout="column" class="dashboard"></div>
+
 <!-- Dashboard Layout -->
-<div fxLayout="column" class="dashboard">
+<div *ngIf="!isLoading" fxLayout="column" class="dashboard">
   <!-- Header -->
   <app-header-new></app-header-new>
 
