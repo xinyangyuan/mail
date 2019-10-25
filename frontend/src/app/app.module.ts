@@ -4,6 +4,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxsModule } from '@ngxs/store';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
+import { environment } from 'src/environments/environment';
 
 import { CoreModule } from './core/core.module';
 import { AppRoutingModule } from './app-routing.module';
@@ -52,7 +53,7 @@ import { AccountModule } from './account/account.module';
     PasswordlessModule,
     CoreModule,
     NgxsModule.forRoot([AuthState, AccountState], ngxsConfig),
-    NgxsLoggerPluginModule.forRoot({ disabled: process.env.NODE_ENV === 'production' })
+    NgxsLoggerPluginModule.forRoot({ disabled: environment.production })
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

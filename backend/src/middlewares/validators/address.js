@@ -1,13 +1,14 @@
-const { check } = require('express-validator');
+const validator = require('validator');
+const ErrorResponse = require('../../utils/error-response');
 
+const { check } = require('express-validator');
 const { validationResultHandler } = require('./validation-result-handler');
-const User = require('../../models/user');
 
 /*
-  Validator Middleware: signUp
+  Validator Middleware: create address validation
 */
 
-exports.signUp = [
+exports.createAddress = [
   check('line1').isString(),
 
   check('line2').isString(),
@@ -16,7 +17,25 @@ exports.signUp = [
 
   check('zip').isPostalCode(),
 
-  check('country').isIn(),
+  check('country').isIn(['US', 'UK']),
+
+  validationResultHandler
+];
+
+/*
+  Validator Middleware: update address validation
+*/
+
+exports.updateAddress = [
+  check('line1').isString(),
+
+  check('line2').isString(),
+
+  check('city').isString(),
+
+  check('zip').isPostalCode(),
+
+  check('country').isIn(['US', 'UK']),
 
   validationResultHandler
 ];

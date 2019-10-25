@@ -6,13 +6,38 @@ const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
-    stripeId: { type: String, required: true }, // payment_intent : 'pi_xxx'
-    stripeInvoiceUrl: { type: String, required: true },
-    reason: { type: String, required: true },
-    amount: { type: Number, required: true },
-    date: { type: Date, immutable: true, required: true }
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    subscriptionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Subscription',
+      required: true
+    },
+    stripeId: {
+      type: String, // stripe payment_intent : 'pi_xxx'
+      required: true,
+      select: false
+    },
+    stripeInvoiceUrl: {
+      type: String, // link to view payment on stripe
+      required: true
+    },
+    reason: {
+      type: String,
+      required: true
+    },
+    amount: {
+      type: Number,
+      required: true
+    },
+    date: {
+      type: Date,
+      required: true,
+      immutable: true
+    }
   },
   { timestamps: true }
 );
@@ -47,8 +72,13 @@ paymentSchema.statics.findByYearMonth = function(
   Query Helper:
 */
 
-paymentSchema.query.byUser = function(userId) {
-  return this.where({ userId: userId });
+paymentSchema.query.byUser = function(userId, userRole) {
+  switch (userRole) {
+    case 'USER':
+      return this.where({ userId: userId });
+    case 'ADMIN':
+      return this.where({});
+  }
 };
 
 paymentSchema.query.currentMonth = function() {

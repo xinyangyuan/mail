@@ -1,9 +1,23 @@
-div .mail-list {
-  width: 100%;
-  margin: 0rem auto;
+/* Expansion List View */
+.expansion-list-wrapper {
+  padding: 2em;
 }
 
+/* Card Grid View */
+.card-grid-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16em, 1fr));
+  column-gap: 2em;
+  row-gap: 0.5em;
+  padding-right: 2em;
+  padding-left: 2em;
+}
+
+app-mail-card-grid-item {
+  max-width: 18.5em;
+}
+
+/* Paginator */
 mat-paginator {
   background-color: #e3f2fd;
-  /* background-color: rgba(245, 245, 245); */
 }

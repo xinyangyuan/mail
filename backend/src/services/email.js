@@ -1,8 +1,8 @@
 const mime = require('mime');
 const transporter = require('../utils/nodemailer');
 
-const Token = require('./token');
-const EmailTemplate = require('../utils/email-template');
+const tokenService = require('./token');
+const emailTemplate = require('../utils/email-template');
 
 /*
   Send email:
@@ -25,10 +25,10 @@ exports.send = send;
 
 exports.emailConfirmation = receiver => {
   // token
-  const token = Token.generateConfirmationToken(receiver);
+  const token = tokenService.generateConfirmationToken(receiver);
 
   // email template
-  const email = EmailTemplate.generateConfirmationEmail(
+  const email = emailTemplate.generateConfirmationEmail(
     receiver.fullName,
     receiver.email,
     token,
@@ -44,10 +44,10 @@ exports.emailConfirmation = receiver => {
 
 exports.passwordReset = receiver => {
   // token
-  const token = Token.generatePasswordResetToken(receiver);
+  const token = tokenService.generatePasswordResetToken(receiver);
 
   // email template
-  const email = EmailTemplate.generatePasswordResetEmail(receiver.fullName, receiver.email, token);
+  const email = emailTemplate.generatePasswordResetEmail(receiver.fullName, receiver.email, token);
 
   return send(email);
 };
@@ -58,12 +58,12 @@ exports.passwordReset = receiver => {
 
 exports.mailReceivedNotification = (receiver, mail, file) => {
   // email token
-  const scanToken = Token.generateScanToken(mail);
-  const skipToken = Token.generateSkipScanToken(mail);
+  const scanToken = tokenService.generateScanToken(mail);
+  const skipToken = tokenService.generateSkipScanToken(mail);
   const emailToken = { scan: scanToken, skipScan: skipToken };
 
   // email template
-  const email = EmailTemplate.generateMailReceivedEmail(
+  const email = emailTemplate.generateMailReceivedEmail(
     receiver.fullName,
     receiver.email,
     mail._id,
@@ -88,7 +88,7 @@ exports.mailReceivedNotification = (receiver, mail, file) => {
 
 exports.mailScannedNotification = (receiver, file) => {
   // email template
-  const email = EmailTemplate.generateMailScannedEmail(receiver.fullName, receiver.email);
+  const email = emailTemplate.generateMailScannedEmail(receiver.fullName, receiver.email);
 
   // attatchment file
   email.attachments = [

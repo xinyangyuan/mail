@@ -29,7 +29,7 @@ transporter.verify(function(error, success) {
   if (error) {
     console.log(error);
   } else {
-    console.log('Connected to email server!');
+    console.log('Connected to email server'.cyan.bold);
   }
 });
 

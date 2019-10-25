@@ -6,12 +6,36 @@ const mongoose = require('mongoose');
 
 const invoiceSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
-    mailIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }],
-    scanIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Mail' }],
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true }
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    subscriptionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Subscription',
+      required: true
+    },
+    mailIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Mail'
+      }
+    ],
+    scanIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Mail'
+      }
+    ],
+    startDate: {
+      type: Date,
+      required: true
+    },
+    endDate: {
+      type: Date,
+      required: true
+    }
   },
   { timestamps: true }
 );
@@ -54,8 +78,13 @@ invoiceSchema.query.currentPeriod = function() {
   return this.where({ startDate: { $lte: Date.now() }, endDate: { $gt: Date.now() } });
 };
 
-invoiceSchema.query.byUser = function(userId) {
-  return this.where({ userId: userId });
+invoiceSchema.query.byUser = function(userId, userRole) {
+  switch (userRole) {
+    case 'USER':
+      return this.where({ userId: userId });
+    case 'ADMIN':
+      return this.where({});
+  }
 };
 
 // export mongoose model

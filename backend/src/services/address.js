@@ -6,26 +6,70 @@ const Address = require('../models/address');
   Add Receiver:
 */
 
-exports.addReceiver = async (addressId, userId, mailboxNo, session = null) => {
-  try {
-    // filter, options, and update
-    const filter = {
-      _id: addressId,
-      'receivers.mailboxNo': { $ne: mailboxNo },
-      'receivers.receiverId': { $ne: userId }
-    };
-    const update = { $push: { receivers: { mailboxNo: mailboxNo, receiverId: userId } } };
-    const options = session ? { session: session, runValidators: true } : { runValidators: true };
+exports.addReceiver = async (addressId, userId, mailboxNo, session) => {
+  // filter, options, and update
+  const filter = {
+    _id: addressId,
+    'receivers.mailboxNo': { $ne: mailboxNo },
+    'receivers.receiverId': { $ne: userId }
+  };
+  const update = { $push: { receivers: { mailboxNo: mailboxNo, receiverId: userId } } };
+  const options = session
+    ? { runValidators: true, new: true }
+    : { runValidators: true, new: true, session };
 
-    // 1$: update address document
-    const address = await Address.findOneAndUpdate(filter, update, options);
-    if (!address) {
-      throw Error(`User already exits in the addresss's mailbox`);
-    }
+  // promise
+  const address = await Address.findOneAndUpdate(filter, update, options);
+  return address;
+};
 
-    // return address
-    return address;
-  } catch (error) {
-    throw error;
-  }
+/*
+  Remove Receiver:
+*/
+
+exports.removeReceiver = async (addressId, userId) => {
+  // filter, options, and update
+  const filter = { _id: addressId };
+  const update = { $pull: { receivers: { receiverId: userId } } };
+  const options = { runValidators: true, new: true };
+
+  // promise
+  const address = await Address.findOneAndUpdate(filter, update, options);
+  return address;
+};
+
+/*
+  Update address:
+*/
+
+exports.updateAddressById = (id, line1, line2, city, country, zip) => {
+  // filter, options
+  const filter = { _id: id };
+  const options = { runValidators: true, new: true };
+
+  // update
+  let update;
+  line1 && (update['line1'] = line1);
+  line2 && (update['line2'] = line2);
+  city && (update['city'] = city);
+  country && (update['country'] = country);
+  zip && (update['zip'] = zipp);
+
+  // document query
+  return Address.updateOne(filter, update, options);
+};
+
+/*
+  Find address:
+*/
+
+exports.findAddressBySenderReceiverIds = (senderId, receiverId) => {
+  // filter
+  const filter = {
+    senderId: mongoose.Types.ObjectId(senderId),
+    'receivers.receiverId': mongoose.Types.ObjectId(receiverId)
+  };
+
+  // document query
+  return Address.findOne(filter);
 };

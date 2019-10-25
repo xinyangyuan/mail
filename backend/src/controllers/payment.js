@@ -1,22 +1,52 @@
 const mongoose = require('mongoose');
-const stripe = require('stripe')(process.env.STRIPE_KEY);
+const asyncHandler = require('../utils/async-handler');
 
-const Plan = require('../models/plan');
-const Subscription = require('../models/subscription');
 const Payment = require('../models/payment');
-const User = require('../models/user');
+const ErrorResponse = require('../utils/error-response');
 
-const AddressService = require('../services/address');
-const SubscriptionService = require('../services/subscription');
-
-/*
-  Controller: get payment list [GET]
+/* 
+  @desc     Get all payments - asscociated to the requested user
+  @route    [GET] /api/v1/payment
+  @access   Private
 */
 
-exports.getPaymentList = async (req, res, next) => {};
+exports.getPayments = asyncHandler(async (req, res, next) => {
+  // query by user status
+  const userId = req.userData.userId;
+  const userRole = req.userData.role;
 
-/*
-  Controller: fetch single payment by id [GET]
+  // filter, projection
+  const filter = { _id: req.params.id };
+
+  // $1: payments
+  const payments = await Payment.find(filter)
+    .byUser(userId, userRole)
+    .lean();
+
+  // success response
+  res.status(200).json({ ok: true, data: { payments } });
+});
+
+/* 
+  @desc     Get one payment by id 
+  @route    [GET] /api/v1/payment/:id
+  @access   Private
 */
 
-exports.getPayment = async (req, res, next) => {};
+exports.getPayment = asyncHandler(async (req, res, next) => {
+  // query by user status
+  const userId = req.userData.userId;
+  const userRole = req.userData.role;
+
+  // filter, projection
+  const filter = { _id: req.params.id };
+
+  // $1: payment
+  const payment = await Payment.findOne(filter)
+    .byUser(userId, userRole)
+    .lean();
+  if (!payment) return next(new ErrorResponse('Cannot find the payment', 400));
+
+  // success response
+  res.status(200).json({ ok: true, data: { payment } });
+});

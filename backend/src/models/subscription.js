@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
   Helper Functions:
 */
 
-function anchorDay() {
+function getAnchorDay() {
   const isMidnight =
     this.startDate.getHours() + this.startDate.getSeconds() + this.startDate.getMilliseconds() ===
     0;
@@ -15,18 +15,21 @@ function anchorDay() {
   Child Schema:
 */
 
-const terminationSchema = new mongoose.Schema({
-  reason: { type: String, required: true },
-  date: { type: Date, required: true }
-});
-
 const stripeItemsSchema = new mongoose.Schema(
   {
     stripeId: { type: String, required: true }, // subscription item si_xxx
     product: { type: String, enum: ['mail', 'scan', 'delivery', 'translation'], required: true },
     type: { type: String, enum: ['metered', 'licensed'], required: true }
   },
-  { _id: false }
+  { _id: false } // no unique _id
+);
+
+const cancellationEventSchema = new mongoose.Schema(
+  {
+    reason: { type: String, immutable: true, required: true },
+    date: { type: Date, immutable: true, required: true }
+  },
+  { _id: true } // require unique _id
 );
 
 /*
@@ -35,38 +38,71 @@ const stripeItemsSchema = new mongoose.Schema(
 
 const subscriptionSchema = new mongoose.Schema(
   {
-    planIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true }],
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    addressId: { type: mongoose.Schema.Types.ObjectId, ref: 'Address', required: true },
+    planIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Plan',
+        required: true
+      }
+    ],
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    addressId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Address',
+      required: true
+    },
     stripeId: {
       type: String,
       required: function() {
         return ['ACTIVE', 'PAST_DUE', 'CANCELED'].includes(this.status);
       }
     },
-    stripeItems: [{ type: stripeItemsSchema }],
+    stripeItems: [
+      {
+        type: stripeItemsSchema
+      }
+    ],
     status: {
       type: String,
-      enum: ['INCOMPLETE', 'ACTIVE', 'PAST_DUE', 'CANCELED'],
+      enum: ['INCOMPLETE', 'INCOMPLETE_EXPIRED', 'ACTIVE', 'PAST_DUE', 'CANCELED'],
       default: 'INCOMPLETE'
     },
-    startDate: { type: Date, required: true, immutable: true },
-    anchorDay: { type: Number, default: anchorDay },
+    startDate: {
+      type: Date,
+      required: true,
+      immutable: true
+    },
+    anchorDay: {
+      type: Number,
+      default: getAnchorDay
+    },
     periodStartDate: {
       type: Date,
       default: function() {
         return this.startDate;
       }
     },
-    periodEndDate: { type: Date, required: true },
-    isAutoRenew: { type: Boolean, default: true },
-    isAllowOverage: { type: Boolean, default: false },
-    termination: {
-      type: terminationSchema,
-      required: function() {
-        return this.status === 'CANCELED';
+    periodEndDate: {
+      type: Date,
+      required: true
+    },
+    isAllowOverage: {
+      type: Boolean,
+      default: false
+    },
+    isCancelAtPeriodEnd: {
+      type: Boolean,
+      default: false
+    },
+    cancellationEvents: [
+      {
+        type: cancellationEventSchema
       }
-    }
+    ]
   },
   { timestamps: true }
 );
@@ -84,11 +120,11 @@ subscriptionSchema.virtual('endDate').get(function() {
 });
 
 subscriptionSchema.virtual('isTerminated').get(function() {
-  return this.status === 'CANCELED' || this.periodEndDate < Date.now();
+  return this.status !== 'ACTIVE' || this.periodEndDate < Date.now();
 });
 
 subscriptionSchema.virtual('isActive').get(function() {
-  return this.status !== 'CANCELED' && this.periodEndDate > Date.now();
+  return this.status === 'ACTIVE' && this.periodEndDate > Date.now();
 });
 
 /*

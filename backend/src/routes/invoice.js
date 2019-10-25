@@ -1,7 +1,7 @@
 const express = require('express');
 
-const AuthMiddleware = require('../middlewares/auth-verify');
-const InvoiceController = require('../controllers/invoice');
+const { protect } = require('../middlewares/auth');
+const controller = require('../controllers/invoice');
 
 const router = express.Router();
 
@@ -9,5 +9,5 @@ const router = express.Router();
    [GET] Endpoints
 */
 
-router.get('', AuthMiddleware.authVerify, InvoiceController.getInvoices);
-router.get('/:id', AuthMiddleware.authVerify, InvoiceController.getInvoice);
+router.get('', protect, controller.getInvoices);
+router.get('/:id', protect, controller.getInvoice);

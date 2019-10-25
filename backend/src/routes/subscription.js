@@ -1,7 +1,8 @@
 const express = require('express');
 
-const AuthMiddleware = require('../middlewares/auth-verify');
-const SubscriptionController = require('../controllers/subscription');
+const { protect, authorize } = require('../middlewares/auth');
+const validator = require('../middlewares/validators/subscription');
+const controller = require('../controllers/subscription');
 
 const router = express.Router();
 
@@ -9,25 +10,27 @@ const router = express.Router();
    [GET] Endpoints
 */
 
-router.get('', AuthMiddleware.authVerify, SubscriptionController.getSubscriptionList);
-router.get('/:id', AuthMiddleware.authVerify, SubscriptionController.getSubscription);
+router.get('', protect, controller.getSubscriptions);
+router.get('/:id', protect, controller.getSubscription);
+// router.get('/:id/invoice/:invoiceId')
+// router.get('/:id/invoice/upcoming')
 
 /*
    [PATCH] Endpoint
 */
 
-router.patch('/:id', AuthMiddleware.authVerify, SubscriptionController.updateSubscription);
+router.patch('/:id', protect, controller.updateSubscription);
 
 /*
    [POST] Endpoint
 */
 
-router.post('', AuthMiddleware.authVerify, SubscriptionController.createSubscription);
+router.post('', protect, validator.createSubscription, controller.createSubscription);
 
 /*
-   [DEL] Endpoint
+   [DEL] Endpoint - soft | hard
 */
 
-router.delete('', AuthMiddleware.authVerify, SubscriptionController.getSubscription); // CANCEL
+router.delete('/:id', protect, controller.cancelSubscription);
 
 module.exports = router;

@@ -10,34 +10,23 @@
   <!-- Mail List View-->
   <div class="mail-list">
     <!-- expansion-panel display: -->
-    <!-- <div *ngIf="!data.isLoading">
-    <mat-accordion>
-      <ng-container *ngFor="let mail of mails">
-        <app-mail-expansion-list-item
-          [mail]="mail"
-          [imageURL]="(imageURLs$ | async)[mail._id]"
-        ></app-mail-expansion-list-item>
-      </ng-container>
-    </mat-accordion>
-  </div> -->
+    <!-- <div *ngIf="!data.isLoading" class="expansion-list-wrapper">
+      <mat-accordion>
+        <ng-container *ngFor="let mail of data.mails">
+          <app-mail-expansion-list-item
+            [mail]="mail"
+            [imageURL]="(imageURLs$ | async)[mail._id]"
+          ></app-mail-expansion-list-item>
+        </ng-container>
+      </mat-accordion>
+    </div> -->
 
     <!-- card-grid display: -->
-    <div
-      fxLayout="row wrap"
-      fxLayout.lt-sm="column"
-      fxLayoutAlign="flex-start"
-      *ngIf="!data.isLoading"
-    >
-      <app-mail-card-grid-item
-        fxFlex="0 1 33.3%"
-        fxFlex.lt-md="0 1 50%"
-        fxFlex.lt-sm="100%"
-        style="padding: 18px;"
-        *ngFor="let mail of data.mails"
-        [mail]="mail"
-        [imageURL]="(imageURLs$ | async)[mail._id]"
-      >
-      </app-mail-card-grid-item>
+    <div *ngIf="!data.isLoading" class="card-grid-wrapper">
+      <div *ngFor="let mail of data.mails" fxLayout="row" fxLayoutAlign="space-around">
+        <app-mail-card-grid-item [mail]="mail" [imageURL]="(imageURLs$ | async)[mail._id]">
+        </app-mail-card-grid-item>
+      </div>
     </div>
 
     <!-- empty maillist placeholder -->

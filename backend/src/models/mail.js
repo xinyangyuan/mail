@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-// const diffHistory = require('mongoose-diff-history/diffHistory');
 
 /*
   Child Schema:
@@ -15,23 +14,53 @@ const mailFlagSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const statusLogSchema = new mongoose.Schema(
+  {
+    event: { type: String, required: true, immutable: true },
+    user: { type: String, required: true, immutable: true },
+    reason: { type: String, immutable: true, default: 'change due to user request' }
+  },
+  { timestamps: true }
+);
+
 /*
   Schema:
 */
 
 const mailSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    content: { type: String, required: true },
-    senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    envelopKey: { type: String },
+    title: {
+      type: String,
+      required: true
+    },
+    description: {
+      type: String,
+      required: true
+    },
+    content: {
+      type: String,
+      required: true
+    },
+    senderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    receiverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    envelopKey: {
+      type: String,
+      select: false
+    },
     contentPDFKey: {
       type: String,
       required: function() {
         return this.status !== 'CREATED' && this.status !== 'SCANNING';
-      }
+      },
+      select: false
     },
     flags: {
       type: mailFlagSchema,
@@ -48,7 +77,11 @@ const mailSchema = new mongoose.Schema(
         'COLLECTED',
         'TRASHED'
       ],
-      required: true
+      default: 'CREATED'
+    },
+    statusLogs: {
+      type: [statusLogSchema],
+      select: false
     }
   },
   { timestamps: true }
@@ -99,19 +132,16 @@ mailSchema.query.byReceiver = function(receiverId) {
   return this.where({ receiverId: receiverId });
 };
 
-mailSchema.query.byUser = function(userId, isSender = false) {
-  if (isSender) {
-    return this.where({ senderId: userId });
-  } else {
-    return this.where({ receiverId: userId });
+mailSchema.query.byUser = function(userId, userRole) {
+  switch (userRole) {
+    case 'USER':
+      return this.where({ receiverId: userId });
+    case 'SENDER':
+      return this.where({ senderId: userId });
+    case 'ADMIN':
+      return this.where({});
   }
 };
-
-/*
-  Plugins:
-*/
-
-// mailSchema.plugin(diffHistory.plugin, { omit: ['flags'] }); // diff history plugin/middleware
 
 /*
   Export mongoose model:

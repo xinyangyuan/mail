@@ -2,9 +2,14 @@ const express = require('express');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const mongoose = require('mongoose');
+const morgan = require('morgan');
+const colors = require('colors');
+
+const connectDB = require('./config/db');
+const errorHandler = require('./middlewares/error');
 
 const stripeWebhookRoutes = require('./routes/stripe-webhook');
+const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const addressRoutes = require('./routes/address');
 const mailRoutes = require('./routes/mail');
@@ -12,31 +17,27 @@ const planRoutes = require('./routes/plan');
 const paymentRoutes = require('./routes/payment');
 const subscriptionRoutes = require('./routes/subscription');
 
+const Invoice = require('./models/invoice');
+
 const app = express();
 
 /*
  setup and connect to MongoDB Atlas databse
 */
 
-mongoose.set('useNewUrlParser', true); // deprecation
-mongoose.set('useFindAndModify', false); // deprecation
-mongoose.set('useCreateIndex', true); // deprecation
-mongoose.set('useUnifiedTopology', true); // deprecation
-
-mongoose
-  .connect(process.env.MONGO_ATLAS)
-  .then(() => {
-    console.log('Connected to database!');
-  })
-  .catch(() => {
-    console.log('Connection to database failed!');
-  });
+connectDB();
 
 /*
   protect express app by helmet-js
 */
 
 app.use(helmet({ hsts: false }));
+
+/*
+  Dev logger
+*/
+
+process.env.NODE_ENV === 'development' && app.use(morgan('dev'));
 
 /*
   parse data stream to data object
@@ -81,6 +82,7 @@ app.use('/api/stripe-webhook', stripeWebhookRoutes);
  rest api routes
 */
 
+app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/mail', mailRoutes);
@@ -91,5 +93,11 @@ app.use('/api/subscription', subscriptionRoutes);
 /*
  graphql api route
 */
+
+/*
+ error handler
+*/
+
+app.use(errorHandler);
 
 module.exports = app;

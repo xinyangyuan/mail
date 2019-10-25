@@ -20,15 +20,41 @@ const intervalSchema = new mongoose.Schema(
 const planSchema = new mongoose.Schema(
   {
     // standard
-    name: { type: String, required: true, unique: true },
-    description: { type: String, required: true },
-    product: { type: String, enum: ['mail', 'scan', 'delivery', 'translation'], required: true },
-    interval: { type: intervalSchema, required: true },
-    currency: { type: String, enum: ['usd', 'cny', 'gbp'], default: 'usd' },
-    flatRate: { type: Number, min: 0, validate: { validator: Number.isInteger }, required: true },
+    name: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    description: {
+      type: String,
+      required: true
+    },
+    product: {
+      type: String,
+      enum: ['mail', 'scan', 'delivery', 'translation'],
+      required: true
+    },
+    interval: {
+      type: intervalSchema,
+      required: true
+    },
+    currency: {
+      type: String,
+      enum: ['usd', 'cny', 'gbp'],
+      default: 'usd'
+    },
+    flatRate: {
+      type: Number,
+      min: 0,
+      validate: { validator: Number.isInteger },
+      required: true
+    },
 
     // metered plan
-    isMetered: { type: Boolean, required: true },
+    isMetered: {
+      type: Boolean,
+      required: true
+    },
     unitPrice: {
       type: Number,
       min: 0,
@@ -45,10 +71,17 @@ const planSchema = new mongoose.Schema(
         return this.isMetered && !this.isTiered;
       }
     },
-    flatCredit: { type: Number, min: -1, validate: { validator: Number.isInteger } },
+    flatCredit: {
+      type: Number,
+      min: -1,
+      validate: { validator: Number.isInteger }
+    },
 
     // tiered plan
-    isTiered: { type: Boolean, required: true },
+    isTiered: {
+      type: Boolean,
+      required: true
+    },
     tierUnitPrices: [
       {
         type: Number,
@@ -72,9 +105,14 @@ const planSchema = new mongoose.Schema(
     // tierFlatPrices: [{ type: Number, min: 0, validate: { validator: Number.isInteger } }],
 
     // stripe refs
-    usageStripeId: { type: String, required: true },
+    usageStripeId: {
+      type: String,
+      required: true,
+      select: false
+    },
     baseStripeId: {
       type: String,
+      select: false,
       required: function() {
         return this.flatRate !== 0; // pay-as-you-go plan does not have base plan sub
       }

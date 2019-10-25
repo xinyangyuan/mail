@@ -1,12 +1,12 @@
 const express = require('express');
 
-const AuthMiddleware = require('../middlewares/auth-verify');
 const queryCheck = require('../middlewares/query-check');
 const updateVerify = require('../middlewares/update-verify');
 const fileUpload = require('../middlewares/file-upload');
 const emailTokenVerify = require('../middlewares/email-token-verify');
 
-const MailController = require('../controllers/mail');
+const { protect, authorize } = require('../middlewares/auth');
+const controller = require('../controllers/mail');
 
 const router = express.Router();
 
@@ -14,40 +14,38 @@ const router = express.Router();
    [GET] Endpoints
 */
 
-router.get('', AuthMiddleware.authVerify, queryCheck, MailController.getMailList);
-
+router.get('', protect, queryCheck, controller.getMails);
 // router.get('/senderId/:senderId', AuthMiddleware.minSecurityLevel())
 // router.get('/receiverId/:receiverId', AuthMiddleware.minSecurityLevel())
-
-router.get('/:id', AuthMiddleware.authVerify, MailController.getMail);
-router.get('/:id/envelop', AuthMiddleware.authVerify, MailController.getEnvelop);
-router.get('/:id/contentPDF', AuthMiddleware.authVerify, MailController.getContentPDF);
+router.get('/:id', protect, controller.getMail);
+router.get('/:id/envelop', protect, controller.getEnvelop);
+router.get('/:id/contentPDF', protect, controller.getContentPDF);
 
 /*
    [PATCH] Endpoints
 */
 
-router.patch('', AuthMiddleware.authVerify, queryCheck, updateVerify, MailController.updateMails);
-router.patch('/:id', AuthMiddleware.authVerify, updateVerify, MailController.updateMail);
-router.patch('/:id/:emailToken', emailTokenVerify, updateVerify, MailController.updateMail);
+router.patch('', protect, queryCheck, updateVerify, controller.updateMails);
+router.patch('/:id', protect, updateVerify, controller.updateMail);
+router.patch('/:id/:emailToken', emailTokenVerify, updateVerify, controller.updateMail);
 
 /*
    [POST] Endpoints
 */
 
-router.post('', AuthMiddleware.senderVerify, fileUpload, MailController.createMail);
+router.post('', protect, authorize('SENDER', 'ADMIN'), fileUpload, controller.createMail);
 
 /*
    [PUT] Endpoints
 */
 
-router.put('/:id', AuthMiddleware.senderVerify, fileUpload, MailController.modifyMail);
+router.put('/:id', protect, authorize('SENDER', 'ADMIN'), fileUpload, controller.modifyMail);
 
 /*
    [DEL] Endpoints
 */
 
-router.delete('', AuthMiddleware.authVerify, MailController.deleteMails);
-router.delete('/:id', AuthMiddleware.authVerify, MailController.deleteMail);
+router.delete('', protect, controller.deleteMails);
+router.delete('/:id', protect, controller.deleteMail);
 
 module.exports = router;

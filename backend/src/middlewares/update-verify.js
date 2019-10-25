@@ -1,7 +1,11 @@
 const Mail = require('../models/mail');
 
-// Helper Function: valid actions lookup table
+/*
+  Middleware: validate status transition look-up table
+*/
+
 const validActionLookupTable = (currentStatus, nxtStatus) => {
+  //look up table
   const lookupTable = {
     CREATED: {
       CREATED: true,
@@ -31,17 +35,9 @@ const validActionLookupTable = (currentStatus, nxtStatus) => {
       TRASHED: true
     }
   };
-  let result = false;
-
-  // invalid current state might will leads indexing in 'undefined' type, catch error
-  try {
-    // invalid nxtStatus will lead to 'undefined', set to false
-    result = lookupTable[currentStatus][nxtStatus] || false;
-  } catch {
-    result = false;
-  }
-
-  return result;
+  // validate
+  const result = lookupTable[currentStatus] && lookupTable[currentStatus][nxtStatus];
+  return result || false;
 };
 
 /*
@@ -49,8 +45,6 @@ const validActionLookupTable = (currentStatus, nxtStatus) => {
 */
 
 module.exports = async (req, res, next) => {
-  console.log('updateVerify is called');
-
   // Case 1: only update mail(s) flag fields
   if (typeof req.body.status === 'undefined') {
     return next();
@@ -63,9 +57,7 @@ module.exports = async (req, res, next) => {
       const mails = await Mail.find({ _id: { $in: req.queryData.ids } }, '_id status');
 
       if (!mails.length) {
-        return res.status(400).json({
-          message: 'Failed to update mails!'
-        });
+        return res.status(400).json({ ok: false, message: 'Failed to update mails' });
       }
 
       for (const mail of mails) {
@@ -78,9 +70,7 @@ module.exports = async (req, res, next) => {
       req.queryData.ids = validIds;
       return next();
     } catch {
-      return res.status(500).json({
-        message: 'Failed to update mails!'
-      });
+      return res.status(500).json({ ok: false, message: 'Failed to update mails' });
     }
   }
 
@@ -90,13 +80,9 @@ module.exports = async (req, res, next) => {
     if (validActionLookupTable(mail.status, req.body.status)) {
       next();
     } else {
-      return res.status(400).json({
-        message: 'Failed to update mails'
-      });
+      return res.status(400).json({ ok: false, message: 'Failed to update mail' });
     }
   } catch {
-    return res.status(500).json({
-      message: 'Failed to update mails'
-    });
+    return res.status(500).json({ ok: false, message: 'Failed to update mail' });
   }
 };

@@ -11,12 +11,35 @@ const userSchema = new mongoose.Schema(
       type: { first: { type: String }, last: { type: String } },
       required: true
     },
-    email: { type: String, required: true, unique: true, uniqueCaseInsensitive: true },
-    password: { type: String, required: true },
-    status: { type: String, enum: ['UNCONFIRMED', 'ACTIVE', 'BLOCKED'], default: 'UNCONFIRMED' },
-    role: { type: String, enum: ['USER', 'SENDER'], required: true },
-    stripeId: { type: String },
-    paymentSource: { type: String }
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      uniqueCaseInsensitive: true,
+      match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please add a valid email']
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+      select: false
+    },
+    status: {
+      type: String,
+      enum: ['UNCONFIRMED', 'ACTIVE', 'BLOCKED'],
+      default: 'UNCONFIRMED'
+    },
+    role: {
+      type: String,
+      enum: ['USER', 'SENDER'],
+      required: true
+    },
+    stripeId: {
+      type: String
+    },
+    paymentSource: {
+      type: String
+    }
   },
   { timestamps: true }
 );
@@ -36,6 +59,16 @@ userSchema.virtual('isSender').get(function() {
 userSchema.virtual('isCustomer').get(function() {
   return typeof this.stripeId !== 'undefined';
 });
+
+/*
+  Middlewares:
+*/
+
+// userSchema.pre('save', async function(next) {
+//   // saltRounds really mean cost factor, pick the cost according to the server setup
+//   // https://security.stackexchange.com/questions/3959/recommended-of-iterations-when-using-pkbdf2-sha256/3993#3993
+//   this.password = await bcrypt.hash(this.password, 10);
+// });
 
 /*
   Query helper:

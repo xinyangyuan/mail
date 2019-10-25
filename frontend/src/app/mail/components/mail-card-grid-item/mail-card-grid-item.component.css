@@ -1,29 +1,23 @@
 /* top tool bar */
 .mail-grid-item-toolbar {
+  display: flex;
+  align-content: center;
+  justify-content: space-between;
   height: 3rem;
-  max-width: 300px;
-  margin: auto;
-}
-
-.checkbox {
-  margin: auto;
-}
-
-.mail-grid-item-toolbar button {
-  margin-top: 5px;
+  min-width: 15em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 
 /* mail card */
-
 .mail-grid-item-card {
-  padding-top: 0px;
-  max-width: 280px;
-  margin: auto;
+  min-width: 15em;
+  padding-top: 0;
 }
 
 /* mail envelop image */
 .image-container {
-  height: 200px;
+  height: 12.5em;
 }
 
 .image {
@@ -33,7 +27,6 @@
 }
 
 /* mail card main content */
-
 .mail-grid-item-card-content {
   margin-right: -16px;
   margin-left: -16px;

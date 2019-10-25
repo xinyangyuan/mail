@@ -1,45 +1,52 @@
 const express = require('express');
-
-const AuthMiddleware = require('../middlewares/auth-verify');
-const AddressController = require('../controllers/address');
-
+const { protect, authorize } = require('../middlewares/auth');
+const controller = require('../controllers/address');
 const router = express.Router();
 
 /*
    [GET] Endpoints
 */
 
-router.get('', AddressController.getAddressList); // PUBLIC ACCESSIBLE
+router.get('', controller.getAddresses);
+
+router.get('/:id', controller.getAddress);
 
 router.get(
   '/senderId/:senderId',
-  AuthMiddleware.authVerify,
-  AddressController.getAddressBySenderId
+  protect,
+  authorize('ADMIN', 'SENDER'),
+  controller.getAddressBySenderId
 );
 
 router.get(
   '/receivers/receiverId/:receiverId',
-  AuthMiddleware.authVerify,
-  AddressController.getAddressByReceiverId
+  protect,
+  authorize('ADMIN', 'USER'),
+  controller.getAddressByReceiverId
 );
 
-router.get('/:id', AddressController.getAddress); // PUBLIC ACCESSIBLE
+router.get('/:id/vacant_mailboxes', controller.getVacantMailboxNos);
 
-router.get('/:id/vacantMailboxNos', AddressController.getVacantMailboxNos); // PUBLIC ACCESSIBLE
-
-router.get('/:id/receivers', AuthMiddleware.senderVerify, AddressController.getAddressReceivers);
+router.get('/:id/receivers', protect, authorize('ADMIN', 'SENDER'), controller.getAddressReceivers);
 
 /*
    [PATCH] Endpoints
 */
 
-// router.patch('/:id/receivers', AuthMiddleware.authVerify, AddressController.addReceiver);
+router.patch('/:id', protect, authorize('SENDER', 'ADMIN'), controller.updateAddress);
 
 /*
    [POST] Endpoint
 */
 
-router.post('', AuthMiddleware.senderVerify, AddressController.createAddress);
+router.post('', protect, authorize('SENDER', 'ADMIN'), controller.createAddress);
+router.post('/:id/receivers', protect, authorize('ADMIN'), controller.addReceiver);
+
+/*
+   [DELETE] Endpoints
+*/
+
+router.delete('/:id/receivers/:receiverId', protect, authorize('ADMIN'), controller.removeReceiver);
 
 /*
    Module

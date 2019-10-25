@@ -1,532 +1,415 @@
 const mongoose = require('mongoose');
+const asyncHandler = require('../utils/async-handler');
 
+const ErrorResponse = require('../utils/error-response');
 const Mail = require('../models/mail');
-const Address = require('../models/address');
 
 const generateFilename = require('../utils/generate-filename');
 const crypto = require('../utils/encrypt');
 
-const S3Service = require('../services/s3');
-const EmailService = require('../services/email');
-const InvoiceService = require('../services/invoice');
+const s3Service = require('../services/s3');
+const mailService = require('../services/mail');
+const emailService = require('../services/email');
+const userService = require('../services/user');
+const addressService = require('../services/address');
+const subscriptionService = require('../services/subscription');
+const invoiceService = require('../services/invoice');
 
-/*
-  Function: get mail list [GET]
+/* 
+  @desc     Get mails list
+  @route    [GET] /api/v1/mail
+  @access   Private
 */
 
-exports.getMailList = async (req, res) => {
-  console.log('getMailList is called');
-  try {
-    // query by user status
-    const isSender = req.userData.isSender;
-    const userId = req.userData.userId;
-    // sender can query his/her receivers' mails
-    const receiverId = req.query.receiverId ? { receiverId: req.query.receiverId } : {};
+exports.getMails = asyncHandler(async (req, res, next) => {
+  // query by user status
+  const userId = req.userData.userId;
+  const userRole = req.userData.role;
 
-    // filter, projection, sort, skip, limit
-    const filter = { ...req.queryData.filterBy, ...receiverId };
-    const projection = { envelopKey: 0, contentPDFKey: 0 };
-    const sort = req.queryData.sortBy;
-    const skip = req.queryData.skip;
-    const limit = req.queryData.limit;
+  // filter, projection, sort, skip, limit
+  const filter = req.queryData.filterBy;
+  const sort = req.queryData.sortBy;
+  const skip = req.queryData.skip;
+  const limit = req.queryData.limit;
 
-    // $1: mail count
-    const mailCount = await Mail.find(filter, projection)
-      .byUser(userId, isSender)
-      .countDocuments();
+  // $1: mail count
+  const count = await Mail.find(filter) //FIXME:
+    .byUser(userId, userRole)
+    .countDocuments();
 
-    // $2: mail array
-    const mails = await Mail.find(filter, projection)
-      .byUser(userId, isSender)
-      .sort(sort.sort)
-      .skip(skip)
-      .limit(Math.min(limit, mailCount)) // cap limit with mailCount
-      .lean();
+  // $2: mail array
+  const mails = await Mail.find(filter) //FIXME:
+    .byUser(userId, userRole)
+    .sort(sort.sort)
+    .skip(skip)
+    .limit(Math.min(limit, count)) // cap limit with mail count
+    .lean();
 
-    // success response
-    res.status(200).json({
-      message: 'Mails fetched successfully.',
-      mailList: mails,
-      mailCount: mailCount
-    });
-  } catch {
-    // error response
-    res.status(500).json({
-      message: 'Failed to fetch mails!'
-    });
-  }
-};
+  // success response
+  res.status(200).json({ ok: true, data: { mails, count } });
+});
 
-/*
-  Function: fetch single mail by id [GET]
+/* 
+  @desc     Get single mail by id
+  @route    [GET] /api/v1/mail/:id
+  @access   Private
 */
 
-exports.getMail = async (req, res) => {
-  console.log('getMail is called');
-  try {
-    // query by user status
-    const isSender = req.userData.isSender;
-    const userId = req.userData.userId;
+exports.getMail = asyncHandler(async (req, res, next) => {
+  // query by user status
+  const userId = req.userData.userId;
+  const userRole = req.userData.role;
 
-    // filter, projection
-    const filter = { _id: req.params.id };
-    const projection = { envelopKey: 0, contentPDFKey: 0 };
+  // filter, projection
+  const filter = { _id: req.params.id };
 
-    // $1: mail
-    const mail = await Mail.findOne(filter, projection)
-      .byUser(userId, isSender)
-      .lean();
-    if (!mail) return res.status(400).json({ message: 'Cannot find the mail' });
+  // $1: mail
+  const mail = await Mail.findOne(filter)
+    .byUser(userId, userRole)
+    .lean();
+  if (!mail) return next(new ErrorResponse('Cannot find the mail', 400));
 
-    // success response
-    res.status(200).json({
-      message: 'Mail fetched successfully',
-      mail: mail
-    });
-  } catch {
-    // error response
-    res.status(500).json({
-      message: 'Failed to fetch mail'
-    });
-  }
-};
+  // success response
+  res.status(200).json({ ok: true, data: { mail } });
+});
 
-/*
-  Function: update flags OR status associated with mails [PATCH]
+/* 
+  @desc     Update mails - only allow flags OR status entries
+  @route    [PATCH] /api/v1/mail
+  @access   Private
 */
 
-exports.updateMails = async (req, res) => {
-  console.log('updateMails is called');
-  try {
-    // query by user status
-    const isSender = req.userData.isSender;
-    const userId = req.userData.userId;
+exports.updateMails = asyncHandler(async (req, res, next) => {
+  // query by user status
+  const userId = req.userData.userId;
+  const userRole = req.userData.role;
 
-    // filter, options
-    const filter = { _id: { $in: req.queryData.ids } };
-    const options = { fields: { envelopKey: 0, contentPDFKey: 0 }, runValidators: true };
+  // filter, options, update
+  const filter = { _id: { $in: req.queryData.ids } };
+  const options = { runValidators: true };
+  const update = mailService.generateMailUpdate(req.body);
 
-    // update
-    const isTerminated = req.body.status === 'COLLECTED' || req.body.status === 'TRASHED';
-    const update = {
-      'flags.read': typeof req.body.flags !== 'undefined' ? req.body.flags.read : undefined,
-      'flags.star': typeof req.body.flags !== 'undefined' ? req.body.flags.star : undefined,
-      'flags.issue': req.body.status === 'RE_SCANNING' ? true : undefined, // only triggered by issue re-scanning
-      'flags.terminated': isTerminated ? true : undefined, // only triggered by collected || trashed
-      status: typeof req.body.status !== 'undefined' ? req.body.status : undefined
-    };
-    Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
-
-    // $1: update mails
-    result = await Mail.updateMany(filter, { $set: update }, options).byUser(userId, isSender);
-    if (result.n === 0) {
-      console.log('no mail is updated by the patch request');
-    }
-
-    // success response
-    res.status(201).json({
-      message: 'Mails flag(s) or status patched successfully',
-      mail: result
-    });
-  } catch {
-    // error response
-    return res.status(500).json({
-      message: 'Failed to patch mail update'
-    });
+  // $1: update mails
+  result = await Mail.updateMany(filter, update, options).byUser(userId, userRole);
+  if (result.n === 0) {
+    next(new ErrorResponse('No mail is updated', 400));
   }
-};
 
-/*
-  Function: update flags OR status associated with the mail [PATCH]
+  // success response
+  res.status(200).json({ ok: true, result: { n: result.n, nModified: result.nModified } });
+});
+
+/* 
+  @desc     Update mail by id - only allow flags OR status entries
+  @route    [PATCH] /api/v1/mail/:id
+  @access   Private
 */
 
-exports.updateMail = async (req, res) => {
-  console.log('updateMail is called');
-  try {
-    // req body obj destruction
-    const { flags: { read, star } = {}, status } = req.body;
+exports.updateMail = asyncHandler(async (req, res, next) => {
+  // query by user status
+  const userId = req.userData.userId;
+  const userRole = req.userData.userRole;
 
-    // query by user status
-    const isSender = req.userData.isSender;
-    const userId = req.userData.userId;
+  // filter, options, update
+  const filter = { _id: req.params.id };
+  const options = { runValidators: true };
+  const update = mailService.generateMailUpdate(req.body);
 
-    // filter, options
-    const filter = { _id: req.params.id };
-    const options = { fields: { envelopKey: 0, contentPDFKey: 0 }, runValidators: true };
-
-    // update
-    const isTerminated = status === 'COLLECTED' || req.body.status === 'TRASHED';
-    const update = {
-      status,
-      'flags.read': read,
-      'flags.star': star,
-      'flags.issue': status === 'RE_SCANNING' ? true : undefined,
-      'flags.terminated': isTerminated ? true : undefined
-    };
-    Object.keys(update).forEach(key => (update[key] === undefined ? delete update[key] : ''));
-
-    // $1: update mail
-    result = await Mail.updateOne(filter, { $set: update }, options).byUser(userId, isSender);
-    if (result.n === 0) {
-      console.log('no mail is updated by the patch request');
-    }
-
-    // success response
-    res.status(201).json({
-      message: 'Mail flag(s) or status patched successfully',
-      mail: result
-    });
-  } catch {
-    // error response
-    return res.status(500).json({
-      message: 'Failed to patch mail update'
-    });
+  // $1: update mail
+  result = await Mail.updateOne(filter, update, options).byUser(userId, userRole);
+  if (result.n === 0) {
+    next(new ErrorResponse('No mail is updated', 400));
   }
-};
 
-/*
-  Function: delete mails [DEL]
+  // success response
+  res.status(200).json({ ok: true, result: { n: result.n, nModified: result.nModified } });
+});
+
+/* 
+  @desc     Delete mails
+  @route    [DEL] /api/v1/mail
+  @access   Private
 */
 
-exports.deleteMails = async (req, res) => {
-  try {
-    // query by user status
-    const isSender = req.userData.isSender;
-    const userId = req.userData.userId;
+exports.deleteMails = asyncHandler(async (req, res, next) => {
+  // query by user status
+  const userRole = req.userData.role;
+  const userId = req.userData.userId;
 
-    // filter, projection
-    const filter = { _id: { $in: req.queryData.ids } };
-    const projection = { envelopKey: 0, contentPDFKey: 0 };
+  // filter
+  const filter = { _id: { $in: req.queryData.ids } };
 
-    // $1: delete mails
-    const result = await Mail.deleteMany(filter, projection).byUser(userId, isSender);
-    if (result.deletedCount === 0) {
-      console.log('no mail is deleted by the del request');
-    }
-
-    // success response
-    res.status(201).json({
-      message: 'Mails deleted successfully.'
-    });
-  } catch {
-    // error response
-    return res.status(500).json({
-      message: 'Failed to delete mails'
-    });
+  // $1: delete mails
+  const result = await Mail.deleteMany(filter).byUser(userId, userRole);
+  if (result.deletedCount === 0) {
+    next(new ErrorResponse('No mail is deleted', 400));
   }
-};
 
-/*
-  Function: delete a mail [DEL]
+  // success response
+  res.status(200).json({ ok: true, result: { n: result.n, deletedCount: result.deletedCount } });
+});
+
+/* 
+  @desc     Delete mail by id
+  @route    [DEL] /api/v1/mail/:id
+  @access   Private
 */
 
-exports.deleteMail = async (req, res) => {
-  try {
-    // query by user status
-    const isSender = req.userData.isSender;
-    const userId = req.userData.userId;
+exports.deleteMail = asyncHandler(async (req, res, next) => {
+  // query by user status
+  const userId = req.userData.userId;
+  const userRole = req.userData.role;
 
-    // filter, projection
-    const filter = { _id: req.params.id };
-    const projection = { envelopKey: 0, contentPDFKey: 0 };
+  // filter
+  const filter = { _id: req.params.id };
 
-    // $1: delete mails
-    const result = await Mail.deleteOne(filter, projection).byUser(userId, isSender);
-    if (result.deletedCount === 0) {
-      console.log('no mail is deleted by the del request');
-    }
-
-    // success response
-    res.status(201).json({
-      message: 'Mail deleted successfully.'
-    });
-  } catch {
-    // error response
-    return res.status(500).json({
-      message: 'Failed to delete mail'
-    });
+  // $1: delete mails
+  const result = await Mail.deleteOne(filter).byUser(userId, userRole);
+  if (result.deletedCount === 0) {
+    return res.status(400).json({ ok: false, result: { n: result.n, deletedCount: 0 } });
   }
-};
 
-/*
-  Function: get envelop image of one mail [GET]
+  // success response
+  res.status(200).json({ ok: true, result: { n: result.n, deletedCount: result.deletedCount } });
+});
+
+/* 
+  @desc     Get mail envelop image file
+  @route    [GET] /api/v1/mail/:id/envelop
+  @access   Private
 */
 
 exports.getEnvelop = async (req, res) => {
   try {
     // query by user status
-    const isSender = req.userData.isSender;
     const userId = req.userData.userId;
+    const userRole = req.userData.role;
 
     // filter
     const filter = { _id: req.params.id };
 
     // $1: find mail
-    const mail = await Mail.findOne(filter).byUser(userId, isSender);
+    const mail = await Mail.findOne(filter)
+      .select('+envelopKey')
+      .byUser(userId, userRole);
     if (!mail) {
-      return res.status(400).json({ message: 'Cannot find mail' });
+      return next(new ErrorResponse('Mail not found', 404));
     } else if (!mail.envelopKey) {
-      return res.status(400).json({ message: 'Cannot find mail envelop' });
+      return next(new ErrorResponse('Mail envelop not found', 404));
     }
 
-    // s3 params
+    // s3 file read stream
     const key = crypto.decrypt(mail.envelopKey);
     const params = { Bucket: process.env.AWS_BUCKET, Key: key };
-    const ext = key.split('.').slice(-1)[0];
+    var stream = s3Service.s3.getObject(params).createReadStream();
 
-    // $2: stream envelop image from s3
-    var stream = S3Service.s3.getObject(params).createReadStream();
+    // event listeners
     stream.on('error', () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
     req.on('close', () => stream.end()); // ensure cancelled request also closes stream
 
-    // stream response
+    // response header
+    const ext = Key.split('.').slice(-1)[0];
     res.setHeader('Content-Type', 'image/' + ext);
+
+    // stream response
     stream.pipe(res);
   } catch {
-    // error response
     if (stream) stream.end();
-    return res.status(500).json({
-      message: 'Failed to get envelop'
-    });
   }
 };
 
-/*
-  Function: get one mail's content PDF [GET]
+/* 
+  @desc     Get mail content pdf file 
+  @route    [GET] /api/v1/mail/:id/contentPDF
+  @access   Private
 */
 
 exports.getContentPDF = async (req, res) => {
-  console.log('getContentPDF is called');
   try {
     // query by user status
-    const isSender = req.userData.isSender;
     const userId = req.userData.userId;
+    const userRole = req.userData.role;
 
     // filter, update
     const filter = { _id: req.params.id };
     const update = { $set: { 'flags.read': true } };
 
     // $1: find mail
-    const mail = await Mail.findOneAndUpdate(filter, update).byUser(userId, isSender);
+    const mail = await Mail.findOneAndUpdate(filter, update)
+      .select('+contentPDFKey')
+      .byUser(userId, userRole);
     if (!mail) {
-      return res.status(400).json({ message: 'Cannot find mail' });
+      return next(new ErrorResponse('Mail not found', 404));
     } else if (!mail.contentPDFKey) {
-      return res.status(400).json({ message: 'Cannot find mail content pdf' });
+      return next(new ErrorResponse('Mail content pdf not found', 404));
     }
 
-    // s3 params
+    // s3 file read stream
     const key = crypto.decrypt(mail.contentPDFKey);
     const params = { Bucket: process.env.AWS_BUCKET, Key: key };
+    var stream = s3Service.s3.getObject(params).createReadStream();
 
-    // $2: stream content pdf from s3
-    var stream = S3Service.s3.getObject(params).createReadStream();
+    // event listeners
     stream.on('error', () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
     req.on('close', () => stream.end()); // ensure cancelled request also closes stream
 
-    // stream response
+    // response header
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename="' + 'Mail Content' + '"');
+
+    // stream response
     stream.pipe(res);
   } catch {
-    // error response
     if (stream) stream.end();
-    return res.status(500).json({
-      message: 'Failed to get contend pdf'
-    });
   }
 };
 
-/*
-  Function: send a new mail [POST]
+/* 
+  @desc     Create mail 
+  @route    [POST] /api/v1/mail/
+  @access   Private/Sender
+  FIXME: this is an awfully fat controller
 */
 
-exports.createMail = async (req, res, next) => {
+exports.createMail = asyncHandler(async (req, res, next) => {
   // check uploaded envelop
-  if (req.fileTypeError)
-    return res.status(401).json('Invalid envelop image filetype (allowed type: jpg, jpeg, png)');
-  if (typeof req.body.receiverId === 'undefined')
-    return res.status(401).json('Please specify receiver');
-
-  // start session and transaction
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try {
-    // envelop file
-    const file = req.files.envelop[0]; // try catch throw Error('Please include envelop info')
-
-    // filter, options, populate options
-    const filter = { senderId: req.userData.userId, 'receivers.receiverId': req.body.receiverId };
-    const options = { session: session, runValidators: true };
-    const receiverId = mongoose.Types.ObjectId(req.body.receiverId);
-    const optionsPop = {
-      path: 'receivers.receiverId',
-      match: { _id: receiverId },
-      select: 'name email'
-    };
-
-    // $1: check receiver belongs to sender
-    const address = await Address.findOne(filter, {}, options).populate(optionsPop);
-    if (!address) throw Error;
-
-    // $2: create mail
-    const mail_ = new Mail({
-      title: req.body.title,
-      description: req.body.description,
-      content: req.body.content,
-      senderId: mongoose.Types.ObjectId(req.userData.userId),
-      receiverId: mongoose.Types.ObjectId(receiverId),
-      status: 'CREATED'
-    });
-    const mail = await mail_.save(options);
-
-    // $3: s3 file upload
-    const filename = generateFilename(file, mail);
-    await S3Service.uploadFile(file, filename);
-
-    // $4: update mail envelop field
-    const filterUpdate = { _id: mail._id };
-    const update = { envelopKey: crypto.encrypt(filename) };
-    await Mail.updateOne(filterUpdate, update, options);
-
-    // $5: send email
-    const receiver = address.receivers
-      // [{receiverId: {}, mailboxNo: xx}, {receiverId: null, mailboxNo: xx}, ...] => [{name: {}, email}, null, null]
-      .map(receiver => receiver.receiverId)
-      // [{name: {}, email}, null, null]  => [{name: {}, email}]
-      .filter(receiver => (receiver ? receiver._id.toString() === receiverId.toString() : false));
-    await EmailService.mailReceivedNotification(receiver[0], mail, file);
-
-    // complete transaction and closes session
-    await session.commitTransaction();
-    session.endSession();
-
-    // $7: invoice and stripe
-    let succeeded = false;
-    for (let i = 0; i < 3 && !succeeded; i++) {
-      try {
-        await InvoiceService.newMail(receiver._id, mail._id);
-        succeeded = true;
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    // success response
-    res.status(201).json({
-      message: 'Mail sent successfully',
-      mail: mail
-    });
-  } catch (err) {
-    console.log(err);
-
-    // closes transaction and session
-    await session.abortTransaction();
-    session.endSession();
-
-    // error response
-    res.status(500).json({
-      message: 'Failed to create new mail'
-    });
+  if (req.fileTypeError) {
+    return next(
+      new ErrorResponse('Invalid envelop image filetype (allowed type: jpg, jpeg, png)', 400)
+    );
   }
-};
 
-/*
-  Function: modify a mail (change mail text content, envelop image, upload content pdf) [PUT]
+  // senderId, receiverId
+  const senderId = req.userData.userId;
+  const { receiverId } = req.body;
+
+  // validation service calls
+  const receiverPromise = userService.findUserById(receiverId);
+  const addressPromise = addressService.findAddressBySenderReceiverIds(senderId, receiverId);
+  const subscriptionPromise = subscriptionService.findActiveSubscriptionByUserId(receiverId);
+
+  // $1: resolve validation promises
+  const promises = [receiverPromise, addressPromise, subscriptionPromise];
+  const [receiver, address, subscription] = await Promise.all(promises);
+
+  // receiver-sender validation
+  if (!address) {
+    return next(new ErrorResponse('Invalid request', 401));
+  }
+
+  // active subscription validation
+  if (!subscription) {
+    return next(new ErrorResponse('Receiver does not have active subscription', 400));
+  }
+
+  // generate mail id
+  const mailId = new mongoose.mongo.ObjectId();
+
+  // $2: upload file to s3
+  const file = req.files.envelop[0];
+  const filename = generateFilename(file, receiverId, mailId.toString());
+  await s3Service.uploadFile(file, filename);
+
+  // $3: create mail
+  const mail = await new Mail({
+    _id: mailId,
+    title: req.body.title,
+    description: req.body.description,
+    content: req.body.content,
+    senderId,
+    receiverId,
+    envelopKey: crypto.encrypt(filename)
+  }).save();
+
+  // $4: create usage record
+  await invoiceService.createMailUsageRecord(mail, subscription);
+
+  // $4: send email
+  await emailService.mailReceivedNotification(receiver, mail, file);
+
+  // success response
+  res.status(201).json({ ok: true, data: { mail } });
+});
+
+/* 
+  @desc     Update mail - mail text content, envelop image, upload content pdf
+  @route    [Put] /api/v1/mail/:id
+  @access   Private/Sender
+  FIXME: this is an awfully fat controller
 */
 
-exports.modifyMail = async (req, res) => {
+exports.modifyMail = asyncHandler(async (req, res, next) => {
   // check uploaded envelop
   if (req.fileTypeError)
     return res.status(401).json('Invalid envelop image filetype (allowed type: jpg, jpeg, png)');
 
-  // start session and transaction
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // validation
+  const [id, senderId] = [req.params.id, req.userData.userId];
+  const mail = await Mail.findById(id);
 
-  try {
-    // envelop and pdffile
-    const envelopFile = req.files.envelop ? req.files.envelop[0] : undefined;
-    const contentFile = req.files.contentPDF ? req.files.contentPDF[0] : undefined;
-
-    // filter, options
-    const filter = {
-      _id: req.params.id,
-      senderId: req.userData.userId,
-      'flags.terminated': false
-    };
-    const options = { session: session, runValidators: true };
-    const optionsPop = { path: 'receiverId', select: ' email name' };
-
-    // $1: find mail
-    const mail = await Mail.findOne(filter, {}, options).populate(optionsPop);
-
-    // $2: upload file
-    if (envelopFile) {
-      const filename = generateFilename(envelopFile, mail);
-      var envelopKey = crypto.encrypt(filename);
-      await S3Service.uploadFile(envelopFile, filename);
-    }
-    if (contentFile) {
-      const filename = generateFilename(contentFile, mail);
-      var contentKey = crypto.encrypt(filename);
-      await S3Service.uploadFile(contentFile, filename);
-    }
-
-    // $3: update mail
-    const update = {
-      title: req.body.title,
-      description: req.body.description,
-      content: req.body.content,
-      envelopKey: envelopKey,
-      contentPDFKey: contentKey,
-      'flags.read': false,
-      'flags.issue': false,
-      status: contentKey ? 'SCANNED_ARCHIVED' : undefined,
-      updatedAt: Date.now()
-    };
-    for (const param in update) if (!update[param]) delete update[param];
-    const result = await Mail.updateOne(filter, { $set: update }, options);
-    if (result.n === 0) console.log('no mail is put updated');
-
-    // $4: send email
-    const receiver = mail.receiverId;
-    if (contentFile) {
-      await EmailService.mailScannedNotification(receiver, contentFile);
-    }
-
-    // complete transaction and closes session
-    await session.commitTransaction();
-    session.endSession();
-
-    // $5: invoice and stripe
-    if (contentFile) {
-      let succeeded = false;
-      for (let i = 0; i < 3 && !succeeded; i++) {
-        try {
-          await InvoiceService.newScan(receiver._id, mail._id);
-          succeeded = true;
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    }
-
-    // success response
-    res.status(201).json({
-      message: 'Mail put updated successfully',
-      mail: mail
-    });
-  } catch (err) {
-    console.log(err);
-
-    // closes transaction and session
-    await session.abortTransaction();
-    session.endSession();
-
-    // error response
-    res.status(500).json({
-      message: 'Failed to put update mail'
-    });
+  // valid id
+  if (!mail) {
+    return next(new ErrorResponse('Unknow resource', 404));
   }
-};
+
+  // validate belongs to sender
+  if (mail.senderId.toString() !== senderId) {
+    return next(new ErrorResponse('Invalid request', 400));
+  }
+
+  // validate status
+  if (mail.flags.terminated) {
+    return next(
+      new ErrorResponse(`Mail is already in ${mail.status}, and cannot be modified`, 400)
+    );
+  } else if (mail.status !== 'SCANNING' && req.files.contentPDF) {
+    return next(new ErrorResponse('Cannot upload pdf brefore user request the scanning', 400));
+  }
+
+  // $1: upload files to s3
+  const envelopFile = req.files.envelop ? req.files.envelop[0] : undefined;
+  const contentFile = req.files.contentPDF ? req.files.contentPDF[0] : undefined;
+
+  if (envelopFile) {
+    const filename = generateFilename(envelopFile, mail);
+    var envelopKey = crypto.encrypt(filename);
+    await s3Service.uploadFile(envelopFile, filename);
+  }
+
+  if (contentFile) {
+    const filename = generateFilename(contentFile, mail);
+    var contentKey = crypto.encrypt(filename);
+    await s3Service.uploadFile(contentFile, filename);
+  }
+
+  // $2: update mail
+  const { title, description, content } = req.body;
+  const result = await mailService.putUpdateMail(
+    id,
+    title,
+    description,
+    content,
+    envelopKey,
+    contentKey
+  );
+
+  if (result.n === 0) {
+    return next(new ErrorResponse(`No mail is updated`, 400));
+  }
+
+  // $3: create charge & send email
+  if (contentFile) {
+    // receiver and subscription
+    const receiverPromise = userService.findUserById(mail.receiverId);
+    const subscriptionPromise = subscriptionService.findActiveSubscriptionByUserId(mail.receiverId);
+    const promises = [receiverPromise, subscriptionPromise];
+    const [receiver, subscription] = await Promise.all(promises);
+
+    // create scan usage record & email scanned notification
+    await invoiceService.createScanUsageRecord(mail, subscription);
+    await emailService.mailScannedNotification(receiver, contentFile);
+  }
+
+  // success response
+  res.status(200).json({ ok: true, result: { n: result.n, nModified: result.nModified } });
+});

@@ -1,51 +1,166 @@
-const mongoose = require('mongoose');
+const stripe = require('stripe')(process.env.STRIPE_KEY);
 
-const Plan = require('../models/plan');
 const Subscription = require('../models/subscription');
 
 /*
-  New Subscription:
+  Service: create a new subscription
 */
 
-exports.newSubscription = async (userId, planIds, addressId, session = undefined) => {
-  // options
-  const options = session ? { session: session } : {};
+exports.createSubscription = async (user, plans, addressId, mailboxNo) => {
+  // caclculate period end date
+  const plan = plans[0]; // select an arbitrary plan
+  const periodInMonth = plan.intervalInMonth;
+  const startDate = new Date();
+  const periodEndDate = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth() + periodInMonth,
+    startDate.getDate() + 1
+  );
 
-  try {
-    // $1: find plan
-    const filter = { _id: { $in: planIds } };
-    const plans = await Plan.find(filter);
-    if (!plans.length) throw Error('Unknow plans');
-    if (plans.length !== planIds.length) throw Error(`Only can find ${plans}`);
+  // userId, planIds
+  const userId = user._id;
+  const planIds = plans.map(plan => plan._id);
 
-    // validate all plans should have same interval
-    if (!plans.map(plan => plan.intervalInMonth).every((value, idx, array) => value === array[0])) {
-      throw Error('Selected plans have different billing intervals');
-    }
+  // database subscription
+  const subscription = await new Subscription({
+    planIds,
+    userId,
+    addressId,
+    startDate,
+    periodEndDate
+  }).save();
 
-    // caclculate period end date
-    const plan = plans[0]; // select an arbitrary plan
-    const periodInMonth = plan.intervalInMonth;
-    const startDate = new Date();
-    const periodEndDate = new Date(
-      startDate.getFullYear(),
-      startDate.getMonth() + periodInMonth,
-      startDate.getDate() + 1
-    );
+  // stripe subscription
+  const stripeSub = await stripe.subscriptions.create(
+    {
+      customer: user.stripeId,
+      items: plans.flatMap(plan => plan.stripeItems),
+      metadata: { id: subscription._id.toString(), mailboxNo },
+      expand: ['latest_invoice.payment_intent']
+    },
+    { idempotency_key: subscription._id }
+  );
 
-    //  $1: create subscription
-    const subscription_ = new Subscription({
-      planIds,
-      userId,
-      addressId,
-      startDate: startDate,
-      periodEndDate: periodEndDate
-    });
-    subscription = await subscription_.save(options);
+  return { subscription, stripe: stripeSub };
+};
 
-    // return
-    return subscription;
-  } catch (error) {
-    throw error;
-  }
+/*
+  Service: activate newly registered subscription 
+*/
+
+exports.activateSubscription = async (subscriptionId, session) => {
+  // filter, update, options
+  const filter = { _id: subscriptionId };
+  const update = { $set: { status: 'ACTIVE' } };
+  const options = session
+    ? { new: true, runValidators: true }
+    : { new: true, runValidators: true, session };
+
+  // promise
+  const subscription = await Subscription.findOneAndUpdate(filter, update, options);
+  return subscription;
+};
+
+/*
+  Service: renew subscription 
+*/
+
+exports.renewSubscription = async (subscriptionId, session) => {
+  // $1: find subscription
+  const subscription = await Subscription.findById(subscriptionId).populate('planIds');
+  const planInterval = subscription.planIds[0].intervalInMonth;
+
+  // new period start and end date
+  const oldEndDate = subscription.periodEndDate;
+  const periodStartDate = oldEndDate;
+  const periodEndDate = new Date(oldEndDate.setMonth(oldEndDate.getMonth() + planInterval));
+
+  // filter, update, options
+  const filter = { _id: subscriptionId };
+  const update = { $set: { status: 'ACTIVE', periodStartDate, periodEndDate } };
+  const options = session
+    ? { new: true, runValidators: true }
+    : { new: true, runValidators: true, session };
+
+  // promise
+  return await Subscription.findOneAndUpdate(filter, update, options);
+};
+
+/*
+  Service: renew subscription 
+*/
+
+exports.updateSubscriptionStatus = async (subscriptionId, status) => {
+  // filter, update, options
+  const filter = { _id: subscriptionId };
+  const update = { $set: { status } };
+  const options = { runValidators: true, new: true };
+
+  // promise
+  return await Subscription.findOneAndUpdate(filter, update, options);
+};
+
+/*
+  Find active subscription by userId
+  FIXME: the user might have mutilple active subscriptions => so findSubscriptions
+*/
+
+exports.findActiveSubscriptionByUserId = userId => {
+  return Subscription.findOne()
+    .byUser(userId)
+    .isActive()
+    .exec();
+};
+
+/*
+  Cancel a subscription immediately
+*/
+
+exports.cancelSubscription = subscriptionId => {
+  // reason, current date, canceelationEvent
+  const reason = 'User request to cancel from client side';
+  const date = new Date();
+  const cancellationEvent = { reason, date };
+
+  // filter, options, update
+  const filter = { _id: subscriptionId };
+  const options = { runValidators: true, new: true };
+  const update = {
+    $set: { status: 'CANCELED' },
+    $addToSet: { cancellationEvents: cancellationEvent }
+  };
+
+  // promise
+  return Subscription.findOneAndUpdate(filter, update, options).then(
+    subscription =>
+      // only call stripe if there is subscription return
+      subscription && stripe.subscriptions.del(subscription.stripeId)
+  );
+};
+
+/*
+  Cancel a subscription at period end
+*/
+
+exports.cancelSubscriptionAtPeriodEnd = subscriptionId => {
+  // reason, current date, canceelationEvent
+  const reason =
+    'User request to stop auto-billing and cancel subscription at period end from client side';
+  const date = new Date();
+  const cancellationEvent = { reason, date };
+
+  // filter, options, update
+  const filter = { _id: subscriptionId };
+  const options = { runValidators: true, new: true };
+  const update = {
+    $set: { isCancelAtPeriodEnd: true },
+    $addToSet: { cancellationEvents: cancellationEvent }
+  };
+
+  // promise
+  return Subscription.findOneAndUpdate(filter, update, options).then(
+    subscription =>
+      subscription && // only call stripe if there is subscription return
+      stripe.subscriptions.update(subscription.stripeId, { cancel_at_period_end: true })
+  );
 };

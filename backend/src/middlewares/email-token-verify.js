@@ -6,7 +6,7 @@ emailTokenVerify = (req, res, next) => {
     const decodedToken = jwt.verify(token, process.env.EMAIL_JWT_KEY);
 
     req.body = { status: decodedToken.status };
-    req.userData = { userId: decodedToken.receiverId, isSender: false };
+    req.userData = { userId: decodedToken.receiverId, isSender: false, role: 'USER' };
 
     next();
   } catch (error) {

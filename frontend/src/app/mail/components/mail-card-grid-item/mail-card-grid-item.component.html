@@ -1,31 +1,19 @@
+<!-- Mail Card Item -->
 <div (mouseenter)="showToolbar = true" (mouseleave)="showToolbar = false">
-  <!-- Mail Action: -->
+  <!-- Mail Action Row: -->
   <div
     class="mail-grid-item-toolbar"
     [style.visibility]="showToolbar || (isSelectMode$ | async) || menuOpen ? 'visible' : 'hidden'"
   >
-    <mat-checkbox
-      [checked]="isSelected$ | async"
-      class="checkbox"
-      (change)="onCheckbox($event)"
-    ></mat-checkbox>
+    <div fxLayout="column" fxLayoutAlign="center center">
+      <mat-checkbox [checked]="isSelected$ | async" (change)="onCheckbox($event)"></mat-checkbox>
+    </div>
 
-    <div fxFlex></div>
-
-    <button mat-icon-button [matMenuTriggerFor]="menu" (click)="menuOpen = true">
-      <mat-icon>more_horiz</mat-icon>
-    </button>
-
-    <mat-menu #menu xPosition="before" (closed)="menuOpen = false">
-      <button mat-menu-item>
-        <mat-icon>flag</mat-icon>
-        <span>Report Issue</span>
+    <div fxLayout="column" fxLayoutAlign="center center">
+      <button mat-icon-button [matMenuTriggerFor]="menu" (click)="menuOpen = true">
+        <mat-icon>more_horiz</mat-icon>
       </button>
-      <button mat-menu-item>
-        <mat-icon>delete_forever</mat-icon>
-        <span>Delete Mail</span>
-      </button>
-    </mat-menu>
+    </div>
   </div>
 
   <!-- Mail Card: -->
@@ -80,3 +68,15 @@
     </mat-card-actions>
   </mat-card>
 </div>
+
+<!-- Mail Action Menu -->
+<mat-menu #menu xPosition="before" (closed)="menuOpen = false">
+  <button mat-menu-item>
+    <mat-icon>flag</mat-icon>
+    <span>Report Issue</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon>delete_forever</mat-icon>
+    <span>Delete Mail</span>
+  </button>
+</mat-menu>

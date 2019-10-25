@@ -18,6 +18,10 @@ yarn-error.log
 testem.log
 /typings
 
+# db seeder
+/seeder
+
 # env variables
 *.env
 nodemon.json
+test.js
