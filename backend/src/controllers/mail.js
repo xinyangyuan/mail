@@ -16,7 +16,7 @@ const subscriptionService = require('../services/subscription');
 const invoiceService = require('../services/invoice');
 
 /* 
-  @desc     Get mails list
+  @desc     Get mails - associated with the sign-in account
   @route    [GET] /api/v1/mail
   @access   Private
 */
@@ -27,20 +27,21 @@ exports.getMails = asyncHandler(async (req, res, next) => {
   const userRole = req.userData.role;
 
   // filter, projection, sort, skip, limit
-  const filter = req.queryData.filterBy;
-  const sort = req.queryData.sortBy;
-  const skip = req.queryData.skip;
-  const limit = req.queryData.limit;
+  const { filter, sort, skip, limit } = req.queryData;
+  if (userRole !== 'ADMIN') {
+    delete filter.senderId;
+    delete filter.receiverId;
+  }
 
   // $1: mail count
-  const count = await Mail.find(filter) //FIXME:
-    .byUser(userId, userRole)
+  const count = await Mail.find(filter)
+    .byUser(userId, userRole) // this will overwrite senderId, reciverId even if query passed through
     .countDocuments();
 
   // $2: mail array
-  const mails = await Mail.find(filter) //FIXME:
+  const mails = await Mail.find(filter)
     .byUser(userId, userRole)
-    .sort(sort.sort)
+    .sort(sort)
     .skip(skip)
     .limit(Math.min(limit, count)) // cap limit with mail count
     .lean();
@@ -85,9 +86,12 @@ exports.updateMails = asyncHandler(async (req, res, next) => {
   const userRole = req.userData.role;
 
   // filter, options, update
-  const filter = { _id: { $in: req.queryData.ids } };
+  const { _id: filter } = req.queryData.filter;
   const options = { runValidators: true };
   const update = mailService.generateMailUpdate(req.body);
+
+  // validation
+  if (!filter._id) return next(new ErrorResponse('Invalid request', 400));
 
   // $1: update mails
   result = await Mail.updateMany(filter, update, options).byUser(userId, userRole);
@@ -137,7 +141,10 @@ exports.deleteMails = asyncHandler(async (req, res, next) => {
   const userId = req.userData.userId;
 
   // filter
-  const filter = { _id: { $in: req.queryData.ids } };
+  const { _id: filter } = req.queryData.filter;
+
+  // validation
+  if (!filter._id) return next(new ErrorResponse('Invalid request', 400));
 
   // $1: delete mails
   const result = await Mail.deleteMany(filter).byUser(userId, userRole);

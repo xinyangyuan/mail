@@ -1,13 +1,16 @@
 const express = require('express');
+
+const query = require('../middlewares/query');
 const { protect, authorize } = require('../middlewares/auth');
 const controller = require('../controllers/address');
+
 const router = express.Router();
 
 /*
    [GET] Endpoints
 */
 
-router.get('', controller.getAddresses);
+router.get('', query, controller.getAddresses);
 
 router.get('/:id', controller.getAddress);
 

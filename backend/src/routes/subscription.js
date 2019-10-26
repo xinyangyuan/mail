@@ -1,5 +1,6 @@
 const express = require('express');
 
+const query = require('../middlewares/query');
 const { protect, authorize } = require('../middlewares/auth');
 const validator = require('../middlewares/validators/subscription');
 const controller = require('../controllers/subscription');
@@ -12,8 +13,6 @@ const router = express.Router();
 
 router.get('', protect, controller.getSubscriptions);
 router.get('/:id', protect, controller.getSubscription);
-// router.get('/:id/invoice/:invoiceId')
-// router.get('/:id/invoice/upcoming')
 
 /*
    [PATCH] Endpoint

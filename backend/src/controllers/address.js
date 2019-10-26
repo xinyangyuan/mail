@@ -13,8 +13,14 @@ const addressService = require('../services/address');
 */
 
 exports.getAddresses = asyncHandler(async (req, res, next) => {
+  // query parameeters
+  const { filter, sort, skip, limit } = req.queryData;
+
   // // $1: get address list
-  const addresses = await Address.find()
+  const addresses = await Address.find(filter)
+    .sort(sort)
+    .skip(skip)
+    .limit(limit)
     .lean()
     .exec();
 
@@ -26,7 +32,6 @@ exports.getAddresses = asyncHandler(async (req, res, next) => {
   @desc     Get a address by id
   @route    [GET] /api/v1/address/:id
   @access   Public
-  FIXME: the params id can actually take {$where: {}}
 */
 
 exports.getAddress = asyncHandler(async (req, res, next) => {
@@ -48,7 +53,6 @@ exports.getAddress = asyncHandler(async (req, res, next) => {
   @desc     Get address belongs to a sender
   @route    [GET] /api/v1/address/senderId/:senderId
   @access   Private - SENDER,ADMIN
-  FIXME: the params id can actually take {$where: {}}
 */
 
 exports.getAddressBySenderId = asyncHandler(async (req, res, next) => {
@@ -75,7 +79,6 @@ exports.getAddressBySenderId = asyncHandler(async (req, res, next) => {
   @desc     Get address belongs to a receiver
   @route    [GET] /api/v1/address/receivers/receiverId/:receiverId
   @access   Private - USER,ADMIN
-  FIXME: the params id can actually take {$where: {}}
 */
 
 exports.getAddressByReceiverId = asyncHandler(async (req, res, next) => {

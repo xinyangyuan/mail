@@ -12,6 +12,14 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({ ok: false, message: 'Invalid access' });
   }
 
+  // Mongoose filter error: actual object filed passes with wrong parameter type TODO: FIXME:
+  if (err.name === 'ObjectParameterError') {
+    return res.status(400).json({ ok: false, message: 'Invalid query parameters' });
+  }
+  if (err.name === 'CastError') {
+    return res.status(400).json({ ok: false, message: 'Invalid query parameters' });
+  }
+
   // Error response
   res.status(err.statusCode || 500).json({
     ok: false,

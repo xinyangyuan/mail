@@ -23,6 +23,7 @@ exports.protect = (req, res, next) => {
       isSender: payload.accountType === 'sender', // converts to boolean,
       role: payload.accountType.toUpperCase()
     };
+    // id, role, permission = [read-self, read-others-restricted, read-all, post-resctricted, post-all] TODO:
 
     //auhVerify is passed
     next();

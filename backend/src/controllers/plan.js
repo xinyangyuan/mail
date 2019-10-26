@@ -10,11 +10,18 @@ const ErrorResponse = require('../utils/error-response');
 */
 
 exports.getPlans = asyncHandler(async (req, res) => {
+  // query parameeters
+  const { filter, sort, skip, limit } = req.queryData;
+
   // projection:
   const projection = { usageStripeId: 0, baseStripeId: 0, __v: 0 };
 
   // $1: get address list
-  const plans = await Plan.find({}, projection).lean();
+  const plans = await Plan.find(filter, projection)
+    .sort(sort)
+    .skip(skip)
+    .limit(limit)
+    .lean();
 
   // success respons
   res.status(200).json({ ok: true, data: { plans } });
