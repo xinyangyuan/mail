@@ -5,7 +5,7 @@ const ErrorResponse = require('../utils/error-response');
 
 /* 
   @desc     Get all plans
-  @route    [GET] /api/v1/plan
+  @route    [GET] /api/v1/plans
   @access   Public
 */
 
@@ -29,7 +29,7 @@ exports.getPlans = asyncHandler(async (req, res) => {
 
 /* 
   @desc     Get one plan by id
-  @route    [GET] /api/v1/plan/:id
+  @route    [GET] /api/v1/plans/:id
   @access   Public
 */
 
@@ -49,7 +49,7 @@ exports.getPlan = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Create new plan
-  @route    [POST] /api/v1/plan
+  @route    [POST] /api/v1/plans
   @access   Private - ADMIN
 */
 
@@ -79,7 +79,7 @@ exports.createPlan = asyncHandler(async (req, res) => {
 
 /* 
   @desc     Update a plan
-  @route    [PATCH] /api/v1/plan/:id
+  @route    [PATCH] /api/v1/plans/:id
   @access   Private - ADMIN
 */
 
@@ -89,7 +89,7 @@ exports.updatePlan = (req, res, next) => {
 
 /* 
   @desc     Delete a plan
-  @route    [DEL] /api/v1/plan
+  @route    [DEL] /api/v1/plans
   @access   Private - ADMIN
 */
 

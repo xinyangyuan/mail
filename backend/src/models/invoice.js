@@ -74,8 +74,8 @@ invoiceSchema.statics.findByYearMonth = function(
   Query Helper:
 */
 
-invoiceSchema.query.currentPeriod = function() {
-  return this.where({ startDate: { $lte: Date.now() }, endDate: { $gt: Date.now() } });
+invoiceSchema.query.upComing = function() {
+  return this.where({ endDate: { $gt: Date.now() } });
 };
 
 invoiceSchema.query.byUser = function(userId, userRole) {

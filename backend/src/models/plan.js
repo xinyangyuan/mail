@@ -107,12 +107,10 @@ const planSchema = new mongoose.Schema(
     // stripe refs
     usageStripeId: {
       type: String,
-      required: true,
-      select: false
+      required: true
     },
     baseStripeId: {
       type: String,
-      select: false,
       required: function() {
         return this.flatRate !== 0; // pay-as-you-go plan does not have base plan sub
       }

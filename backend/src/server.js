@@ -1,6 +1,6 @@
 process.env.NODE_ENV || require('dotenv').config();
 const http = require('http');
-const debug = require('debug')('node-angular');
+const debug = require('debug')('mail-api');
 const app = require('./app'); // express app
 
 // Normalize a port into a number, string, or false.
@@ -45,6 +45,7 @@ const onListening = () => {
   const addr = server.address();
   const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
   debug('Listening on ' + bind);
+  console.log(`Server running in ${process.env.NODE_ENV} mode on ${bind}`.cyan.bold);
 };
 
 // Setup Express App Port

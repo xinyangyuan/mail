@@ -17,7 +17,7 @@ const invoiceService = require('../services/invoice');
 
 /* 
   @desc     Get mails - associated with the sign-in account
-  @route    [GET] /api/v1/mail
+  @route    [GET] /api/v1/mails
   @access   Private
 */
 
@@ -52,7 +52,7 @@ exports.getMails = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Get single mail by id
-  @route    [GET] /api/v1/mail/:id
+  @route    [GET] /api/v1/mails/:id
   @access   Private
 */
 
@@ -76,7 +76,7 @@ exports.getMail = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Update mails - only allow flags OR status entries
-  @route    [PATCH] /api/v1/mail
+  @route    [PATCH] /api/v1/mails
   @access   Private
 */
 
@@ -95,7 +95,7 @@ exports.updateMails = asyncHandler(async (req, res, next) => {
 
   // $1: update mails
   result = await Mail.updateMany(filter, update, options).byUser(userId, userRole);
-  if (result.n === 0) {
+  if (!result || result.n === 0) {
     next(new ErrorResponse('No mail is updated', 400));
   }
 
@@ -105,14 +105,14 @@ exports.updateMails = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Update mail by id - only allow flags OR status entries
-  @route    [PATCH] /api/v1/mail/:id
+  @route    [PATCH] /api/v1/mails/:id
   @access   Private
 */
 
 exports.updateMail = asyncHandler(async (req, res, next) => {
   // query by user status
   const userId = req.userData.userId;
-  const userRole = req.userData.userRole;
+  const userRole = req.userData.role;
 
   // filter, options, update
   const filter = { _id: req.params.id };
@@ -120,9 +120,9 @@ exports.updateMail = asyncHandler(async (req, res, next) => {
   const update = mailService.generateMailUpdate(req.body);
 
   // $1: update mail
-  result = await Mail.updateOne(filter, update, options).byUser(userId, userRole);
-  if (result.n === 0) {
-    next(new ErrorResponse('No mail is updated', 400));
+  const result = await Mail.updateOne(filter, update, options).byUser(userId, userRole);
+  if (!result || result.n === 0) {
+    return next(new ErrorResponse('No mail is updated', 400));
   }
 
   // success response
@@ -131,7 +131,7 @@ exports.updateMail = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Delete mails
-  @route    [DEL] /api/v1/mail
+  @route    [DEL] /api/v1/mails
   @access   Private
 */
 
@@ -148,8 +148,8 @@ exports.deleteMails = asyncHandler(async (req, res, next) => {
 
   // $1: delete mails
   const result = await Mail.deleteMany(filter).byUser(userId, userRole);
-  if (result.deletedCount === 0) {
-    next(new ErrorResponse('No mail is deleted', 400));
+  if (!result || result.deletedCount === 0) {
+    return next(new ErrorResponse('No mail is deleted', 400));
   }
 
   // success response
@@ -158,7 +158,7 @@ exports.deleteMails = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Delete mail by id
-  @route    [DEL] /api/v1/mail/:id
+  @route    [DEL] /api/v1/mails/:id
   @access   Private
 */
 
@@ -172,8 +172,8 @@ exports.deleteMail = asyncHandler(async (req, res, next) => {
 
   // $1: delete mails
   const result = await Mail.deleteOne(filter).byUser(userId, userRole);
-  if (result.deletedCount === 0) {
-    return res.status(400).json({ ok: false, result: { n: result.n, deletedCount: 0 } });
+  if (!result || result.deletedCount === 0) {
+    return next(ErrorResponse(`Unable to delete mail ${req.params.id}`, 400));
   }
 
   // success response
@@ -182,7 +182,7 @@ exports.deleteMail = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Get mail envelop image file
-  @route    [GET] /api/v1/mail/:id/envelop
+  @route    [GET] /api/v1/mails/:id/envelop
   @access   Private
 */
 
@@ -227,7 +227,7 @@ exports.getEnvelop = async (req, res) => {
 
 /* 
   @desc     Get mail content pdf file 
-  @route    [GET] /api/v1/mail/:id/contentPDF
+  @route    [GET] /api/v1/mails/:id/contentPDF
   @access   Private
 */
 
@@ -273,7 +273,7 @@ exports.getContentPDF = async (req, res) => {
 
 /* 
   @desc     Create mail 
-  @route    [POST] /api/v1/mail/
+  @route    [POST] /api/v1/mails/
   @access   Private/Sender
   FIXME: this is an awfully fat controller
 */
@@ -293,18 +293,21 @@ exports.createMail = asyncHandler(async (req, res, next) => {
   // validation service calls
   const receiverPromise = userService.findUserById(receiverId);
   const addressPromise = addressService.findAddressBySenderReceiverIds(senderId, receiverId);
-  const subscriptionPromise = subscriptionService.findActiveSubscriptionByUserId(receiverId);
+  const subscriptionsPromise = subscriptionService.findActiveSubscriptionsByUserId(receiverId);
 
   // $1: resolve validation promises
-  const promises = [receiverPromise, addressPromise, subscriptionPromise];
-  const [receiver, address, subscription] = await Promise.all(promises);
+  const promises = [receiverPromise, addressPromise, subscriptionsPromise];
+  const [receiver, address, subscriptions] = await Promise.all(promises);
 
   // receiver-sender validation
   if (!address) {
     return next(new ErrorResponse('Invalid request', 401));
   }
 
-  // active subscription validation
+  // active subscription validation at the address
+  const subscription = subscriptions.find(
+    subscription => subscription.addressId.toString() === address._id.toString()
+  );
   if (!subscription) {
     return next(new ErrorResponse('Receiver does not have active subscription', 400));
   }
@@ -340,7 +343,7 @@ exports.createMail = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Update mail - mail text content, envelop image, upload content pdf
-  @route    [Put] /api/v1/mail/:id
+  @route    [Put] /api/v1/mails/:id
   @access   Private/Sender
   FIXME: this is an awfully fat controller
 */
@@ -370,7 +373,9 @@ exports.modifyMail = asyncHandler(async (req, res, next) => {
       new ErrorResponse(`Mail is already in ${mail.status}, and cannot be modified`, 400)
     );
   } else if (mail.status !== 'SCANNING' && req.files.contentPDF) {
-    return next(new ErrorResponse('Cannot upload pdf brefore user request the scanning', 400));
+    return next(
+      new ErrorResponse(`Mail is in ${mail.status} state, content pdf cannot be uploaded`, 400)
+    );
   }
 
   // $1: upload files to s3
@@ -400,17 +405,25 @@ exports.modifyMail = asyncHandler(async (req, res, next) => {
     contentKey
   );
 
-  if (result.n === 0) {
-    return next(new ErrorResponse(`No mail is updated`, 400));
+  if (!result || result.n === 0) {
+    return next(new ErrorResponse(`Unable to put update mail ${id}`, 400));
   }
 
   // $3: create charge & send email
   if (contentFile) {
     // receiver and subscription
     const receiverPromise = userService.findUserById(mail.receiverId);
-    const subscriptionPromise = subscriptionService.findActiveSubscriptionByUserId(mail.receiverId);
-    const promises = [receiverPromise, subscriptionPromise];
-    const [receiver, subscription] = await Promise.all(promises);
+    const addressPromise = addressService.findAddressBySenderReceiverIds(senderId, mail.receiverId);
+    const subscriptionsPromise = subscriptionService.findActiveSubscriptionsByUserId(
+      mail.receiverId
+    );
+    const promises = [receiverPromise, addressPromise, subscriptionsPromise];
+
+    // resolve all promises
+    const [receiver, address, subscriptions] = await Promise.all(promises);
+    const subscription = subscriptions.find(
+      subscription => subscription.addressId.toString() === address._id.toString()
+    );
 
     // create scan usage record & email scanned notification
     await invoiceService.createScanUsageRecord(mail, subscription);

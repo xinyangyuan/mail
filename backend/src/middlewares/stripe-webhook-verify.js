@@ -9,8 +9,8 @@ const stripeWebhookVerify = (req, res, next) => {
     // signed body
     req.stripeEvent = stripe.webhooks.constructEvent(req.rawBody, signature, endpointSecret);
     next();
-  } catch (err) {
-    res.status(400).send(`Webhook Error: ${err.message}`);
+  } catch (error) {
+    next(error);
   }
 };
 module.exports = stripeWebhookVerify;

@@ -2,8 +2,20 @@ const asyncHandler = require('../../utils/async-handler');
 const StripeEventHandler = require('./stripe-event-handler');
 const ErrorResponse = require('../../utils/error-response');
 
-/*
-  Controller: handle all incoming stripe webhook events
+/* 
+  @desc     Get stripe publick keey
+  @route    [GET] /api/v1/stripe/pk
+  @access   Public
+*/
+
+exports.getPublickKey = (req, res) => {
+  res.status(200).json({ ok: true, data: { pk: process.env.STRIPE_PUB_KEY } });
+};
+
+/* 
+  @desc     Handle all incoming stripe webhook events
+  @route    [POST] /api/v1/stripe/webhook
+  @access   Private/Verify-By-Stripe-Signature
 */
 
 exports.handleStripeWebhookEvent = asyncHandler(async (req, res, next) => {

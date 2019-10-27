@@ -11,7 +11,7 @@ const router = express.Router();
    [GET] Endpoints
 */
 
-router.get('', protect, controller.getSubscriptions);
+router.get('', protect, query, controller.getSubscriptions);
 router.get('/:id', protect, controller.getSubscription);
 
 /*

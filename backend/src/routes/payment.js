@@ -1,8 +1,9 @@
 const express = require('express');
 
-const query = require('api-query-params');
+const query = require('../middlewares/query');
 const { protect, authorize } = require('../middlewares/auth');
 const controller = require('../controllers/payment');
+
 const router = express.Router();
 
 /*

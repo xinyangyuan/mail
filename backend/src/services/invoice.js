@@ -33,7 +33,7 @@ exports.createMailUsageRecord = (mail, subscription) => {
     stripe.usageRecords.create(
       stripeSubItem,
       { quantity: 1, timestamp: Math.floor(Date.parse(mail.createdAt) / 1000) },
-      { idempotency_key: mail._id.toString() }
+      { idempotency_key: mail._id.toString() + `_mail_usage_record` }
     )
   );
 };
@@ -61,17 +61,34 @@ exports.createScanUsageRecord = (mail, subscription) => {
 
   // filter, update, options
   const filter = { userId, subscriptionId, startDate, endDate };
-  const update = { $addToSet: { mailIds: mailId } };
+  const update = { $addToSet: { scanIds: mailId } };
   const options = { runValidators: true, upsert: true, new: true };
 
   return Invoice.findOneAndUpdate(filter, update, options).then(() =>
     stripe.usageRecords.create(
       stripeSubItem,
       { quantity: 1, timestamp: Math.floor(Date.parse(mail.createdAt) / 1000) },
-      { idempotency_key: mail._id.toString() }
+      { idempotency_key: mail._id.toString() + `_scan_usage_record` }
     )
   );
 };
+
+/*
+  Service: get stripe upcoming invoices of multi subscriptions
+*/
+
+exports.getStripeUpcomingInvoices = async stripeSubscriptionIds => {
+  // promises
+  const promises = stripeSubscriptionIds.map(subscriptionId =>
+    stripe.invoices.retrieveUpcoming({ subscription: subscriptionId })
+  );
+
+  // return
+  return await Promise.all(promises);
+};
+
+//sub_G4DTx6QNY3KccL
+// sub_G4DMyJx6k7jean
 
 /*
   Service: check mail service overage : Promise<boolean>
@@ -87,7 +104,7 @@ exports.checkMailOverage = userId => {
       }
     })
     .byUser(userId)
-    .currentPeriod()
+    .upComing()
     .then(checkOverageHandler);
 };
 
@@ -105,7 +122,7 @@ exports.checkScanOverage = userId => {
       }
     })
     .byUser(userId)
-    .currentPeriod()
+    .upComing()
     .then(checkOverageHandler);
 };
 

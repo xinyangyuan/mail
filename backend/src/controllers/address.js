@@ -8,7 +8,7 @@ const addressService = require('../services/address');
 
 /* 
   @desc     Get all addresses
-  @route    [GET] /api/v1/address
+  @route    [GET] /api/v1/addresses
   @access   Public
 */
 
@@ -30,7 +30,7 @@ exports.getAddresses = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Get a address by id
-  @route    [GET] /api/v1/address/:id
+  @route    [GET] /api/v1/addresses/:id
   @access   Public
 */
 
@@ -51,7 +51,7 @@ exports.getAddress = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Get address belongs to a sender
-  @route    [GET] /api/v1/address/senderId/:senderId
+  @route    [GET] /api/v1/addresses/senderId/:senderId
   @access   Private - SENDER,ADMIN
 */
 
@@ -77,7 +77,7 @@ exports.getAddressBySenderId = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Get address belongs to a receiver
-  @route    [GET] /api/v1/address/receivers/receiverId/:receiverId
+  @route    [GET] /api/v1/addresses/receivers/receiverId/:receiverId
   @access   Private - USER,ADMIN
 */
 
@@ -105,7 +105,7 @@ exports.getAddressByReceiverId = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Get one address with receiver details info
-  @route    [GET] /api/v1/address/:id/receivers
+  @route    [GET] /api/v1/addresses/:id/receivers
   @access   Private - SENDER,ADMIN
 */
 
@@ -135,7 +135,7 @@ exports.getAddressReceivers = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Get one address with receiver details info
-  @route    [GET] /api/v1/address/:id/vacant_mailboxes
+  @route    [GET] /api/v1/addresses/:id/vacant_mailboxes
   @access   Public
 */
 
@@ -184,7 +184,7 @@ exports.createAddress = asyncHandler(async (req, res) => {
 
 /* 
   @desc     Update an address
-  @route    [PATCH] /api/v1/address/:id
+  @route    [PATCH] /api/v1/addresses/:id
   @access   Private - SENDER,ADMIN
 */
 
@@ -200,7 +200,7 @@ exports.updateAddress = asyncHandler(async (req, res) => {
   const result = await addressService
     .updateAddressById(id, line1, line2, city, country, zip)
     .byUser(userId, userRole);
-  if (result.n === 0) {
+  if (!result || result.n === 0) {
     return next(new ErrorResponse(`Unable to update address ${id} with values {req.body}`, 400));
   }
 
@@ -210,7 +210,7 @@ exports.updateAddress = asyncHandler(async (req, res) => {
 
 /* 
   @desc     Add a receiver at an address
-  @route    [POST] /api/v1/address/:id/receivers
+  @route    [POST] /api/v1/addresses/:id/receivers
   @access   Private - ADMIN
 */
 
@@ -230,7 +230,7 @@ exports.addReceiver = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Remove a receiver at an address
-  @route    [DELETE] /api/v1/address/:id/receivers/:receiverId
+  @route    [DELETE] /api/v1/addresses/:id/receivers/:receiverId
   @access   Private - ADMIN
 */
 

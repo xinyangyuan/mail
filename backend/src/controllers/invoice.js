@@ -3,9 +3,12 @@ const asyncHandler = require('../utils/async-handler');
 const Invoice = require('../models/invoice');
 const ErrorResponse = require('../utils/error-response');
 
+const invoiceService = require('../services/invoice');
+const subscriptionService = require('../services/subscription');
+
 /* 
   @desc     Get all invoices - asscociated to the requested user
-  @route    [GET] /api/v1/invoice
+  @route    [GET] /api/v1/invoices
   @access   Private
 */
 
@@ -34,7 +37,7 @@ exports.getInvoices = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Get one invoice by id - if the requested invoice is asscociated to the requested user
-  @route    [GET] /api/v1/invoice/:id
+  @route    [GET] /api/v1/invoices/:id
   @access   Private
 */
 
@@ -50,23 +53,23 @@ exports.getInvoice = asyncHandler(async (req, res, next) => {
   const invoice = await Invoice.findOne(filter)
     .byUser(userId, userRole)
     .lean();
-  if (!invoice) return next(new ErrorResponse('Cannot find the invoice', 400));
+  if (!invoice) return next(new ErrorResponse(`Cannot find the invoice ${req.params.id}`, 400));
 
   // success response
   res.status(200).json({ ok: true, data: { invoice } });
 });
 
 /* 
-  @desc     Get upcoming invoice of the requested user
-  @route    [GET] /api/v1/invoice/upcoming -self
-  @route    [GET] /api/v1/invoice/upcoming?userId TODO:
-  @route    [GET] /api/v1/invoice/userId/:userId/upcoming TODO:
-  @route    [GET] /api/v1/subscription/:subscriptionId/invoice/upcoming TODO:
-  @route    [GET] /api/v1/user/:userId/invoice/upcoming TODO:
+  @desc     Get upcoming invoices of the requested user - user can have multiple subcriptions in different locations
+  @route    [GET] /api/v1/invoices/upcoming -self
+  @route    [GET] /api/v1/invoices/upcoming?userId TODO:
+  @route    [GET] /api/v1/invoices/userId/:userId/upcoming TODO:
+  @route    [GET] /api/v1/subscription/:subscriptionId/invoices/upcoming TODO:
+  @route    [GET] /api/v1/user/:userId/invoices/upcoming TODO:
   @access   Private
 */
 
-exports.getUpcomingInvoice = asyncHandler(async (req, res, next) => {
+exports.getUpcomingInvoices = asyncHandler(async (req, res, next) => {
   // query by user status
   const userId = req.userData.userId;
   const userRole = req.userData.role;
@@ -76,16 +79,24 @@ exports.getUpcomingInvoice = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`Haven't implemented query for specific user by id`, 404));
   }
 
-  // filter, projection
-  const filter = { userId };
+  // $1: find user active subscriptions
+  const subscriptions = await subscriptionService.findActiveSubscriptionsByUserId(userId);
+  if (!subscriptions.length)
+    return next(new ErrorResponse(`No usage reported at current period for user ${userId}`, 404));
 
-  // $1: mail
-  const invoice = await Invoice.findOne(filter)
-    .currentPeriod()
+  // $2: invoices
+  const filter = { subscriptionId: { $in: subscriptions.map(subscription => subscription._id) } };
+  const invoices = await Invoice.find(filter)
+    .upComing()
     .byUser(userId, userRole)
     .lean();
-  if (!invoice) return next(new ErrorResponse('Cannot find the invoice', 400));
+  if (!invoices.length)
+    return next(new ErrorResponse(`No usage reported at current period for user ${userId}`, 404));
+
+  // // $3s: also confirm with stripe
+  // const stripeSubscriptionIds = subscriptions.map(subscription => subscription.stripeId);
+  // const stripe = await invoiceService.getStripeUpcomingInvoices(stripeSubscriptionIds);
 
   // success response
-  res.status(200).json({ ok: true, data: { invoice } });
+  res.status(200).json({ ok: true, data: { invoices } });
 });

@@ -12,6 +12,11 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({ ok: false, message: 'Invalid access' });
   }
 
+  // Stripe signature verification error
+  if (err.type === 'StripeSignatureVerificationError') {
+    return res.status(401).json({ ok: false, message: 'Not authorized to access this route' });
+  }
+
   // Mongoose filter error: actual object filed passes with wrong parameter type TODO: FIXME:
   if (err.name === 'ObjectParameterError') {
     return res.status(400).json({ ok: false, message: 'Invalid query parameters' });

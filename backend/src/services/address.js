@@ -60,7 +60,19 @@ exports.updateAddressById = (id, line1, line2, city, country, zip) => {
 };
 
 /*
-  Find address:
+  Find address by id
+*/
+
+exports.findAddressById = addressId => {
+  // filter
+  const filter = { _id: addressId };
+
+  // document query
+  return Address.findOne(filter);
+};
+
+/*
+  Find address by sender & receiver ids pair:
 */
 
 exports.findAddressBySenderReceiverIds = (senderId, receiverId) => {

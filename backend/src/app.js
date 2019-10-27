@@ -5,30 +5,33 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const colors = require('colors');
 
-const connectDB = require('./config/db');
+const db = require('./config/database');
 const errorHandler = require('./middlewares/error');
 
-const stripeWebhookRoutes = require('./routes/stripe-webhook');
+const stripeRoutes = require('./routes/stripe');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const addressRoutes = require('./routes/address');
 const mailRoutes = require('./routes/mail');
 const planRoutes = require('./routes/plan');
 const paymentRoutes = require('./routes/payment');
+const invoiceRoutes = require('./routes/invoice');
 const subscriptionRoutes = require('./routes/subscription');
 
-const Invoice = require('./models/invoice');
+/*
+ Instantiate express app
+*/
 
 const app = express();
 
 /*
- setup and connect to MongoDB Atlas databse
+ Setup and connect to MongoDB Atlas databse
 */
 
-connectDB();
+db.connect();
 
 /*
-  protect express app by helmet-js
+  Protect express app by helmet-js
 */
 
 app.use(helmet({ hsts: false }));
@@ -49,7 +52,7 @@ app.use(
   bodyParser.json({
     verify: function(req, res, buf) {
       const url = req.originalUrl;
-      if (url === '/api/stripe-webhook') {
+      if (url === '/api/stripe/webhook') {
         req.rawBody = buf.toString(); // stripe requires raw
       }
     }
@@ -72,26 +75,26 @@ app.use((req, res, next) => {
 });
 
 /*
- stripe publick key & webhook routes
+ stripe endpoints
 */
 
-app.get('/api/stripe-pk', (_, res) => res.status(200).json({ pk: process.env.STRIPE_PUB_KEY }));
-app.use('/api/stripe-webhook', stripeWebhookRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 /*
- rest api routes
+ rest endpoints
 */
 
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/address', addressRoutes);
-app.use('/api/mail', mailRoutes);
-app.use('/api/plan', planRoutes);
-app.use('/api/payment', paymentRoutes);
-app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/addresses', addressRoutes);
+app.use('/api/mails', mailRoutes);
+app.use('/api/plans', planRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 /*
- graphql api route
+ graphql endpoint 
 */
 
 /*

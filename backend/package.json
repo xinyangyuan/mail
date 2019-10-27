@@ -2,10 +2,10 @@
   "name": "mail-backend",
   "version": "0.0.0",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "NODE_ENV=production node src/server.js",
     "dev": "nodemon src/server.js",
-    "release": "release-it",
-    "test": "node test.js"
+    "test": "mocha --recursive --exit",
+    "release": "release-it"
   },
   "private": true,
   "dependencies": {
@@ -31,6 +31,7 @@
     "stripe": "^7.10.0"
   },
   "devDependencies": {
+    "debug": "^4.1.1",
     "dotenv": "^8.2.0",
     "nodemon": "^1.19.4",
     "release-it": "^12.4.3"

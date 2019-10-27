@@ -24,12 +24,14 @@ const stripeItemsSchema = new mongoose.Schema(
   { _id: false } // no unique _id
 );
 
-const cancellationEventSchema = new mongoose.Schema(
+const statusLogSchema = new mongoose.Schema(
   {
+    event: { type: String, immutable: true, required: true },
     reason: { type: String, immutable: true, required: true },
-    date: { type: Date, immutable: true, required: true }
+    user: { type: String, immutable: true },
+    createdAt: { type: Date, default: Date.now() }
   },
-  { _id: true } // require unique _id
+  { _id: true }
 );
 
 /*
@@ -98,9 +100,9 @@ const subscriptionSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    cancellationEvents: [
+    statusLogs: [
       {
-        type: cancellationEventSchema
+        type: statusLogSchema
       }
     ]
   },
@@ -119,10 +121,6 @@ subscriptionSchema.virtual('endDate').get(function() {
   }
 });
 
-subscriptionSchema.virtual('isTerminated').get(function() {
-  return this.status !== 'ACTIVE' || this.periodEndDate < Date.now();
-});
-
 subscriptionSchema.virtual('isActive').get(function() {
   return this.status === 'ACTIVE' && this.periodEndDate > Date.now();
 });
@@ -132,19 +130,33 @@ subscriptionSchema.virtual('isActive').get(function() {
 */
 
 subscriptionSchema.query.isActive = function() {
-  return this.where({ periodEndDate: { $gt: Date.now() }, status: { $ne: 'CANCELED' } });
+  return this.where({ periodEndDate: { $gt: Date.now() }, status: { $eq: 'ACTIVE' } });
+};
+
+subscriptionSchema.query.isActiveOrIncomplete = function() {
+  return this.where({
+    periodEndDate: { $gt: Date.now() },
+    status: { $in: ['ACTIVE', 'INCOMPLETE'] }
+  });
 };
 
 subscriptionSchema.query.byPlan = function(planId) {
   return this.where({ planId: planId });
 };
 
-subscriptionSchema.query.byUser = function(userId) {
-  return this.where({ userId: userId });
-};
-
 subscriptionSchema.query.byAddress = function(addressId) {
   return this.where({ addressId: addressId });
+};
+
+subscriptionSchema.query.byUser = function(userId, userRole) {
+  switch (userRole) {
+    case 'USER':
+      return this.where({ userId: userId });
+    case 'ADMIN':
+      return this.where({});
+    // case 'SENDER':
+    //   return this.where({});
+  }
 };
 
 // export mongoose model

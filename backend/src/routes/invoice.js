@@ -11,5 +11,7 @@ const router = express.Router();
 */
 
 router.get('', protect, query, controller.getInvoices);
-router.get('/upcoming', protect, controller.getUpcomingInvoice);
+router.get('/upcoming', protect, controller.getUpcomingInvoices);
 router.get('/:id', protect, controller.getInvoice);
+
+module.exports = router;

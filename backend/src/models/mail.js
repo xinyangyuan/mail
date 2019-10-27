@@ -16,9 +16,9 @@ const mailFlagSchema = new mongoose.Schema(
 
 const statusLogSchema = new mongoose.Schema(
   {
-    event: { type: String, required: true, immutable: true },
-    user: { type: String, required: true, immutable: true },
-    reason: { type: String, immutable: true, default: 'change due to user request' }
+    event: { type: String, immutable: true, required: true },
+    reason: { type: String, immutable: true, required: true },
+    user: { type: String, immutable: true }
   },
   { timestamps: true }
 );

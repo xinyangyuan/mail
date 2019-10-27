@@ -38,7 +38,7 @@ class StripeEventHandler {
       case 'customer.subscription.deleted':
         return this.handleCustomerSubscriptionDeleted;
       default:
-        return this.handleUnspecifiedEvent;
+        return this.handleUnspecifiedEvent; // automatically return success result
     }
   }
 
@@ -175,10 +175,16 @@ class StripeEventHandler {
 
     // update subscription - handle status transitioned to incomplete_expired OR past_due
     if (status === 'incomplete_expired' || status === 'past_due') {
+      // status log
+      const event = `[Status] transition to ${status.toUpperCase()}`;
+      const reason = `Stripe webhook triger event change`;
+      const statusLog = { event, reason };
+
       // $1: update subscription status
       const subscription = await subscriptionService.updateSubscriptionStatus(
         subscriptionId,
-        status.toUpperCase()
+        status.toUpperCase(),
+        statusLog
       );
 
       // return
@@ -187,7 +193,7 @@ class StripeEventHandler {
       else
         return { ok: false, message: `Subscription ${subscriptionId} failed to update ${status}` };
     } else {
-      return { ok: true, message: 'Unhandled due to unspecified change' };
+      return { ok: true, message: 'Unhandled due to unspecified subscription status update' };
     }
   }
 
@@ -200,9 +206,22 @@ class StripeEventHandler {
     const stripeSubscription = this.eventObject;
     const subscriptionId = stripeSubscription.metadata.id;
 
+    // status log
+    const event = `[Status] transition to CANCELED`;
+    const reason = `Stripe webhook triger event change`;
+    const statusLog = { event, reason };
+
     // $1: update subscription status to cancel
     const status = 'CANCELED';
-    const subscription = await subscriptionService.updateSubscriptionStatus(subscriptionId, status);
+    const subscription = await subscriptionService.updateSubscriptionStatus(
+      subscriptionId,
+      status,
+      statusLog
+    );
+
+    // $2 remove user from address TODO: bind two asynchronous using transactions
+    const { addressId, userId } = subscription;
+    await addressService.removeReceiver(addressId, userId);
 
     // return
     if (subscription)
@@ -211,7 +230,7 @@ class StripeEventHandler {
   }
 
   /*
-    Method: handle remaining un-specified events
+    Method: handle remaining un-specified events [AUTOMATICALLY SUCCESS RESPONSE]
   */
 
   handleUnspecifiedEvent() {

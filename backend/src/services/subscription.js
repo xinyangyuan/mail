@@ -87,13 +87,13 @@ exports.renewSubscription = async (subscriptionId, session) => {
 };
 
 /*
-  Service: renew subscription 
+  Service: renew subscription [call from webhook]
 */
 
-exports.updateSubscriptionStatus = async (subscriptionId, status) => {
+exports.updateSubscriptionStatus = async (subscriptionId, status, statusLog) => {
   // filter, update, options
   const filter = { _id: subscriptionId };
-  const update = { $set: { status } };
+  const update = { $set: { status }, $addToSet: { statusLogs: statusLog } };
   const options = { runValidators: true, new: true };
 
   // promise
@@ -101,13 +101,11 @@ exports.updateSubscriptionStatus = async (subscriptionId, status) => {
 };
 
 /*
-  Find active subscription by userId
-  FIXME: the user might have mutilple active subscriptions => so findSubscriptions
+  Find active subscription by userId => Promise<subscription[]>
 */
 
-exports.findActiveSubscriptionByUserId = userId => {
-  return Subscription.findOne()
-    .byUser(userId)
+exports.findActiveSubscriptionsByUserId = userId => {
+  return Subscription.find({ userId })
     .isActive()
     .exec();
 };
@@ -116,51 +114,47 @@ exports.findActiveSubscriptionByUserId = userId => {
   Cancel a subscription immediately
 */
 
-exports.cancelSubscription = subscriptionId => {
-  // reason, current date, canceelationEvent
-  const reason = 'User request to cancel from client side';
-  const date = new Date();
-  const cancellationEvent = { reason, date };
+exports.cancelSubscription = async subscriptionId => {
+  // status change log
+  const event = `[Status] transition from ACTIVE to CANCELED`;
+  const reason = `User request to cancel event immediately`;
+  const statusLog = { event, reason };
 
   // filter, options, update
-  const filter = { _id: subscriptionId };
+  const filter = { _id: subscriptionId, status: { $ne: 'CANCELED' } };
   const options = { runValidators: true, new: true };
   const update = {
     $set: { status: 'CANCELED' },
-    $addToSet: { cancellationEvents: cancellationEvent }
+    $addToSet: { statusLogs: statusLog }
   };
 
-  // promise
-  return Subscription.findOneAndUpdate(filter, update, options).then(
-    subscription =>
-      // only call stripe if there is subscription return
-      subscription && stripe.subscriptions.del(subscription.stripeId)
-  );
+  // promises
+  const subscription = await Subscription.findOneAndUpdate(filter, update, options);
+  subscription && stripe.subscriptions.del(subscription.stripeId); // only call stripe if there is subscription return
+  return subscription;
 };
 
 /*
   Cancel a subscription at period end
 */
 
-exports.cancelSubscriptionAtPeriodEnd = subscriptionId => {
-  // reason, current date, canceelationEvent
-  const reason =
-    'User request to stop auto-billing and cancel subscription at period end from client side';
-  const date = new Date();
-  const cancellationEvent = { reason, date };
+exports.cancelSubscriptionAtPeriodEnd = async subscriptionId => {
+  // status change log
+  const event = `[isCancelAtPeriodEnd] transition from ${false} to ${true}`;
+  const reason = `User request to stop auto-billing and cancel subscription at period end`;
+  const statusLog = { event, reason };
 
   // filter, options, update
   const filter = { _id: subscriptionId };
   const options = { runValidators: true, new: true };
   const update = {
     $set: { isCancelAtPeriodEnd: true },
-    $addToSet: { cancellationEvents: cancellationEvent }
+    $addToSet: { statusLogs: statusLog }
   };
 
-  // promise
-  return Subscription.findOneAndUpdate(filter, update, options).then(
-    subscription =>
-      subscription && // only call stripe if there is subscription return
-      stripe.subscriptions.update(subscription.stripeId, { cancel_at_period_end: true })
-  );
+  // promises
+  const subscription = await Subscription.findOneAndUpdate(filter, update, options);
+  subscription && // only call stripe if there is subscription return
+    stripe.subscriptions.update(subscription.stripeId, { cancel_at_period_end: true });
+  return subscription;
 };

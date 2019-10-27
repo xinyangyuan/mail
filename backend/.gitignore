@@ -24,4 +24,3 @@ testem.log
 # env variables
 *.env
 nodemon.json
-test.js

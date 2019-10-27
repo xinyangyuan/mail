@@ -3,7 +3,7 @@ const User = require('../models/user');
 
 /* 
   @desc     Get a logged-in user's profile
-  @route    [GET] /api/v1/user/self
+  @route    [GET] /api/v1/users/self
   @access   Private
 */
 

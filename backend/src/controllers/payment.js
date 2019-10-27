@@ -6,7 +6,7 @@ const ErrorResponse = require('../utils/error-response');
 
 /* 
   @desc     Get all payments - asscociated to the requested user
-  @route    [GET] /api/v1/payment
+  @route    [GET] /api/v1/payments
   @access   Private
 */
 
@@ -15,11 +15,17 @@ exports.getPayments = asyncHandler(async (req, res, next) => {
   const userId = req.userData.userId;
   const userRole = req.userData.role;
 
-  // filter, projection
-  const filter = { _id: req.params.id };
+  // filter, projection, sort, skip, limit
+  const { filter, sort, skip, limit } = req.queryData;
+  if (userRole !== 'ADMIN') {
+    delete filter.userId;
+  }
 
   // $1: payments
   const payments = await Payment.find(filter)
+    .sort(sort)
+    .skip(skip)
+    .limit(limit)
     .byUser(userId, userRole)
     .lean();
 
@@ -29,7 +35,7 @@ exports.getPayments = asyncHandler(async (req, res, next) => {
 
 /* 
   @desc     Get one payment by id 
-  @route    [GET] /api/v1/payment/:id
+  @route    [GET] /api/v1/payments/:id
   @access   Private
 */
 

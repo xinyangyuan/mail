@@ -15,7 +15,7 @@ const options = {
 };
 
 // connect
-const connectDB = async () => {
+const connect = async () => {
   try {
     const connection = await mongoose.connect(process.env.MONGO_ATLAS, options);
     console.log(`Connected to MongoDB: ${connection.connection.host}`.cyan.bold);
@@ -24,4 +24,9 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+// disconnect
+const disconnect = async () => {
+  mongoose.disconnect();
+};
+
+module.exports = { connect, disconnect };
