@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { MainLayoutComponent } from '../layout/main-layout/main-layout.component';
-import { NewSubscriptionComponent } from './new-subscription/new-subscription.component';
+import { NewSubscriptionComponent } from './components/new-subscription/new-subscription.component';
 
 const routes: Routes = [
   {

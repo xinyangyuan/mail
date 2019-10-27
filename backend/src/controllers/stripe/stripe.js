@@ -9,7 +9,8 @@ const ErrorResponse = require('../../utils/error-response');
 */
 
 exports.getPublickKey = (req, res) => {
-  res.status(200).json({ ok: true, data: { pk: process.env.STRIPE_PUB_KEY } });
+  const pk = process.env.STRIPE_PUB_KEY;
+  return res.status(200).json({ ok: true, data: { pk } });
 };
 
 /* 

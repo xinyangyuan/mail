@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 
-import { SubscriptionQuery } from '../store/subscription.query';
+import { SubscriptionQuery } from '../../store/subscription.query';
 import { NewSubscriptionSelectAddressComponent } from '../new-subscription-select-address/new-subscription-select-address.component';
 import { NewSubscriptionSelectPlanComponent } from '../new-subscription-select-plan/new-subscription-select-plan.component';
 import { NewSubscriptionCheckoutComponent } from '../new-subscription-checkout/new-subscription-checkout.component';

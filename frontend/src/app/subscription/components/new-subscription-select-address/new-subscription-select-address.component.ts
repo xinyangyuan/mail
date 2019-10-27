@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { Select } from '@ngxs/store';
 
 import { Address } from 'src/app/address/models/address.model';
-import { SubscriptionQuery } from '../store/subscription.query';
+import { SubscriptionQuery } from '../../store/subscription.query';
 
 @Component({
   selector: 'app-new-subscription-select-address',

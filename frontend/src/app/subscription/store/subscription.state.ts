@@ -1,6 +1,6 @@
 import { State, Action, StateContext } from '@ngxs/store';
 
-import { Subscription } from '../subscription.model';
+import { Subscription } from '../models/subscription.model';
 import * as SubscriptionActions from './subscription.action';
 import { SubscriptionService } from '../subscription.service';
 import { PaymentService } from 'src/app/payment/payment.service';

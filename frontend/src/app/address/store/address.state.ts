@@ -80,7 +80,7 @@ export class AddressState {
     const result = await this.addressService._getAddressList().toPromise();
 
     // return new state
-    ctx.patchState({ addresses: result.addressList });
+    ctx.patchState({ addresses: result.addresses });
   }
 
   /*
@@ -122,7 +122,7 @@ export class AddressState {
     const result = await this.addressService._getVacantMailboxNos(action.payload).toPromise();
 
     // return new state
-    ctx.patchState({ vacantMailboxNos: result.address.vacantMailboxNos });
+    ctx.patchState({ vacantMailboxNos: result.vacantMailboxNos });
   }
 
   /*

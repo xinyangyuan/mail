@@ -9,10 +9,10 @@ import { PlanModule } from '../plan/plan.module';
 import { AddressModule } from '../address/address.module';
 
 import { SubscriptionState } from './store/subscription.state';
-import { NewSubscriptionCheckoutComponent } from './new-subscription-checkout/new-subscription-checkout.component';
-import { NewSubscriptionComponent } from './new-subscription/new-subscription.component';
-import { NewSubscriptionSelectAddressComponent } from './new-subscription-select-address/new-subscription-select-address.component';
-import { NewSubscriptionSelectPlanComponent } from './new-subscription-select-plan/new-subscription-select-plan.component';
+import { NewSubscriptionCheckoutComponent } from './components/new-subscription-checkout/new-subscription-checkout.component';
+import { NewSubscriptionComponent } from './components/new-subscription/new-subscription.component';
+import { NewSubscriptionSelectAddressComponent } from './components/new-subscription-select-address/new-subscription-select-address.component';
+import { NewSubscriptionSelectPlanComponent } from './components/new-subscription-select-plan/new-subscription-select-plan.component';
 
 @NgModule({
   declarations: [

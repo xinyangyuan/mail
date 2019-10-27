@@ -15,7 +15,7 @@ import { environment } from 'src/environments/environment';
 })
 export class MailService {
   // Attributes
-  private BACKEND_URL = environment.apiURL + '/mail/';
+  private BACKEND_URL = environment.apiURL + '/mails/';
 
   // Constructor
   constructor(private http: HttpClient, private store: Store) {}
@@ -28,7 +28,7 @@ export class MailService {
     skip: number,
     limit: number,
     filterBy?: { read?: boolean; star?: boolean; issue?: boolean; status?: MailStatus }
-  ): Observable<{ message: string; mailList: Mail[]; mailCount: number }> {
+  ): Observable<{ mails: Mail[]; count: number }> {
     // retrieve flags query
     let filterByString = '';
     for (const [filterName, filterValue] of Object.entries(filterBy)) {
@@ -39,24 +39,9 @@ export class MailService {
     const queryParams = `?skip=${skip}&limit=${limit}` + filterByString;
 
     // fetch mail list from the RESTapi
-    return (
-      this.http
-        // send get request
-        .get<{ message: string; mailList: Mail[]; mailCount: number }>(
-          this.BACKEND_URL + queryParams
-        )
-        .pipe(
-          tap(
-            res => {
-              console.log(res.message);
-            },
-            err => {
-              console.log('Failed to fetch mails');
-            }
-          ),
-          catchError(error => throwError(error))
-        )
-    );
+    return this.http
+      .get<{ ok: boolean; data: { mails: Mail[]; count: number } }>(this.BACKEND_URL + queryParams)
+      .pipe(map(result => result.data));
   }
 
   /*
@@ -69,7 +54,7 @@ export class MailService {
     description: string,
     content: string,
     envelop: File
-  ): Observable<{ message: string; mail: Mail }> {
+  ): Observable<{ mail: Mail }> {
     // pack all required post data
     const mailData = new FormData();
     mailData.append('receiverId', receiverId);
@@ -79,22 +64,9 @@ export class MailService {
     mailData.append('envelop', envelop);
 
     // call createMail method
-    return (
-      this.http
-        // send get request
-        .post<{ message: string; mail: Mail }>(this.BACKEND_URL, mailData)
-        .pipe(
-          tap(
-            res => {
-              console.log(res.message);
-            },
-            err => {
-              console.log('Failed to send the mail!');
-            }
-          ),
-          catchError(error => throwError(error))
-        )
-    );
+    return this.http
+      .post<{ ok: boolean; data: { mail: Mail } }>(this.BACKEND_URL, mailData)
+      .pipe(map(result => result.data));
   }
 
   /*
@@ -108,7 +80,7 @@ export class MailService {
     modifiedContent: string,
     modifiedEnvelop: File,
     modifiedContentPDF: File
-  ): Observable<{ message: string; mail: Mail }> {
+  ): Observable<{ ok: boolean }> {
     // pack all required post data
     const mailData = new FormData();
     mailData.append('title', modfiedTitle);
@@ -118,21 +90,9 @@ export class MailService {
     mailData.append('contentPDF', modifiedContentPDF);
 
     // call createMail method
-    return (
-      this.http
-        // send get request
-        .put<{ message: string; mail: Mail }>(this.BACKEND_URL + mail._id, mailData)
-        .pipe(
-          tap(
-            res => {
-              console.log(res.message);
-            },
-            err => {
-              console.log('Failed to send the mail!');
-            }
-          ),
-          catchError(error => throwError(error))
-        )
+    return this.http.put<{ ok: boolean; result: { n: number; nModified: number } }>(
+      this.BACKEND_URL + mail._id,
+      mailData
     );
   }
 
@@ -143,20 +103,14 @@ export class MailService {
   _updateMail(
     mail: Mail,
     update: { flags?: { star?: boolean; read?: boolean; issue?: boolean }; status?: MailStatus }
-  ): Observable<{ message: string; mail: Mail }> {
+  ): Observable<{ ok: boolean }> {
     // patch request
     return this.http
-      .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + mail._id, update)
-      .pipe(
-        tap(
-          res => {
-            this.store.dispatch(new MailActions.UpdateMail({ mail, update }));
-          },
-          err => {
-            console.log('Failed to update mail flags!');
-          }
-        )
-      );
+      .patch<{ ok: true; result: { n: number; nModified: number } }>(
+        this.BACKEND_URL + mail._id,
+        update
+      )
+      .pipe(tap(() => this.store.dispatch(new MailActions.UpdateMail({ mail, update }))));
   }
 
   /*
@@ -166,86 +120,47 @@ export class MailService {
   _updateMails(
     mails: Mail[],
     update: { flags?: { star?: boolean; read?: boolean; issue?: boolean }; status?: MailStatus }
-  ): Observable<{ message: string; mail: Mail }> {
+  ): Observable<{ ok: boolean }> {
     // query params
     const ids: string = mails.map(mail => mail._id).join(',');
     const queryParams = `?ids=${ids}`;
 
     // post updated mail data to RESTapi
-    return (
-      this.http
-        // send patch request
-        .patch<{ message: string; mail: Mail }>(this.BACKEND_URL + queryParams, update)
-        .pipe(
-          tap(
-            res => {
-              this.store.dispatch(new MailActions.UpdateMails({ mails, update }));
-            },
-            err => {
-              console.log('Failed to update mail flags!');
-            }
-          )
-        )
-    );
+    return this.http
+      .patch<{ ok: true; result: { n: number; nModified: number } }>(
+        this.BACKEND_URL + queryParams,
+        update
+      )
+      .pipe(tap(() => this.store.dispatch(new MailActions.UpdateMails({ mails, update }))));
   }
 
   /*
     $ Method: delete a mail  [DELETE]
   */
 
-  _deleteMail(mail: Mail): Observable<{ message: string; mail: Mail }> {
-    // post updated mail data to RESTapi
-    return (
-      this.http
-        // send delete request
-        .delete<{ message: string; mail: Mail }>(this.BACKEND_URL + mail._id)
-        .pipe(
-          tap(
-            res => {},
-            err => {
-              console.log('Failed to update mail flags!');
-            }
-          ),
-          catchError(error => throwError(error))
-        )
+  _deleteMail(mail: Mail): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: true; result: { n: number; deletedCount: number } }>(
+      this.BACKEND_URL + mail._id
     );
   }
 
   /*
     $ Method: get mail conten pdf  [GET]
   */
+
   _getEnvelop(id: string): Observable<{ id: string; file: Blob }> {
-    return (
-      this.http
-        // send get request
-        .get(this.BACKEND_URL + id + '/envelop/', { responseType: 'blob' })
-        .pipe(
-          map(file => {
-            return { id, file };
-          })
-        )
+    return this.http.get(this.BACKEND_URL + id + '/envelop', { responseType: 'blob' }).pipe(
+      map(file => {
+        return { id, file };
+      })
     );
   }
 
   /*
     $ Method: get mail content pdf  [GET]
   */
+
   _getContentPDF(mail: Mail) {
-    return (
-      this.http
-        // send get request
-        .get(this.BACKEND_URL + mail._id + '/contentPDF/', { responseType: 'blob' })
-        .pipe(
-          tap(
-            res => {
-              console.log('Get mail pdf suceessfully');
-            },
-            err => {
-              console.log('Failed to get mail PDF!');
-            }
-          ),
-          catchError(error => throwError(error))
-        )
-    );
+    return this.http.get(this.BACKEND_URL + mail._id + '/contentPDF', { responseType: 'blob' });
   }
 }

@@ -12,7 +12,7 @@ import { environment } from 'src/environments/environment';
 })
 export class AddressService {
   // Attributes:
-  private BACKEND_URL = environment.apiURL + '/address/';
+  private BACKEND_URL = environment.apiURL + '/addresses/';
 
   // Constructor:
   constructor(private http: HttpClient) {}
@@ -21,13 +21,14 @@ export class AddressService {
     $ Method: get a list of all addresses [GET]
   */
 
-  _getAddressList(): Observable<{ addressList: Address[] }> {
+  _getAddressList(): Observable<{ addresses: Address[] }> {
     return (
       // fetch address list from the RESTapi
       this.http
-        .get<{ message: string; addressList: Address[] }>(this.BACKEND_URL)
+        .get<{ ok: boolean; data: { addresses: Address[] } }>(this.BACKEND_URL)
         // insert extra operations
         .pipe(
+          map(result => result.data),
           tap(
             () => console.log('Fetch address list successfuly.'),
             () => console.log('Failed to fetch address list.')
@@ -45,9 +46,10 @@ export class AddressService {
     return (
       // fetch address from the RESTapi
       this.http
-        .get<{ message: string; address: Address }>(this.BACKEND_URL + id)
+        .get<{ ok: true; data: { address: Address } }>(this.BACKEND_URL + id)
         // insert extra operations
         .pipe(
+          map(result => result.data),
           tap(
             () => console.log('Get address successfuly.'),
             () => console.log('Failed to fetch the address.')
@@ -65,9 +67,10 @@ export class AddressService {
     return (
       // fetch address from the RESTapi
       this.http
-        .get<{ message: string; address: Address }>(this.BACKEND_URL + `senderId/${id}`)
+        .get<{ ok: true; data: { address: Address } }>(this.BACKEND_URL + `senderId/${id}`)
         // insert extra operations
         .pipe(
+          map(result => result.data),
           tap(
             () => console.log('Get address successfuly.'),
             () => console.log('Failed to fetch the address.')
@@ -85,9 +88,12 @@ export class AddressService {
     return (
       // fetch address from the RESTapi
       this.http
-        .get<{ message: string; address: Address }>(this.BACKEND_URL + `receivers/receiverId/${id}`)
+        .get<{ ok: true; data: { address: Address } }>(
+          this.BACKEND_URL + `receivers/receiverId/${id}`
+        )
         // insert extra operations
         .pipe(
+          map(result => result.data),
           tap(
             () => console.log('Get address successfuly.'),
             () => console.log('Failed to fetch the address.')
@@ -103,15 +109,18 @@ export class AddressService {
 
   _getVacantMailboxNos(
     address: Address
-  ): Observable<{ message: string; address: { _id: string; vacantMailboxNos: number[] } }> {
+  ): Observable<{ address: Address; vacantMailboxNos: number[] }> {
     return (
       // fetch my address from the RESTapi
       this.http
-        .get<{ message: string; address: { _id: string; vacantMailboxNos: number[] } }>(
+        .get<{ ok: boolean; data: { address: Address; vacantMailboxNos: number[] } }>(
           this.BACKEND_URL + address._id + '/vacantMailboxNos'
         )
         // insert extra operations
-        .pipe(catchError(error => throwError(error)))
+        .pipe(
+          map(result => result.data),
+          catchError(error => throwError(error))
+        )
     );
   }
 
@@ -123,12 +132,12 @@ export class AddressService {
     return (
       // fetch my address from the RESTapi
       this.http
-        .get<{ message: string; address: { _id: string; receivers: Receiver[] } }>(
+        .get<{ ok: boolean; data: { address: Address; receivers: Receiver[] } }>(
           this.BACKEND_URL + address._id + '/receivers'
         )
         .pipe(
           map(result => {
-            return { receivers: result.address.receivers };
+            return { receivers: result.data.receivers };
           }),
           tap(
             () => console.log('Get receivers successfuly.'),
@@ -168,22 +177,4 @@ export class AddressService {
         )
     );
   }
-
-  /*
-    $ Method: add new receiver to an address [PATCH]: authenticated users
-  */
-
-  // _addReceiver(id: string, mailboxNo: number): Observable<{ address: Address }> {
-  //   return (
-  //     this.http
-  //       // send post request to RESTapi
-  //       .patch<{ address: Address }>(this.BACKEND_URL + id + '/receivers' , {mailboxNo} )
-  //       .pipe(
-  //         tap(
-  //           () => console.log('You are added to the address successfully.'),
-  //           () => console.log('Fail to add you to the address!')
-  //         ),
-  //         catchError(error => throwError(error))
-  //       )
-  //   );
 }

@@ -156,7 +156,7 @@ exports.sendEmailVerification = asyncHandler(async (req, res, next) => {
 });
 
 /* 
-  @desc     Confirm email-verification email - update user status
+  @desc     Confirm email-verification email - update user status, also login-in user
   @route    [POST] /api/v1/confirmation/:emailToken
   @access   Public
 */
@@ -179,8 +179,13 @@ exports.confirmEmailVerification = asyncHandler(async (req, res, next) => {
   const options = { runValidators: true };
   await User.updateOne(filter, update, options);
 
+  // tokens
+  const token = tokenService.generateAuthToken(user);
+  const refreshToken = tokenService.generateRefreshToken(user);
+
   // success response
-  res.status(200).json({ ok: true, message: 'success' });
+  res.cookie('jid', refreshToken, { httpOnly: true }); // path: '/refresh_token'
+  res.status(200).json({ ok: true, message: 'success', token });
 });
 
 /* 
@@ -209,7 +214,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 });
 
 /* 
-  @desc     Reset password 
+  @desc     Reset password - also log-in user
   @route    [POST] /api/v1/reset/:emailToken
   @access   Public
 */
@@ -228,6 +233,11 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
   const user = await User.updateOne(filter, update, options);
   if (!user) return next(new ErrorResponse('Failed to reset your password', 400));
 
+  // tokens
+  const token = tokenService.generateAuthToken(user);
+  const refreshToken = tokenService.generateRefreshToken(user);
+
   // success response
-  res.status(200).json({ ok: true, message: 'success' });
+  res.cookie('jid', refreshToken, { httpOnly: true }); // path: '/refresh_token'
+  res.status(200).json({ ok: true, message: 'Password reset success', token });
 });

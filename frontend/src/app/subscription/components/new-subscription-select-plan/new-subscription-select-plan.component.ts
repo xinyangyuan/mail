@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { Select, Store } from '@ngxs/store';
 
 import { Plan } from 'src/app/plan/plan.model';
-import { SubscriptionQuery } from '../store/subscription.query';
+import { SubscriptionQuery } from '../../store/subscription.query';
 
 @Component({
   selector: 'app-new-subscription-select-plan',

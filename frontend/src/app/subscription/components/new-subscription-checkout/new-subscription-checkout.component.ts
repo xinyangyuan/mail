@@ -7,8 +7,8 @@ import { Select, Store } from '@ngxs/store';
 import { Plan } from 'src/app/plan/plan.model';
 import { Address } from 'src/app/address/models/address.model';
 import { Mailbox } from 'src/app/address/models/mailbox.model';
-import { SubscriptionQuery } from '../store/subscription.query';
-import * as SubscriptionActions from '../store/subscription.action';
+import { SubscriptionQuery } from '../../store/subscription.query';
+import * as SubscriptionActions from '../../store/subscription.action';
 
 @Component({
   selector: 'app-new-subscription-checkout',

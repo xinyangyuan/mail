@@ -56,8 +56,8 @@ exports.getAddress = asyncHandler(async (req, res, next) => {
 */
 
 exports.getAddressBySenderId = asyncHandler(async (req, res, next) => {
-  // se der only can access his address
-  if (req.userData.userId !== req.params.receiverId && req.userData.role === 'SENDER') {
+  // sender only can access his address
+  if (req.userData.userId !== req.params.senderId && req.userData.role === 'SENDER') {
     console.log(`Error: ${req.userData.userId} tries to access other sender adddress info`.red);
     return next(new ErrorResponse(`No address is found`, 400));
   }
@@ -111,10 +111,8 @@ exports.getAddressByReceiverId = asyncHandler(async (req, res, next) => {
 
 exports.getAddressReceivers = asyncHandler(async (req, res, next) => {
   // sender only can access his address
-  if (req.userData.userId !== req.params.receiverId && req.userData.role === 'SENDER') {
-    console.log(`Error: ${req.userData.userId} tries to access other sender adddress info`.red);
-    return next(new ErrorResponse(`Unknow address id: ${req.params.id}`, 400));
-  }
+  const userId = req.userData.userId;
+  const userRole = req.userData.role;
 
   // projection
   const optionsPop = { path: 'receivers.receiverId', select: ' name ' };
@@ -122,6 +120,7 @@ exports.getAddressReceivers = asyncHandler(async (req, res, next) => {
   // $1: get address
   const address = await Address.findById(req.params.id)
     .select('+senderId +receivers')
+    .byUser(userId, userRole)
     .populate(optionsPop)
     .lean()
     .exec();

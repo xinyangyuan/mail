@@ -21,6 +21,12 @@ $ npm run start:client
 $ npm run start:server
 ```
 
+#### Stripe webhook events
+
+```bash
+$ stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
 ### Docker-compose [development]
 
 ```bash

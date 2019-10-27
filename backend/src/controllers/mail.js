@@ -215,13 +215,14 @@ exports.getEnvelop = async (req, res) => {
     req.on('close', () => stream.end()); // ensure cancelled request also closes stream
 
     // response header
-    const ext = Key.split('.').slice(-1)[0];
+    const ext = key.split('.').slice(-1)[0];
     res.setHeader('Content-Type', 'image/' + ext);
 
     // stream response
     stream.pipe(res);
-  } catch {
+  } catch (error) {
     if (stream) stream.end();
+    next(error);
   }
 };
 
@@ -266,8 +267,9 @@ exports.getContentPDF = async (req, res) => {
 
     // stream response
     stream.pipe(res);
-  } catch {
+  } catch (error) {
     if (stream) stream.end();
+    next(error);
   }
 };
 

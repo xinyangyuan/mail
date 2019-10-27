@@ -171,11 +171,11 @@ export class MailState {
 
     // return new state
     ctx.patchState({
-      mailList: result.mailList,
-      imageTaskPool: result.mailList
+      mailList: result.mails,
+      imageTaskPool: result.mails
         .map(mail => mail._id)
         .filter(mailId => !Object.keys(state.imageURLs).includes(mailId)),
-      mailCount: result.mailCount,
+      mailCount: result.count,
       isLoading: false,
       urlData: action.payload
     });
@@ -414,8 +414,8 @@ export class MailState {
         tap(result => {
           // return new state
           ctx.patchState({
-            mailList: [...state.mailList, ...result.mailList],
-            imageTaskPool: result.mailList
+            mailList: [...state.mailList, ...result.mails],
+            imageTaskPool: result.mails
               .map(mail => mail._id)
               .filter(mailId => !Object.keys(state.imageURLs).includes(mailId))
           });
@@ -905,10 +905,10 @@ export class MailState {
 
       // return new state
       ctx.patchState({
-        mailList: [...mailList, ...result.mailList],
-        mailCount: result.mailCount,
+        mailList: [...mailList, ...result.mails],
+        mailCount: result.count,
         imageTaskPool: [
-          ...result.mailList
+          ...result.mails
             .map(mail => mail._id)
             .filter(mailId => !Object.keys(state.imageURLs).includes(mailId)),
           ...state.imageTaskPool

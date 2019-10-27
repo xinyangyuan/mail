@@ -17,15 +17,15 @@ export class PaymentService {
   stripe: stripe.Stripe;
   private stripeKey: string;
   private paymentDialogRef: MatDialogRef<PaymentModalComponent>;
-  private BACKEND_URL = environment.apiURL + '/stripe-pk';
+  private BACKEND_URL = environment.apiURL + '/stripe/pk';
 
   // Constructor:
   constructor(private store: Store, private dialog: MatDialog, private http: HttpClient) {
     this.http
-      .get<{ pk: string }>(this.BACKEND_URL)
+      .get<{ data: { pk: string } }>(this.BACKEND_URL)
       .toPromise()
       .then(response => {
-        this.stripeKey = response.pk; // get stripeKey from backend
+        this.stripeKey = response.data.pk; // get stripeKey from backend
         this.stripe = Stripe(this.stripeKey);
       });
   }
