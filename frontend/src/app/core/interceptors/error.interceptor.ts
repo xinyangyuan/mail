@@ -6,36 +6,39 @@ import { MatSnackBar } from '@angular/material';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  // Construtor
+  // Construtor:
   constructor(private snackBar: MatSnackBar) {}
 
+  // Method: intercept http call
   intercept(request: HttpRequest<any>, next: HttpHandler) {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        // Console log error
-        // console.log(error);
-
-        // // Display error
-        // // alert(error.error.message);
-
+        // Show error snackbar
         if (
           error.error.message !== 'Please verify your email address!' &&
           !(error.error instanceof Blob)
         ) {
-          this.snackBar.open(
-            error.error.message ? error.error.message : 'Lost Connection 🚧',
-            'CLOSE',
-            {
-              verticalPosition: 'bottom',
-              horizontalPosition: 'left',
-              panelClass: ['warning-snackbar']
-            }
-          );
+          this.showSnackBar(error.error.message);
         }
 
         // Return error to service subscriber
         return throwError(error);
       })
     );
+  }
+
+  // Method: display snackbar
+  private showSnackBar(message: string) {
+    // set default message if none provided
+    if (!message) {
+      message = 'Service Temporarily Unavailable 🚧';
+    }
+
+    // open snack bar
+    this.snackBar.open(message, 'CLOSE', {
+      verticalPosition: 'bottom',
+      horizontalPosition: 'left',
+      panelClass: ['warning-snackbar']
+    });
   }
 }

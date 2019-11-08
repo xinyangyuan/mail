@@ -1,5 +1,6 @@
 const express = require('express');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
@@ -35,15 +36,59 @@ db.connect();
 */
 
 app.use(helmet({ hsts: false }));
+// const mongoSanitize = require('express-mongo-sanitize');
+// app.use(mongoSanitize());
 
 /*
-  Dev logger
+ Cors settings
 */
 
-process.env.NODE_ENV === 'development' && app.use(morgan('dev'));
+app.use((req, res, next) => {
+  const origins =
+    process.env.NODE_ENV === 'development'
+      ? ['http://localhost:4200']
+      : ['https://shockmail.today', 'https://www.shockmail.today'];
+
+  const origin = origins.includes(req.headers.origin) ? req.headers.origin : origins[0];
+
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, PUT, OPTIONS');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).send();
+  } else {
+    next();
+  }
+});
 
 /*
-  parse data stream to data object
+   Logger
+*/
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev')); // precise
+} else {
+  app.use(morgan('common')); // standard apache log
+}
+
+/*
+  Rate limit
+*/
+
+app.use(
+  rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 mins
+    max: 200 // 200 requests
+  })
+);
+
+/*
+  Parse data stream to data object
 */
 
 app.use(cookieParser()); // cookie
@@ -58,21 +103,6 @@ app.use(
     }
   })
 );
-
-/*
- cors settings
-*/
-
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  );
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, PUT, OPTIONS');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  next();
-});
 
 /*
  stripe endpoints

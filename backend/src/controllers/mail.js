@@ -215,8 +215,8 @@ exports.getEnvelop = async (req, res) => {
     req.on('close', () => stream.end()); // ensure cancelled request also closes stream
 
     // response header
-    const ext = key.split('.').slice(-1)[0];
-    res.setHeader('Content-Type', 'image/' + ext);
+    // const ext = key.split('.').slice(-1)[0];
+    // res.setHeader('Content-Type', 'image/' + ext);
 
     // stream response
     stream.pipe(res);
@@ -262,8 +262,8 @@ exports.getContentPDF = async (req, res) => {
     req.on('close', () => stream.end()); // ensure cancelled request also closes stream
 
     // response header
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'inline; filename="' + 'Mail Content' + '"');
+    // res.setHeader('Content-Type', 'application/pdf');
+    // res.setHeader('Content-Disposition', 'inline; filename="' + 'Mail Content' + '"');
 
     // stream response
     stream.pipe(res);
