@@ -47,7 +47,7 @@ app.use((req, res, next) => {
   const origins =
     process.env.NODE_ENV === 'development'
       ? ['http://localhost:4200']
-      : ['https://shockmail.today', 'https://www.shockmail.today'];
+      : ['http://localhost:4200', 'https://shockmail.today', 'https://www.shockmail.today'];
 
   const origin = origins.includes(req.headers.origin) ? req.headers.origin : origins[0];
 

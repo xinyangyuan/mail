@@ -9,9 +9,9 @@ RUN apk --no-cache add --virtual native-deps \
 # Container working directory
 WORKDIR /usr/app
 
-# Install dependencies
+# Install dependencies (exclude dev dependencies)
 COPY package*.json ./
-RUN npm install 
+RUN npm install --production
 
 # Copy directory
 COPY . .

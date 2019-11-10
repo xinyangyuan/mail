@@ -1,7 +1,11 @@
-process.env.NODE_ENV || require('dotenv').config();
 const http = require('http');
 const debug = require('debug')('mail-api');
 const app = require('./app'); // express app
+
+// Load environment variables from .env file in development mode
+if (process.env.NODE_ENV === 'development') {
+  require('dotenv').config();
+}
 
 // Normalize a port into a number, string, or false.
 const normalizePort = val => {
