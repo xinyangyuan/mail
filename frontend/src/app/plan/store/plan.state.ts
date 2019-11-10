@@ -5,6 +5,7 @@ import * as PlanActions from './plan.action';
 
 const plans: Plan[] = [
   {
+    id: '1',
     ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
     name: 'Simple',
     price: 999,
@@ -12,11 +13,51 @@ const plans: Plan[] = [
     scanCredit: 10,
     type: 'monthly'
   },
-  { ids: ['2'], name: 'Pro', price: 1999, mailCredit: -1, scanCredit: 30, type: 'monthly' },
-  { ids: ['3'], name: 'Master', price: 2999, mailCredit: -1, scanCredit: 100, type: 'monthly' },
-  { ids: ['4'], name: 'Simple', price: 9999, mailCredit: 20, scanCredit: 10, type: 'annual' },
-  { ids: ['5'], name: 'Pro', price: 19999, mailCredit: -1, scanCredit: 30, type: 'annual' },
-  { ids: ['6'], name: 'Master', price: 29999, mailCredit: -1, scanCredit: 100, type: 'annual' }
+  {
+    id: '2',
+    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
+    name: 'Pro',
+    price: 1999,
+    mailCredit: -1,
+    scanCredit: 30,
+    type: 'monthly'
+  },
+  {
+    id: '3',
+    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
+    name: 'Master',
+    price: 2999,
+    mailCredit: -1,
+    scanCredit: 100,
+    type: 'monthly'
+  },
+  {
+    id: '4',
+    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
+    name: 'Simple',
+    price: 9999,
+    mailCredit: 20,
+    scanCredit: 10,
+    type: 'annual'
+  },
+  {
+    id: '5',
+    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
+    name: 'Pro',
+    price: 19999,
+    mailCredit: -1,
+    scanCredit: 30,
+    type: 'annual'
+  },
+  {
+    id: '6',
+    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
+    name: 'Master',
+    price: 29999,
+    mailCredit: -1,
+    scanCredit: 100,
+    type: 'annual'
+  }
 ];
 
 /*
@@ -86,7 +127,7 @@ export class PlanState {
     return createSelector(
       [PlanState],
       (state: PlanStateModel) => {
-        return state.selectedPlan ? state.selectedPlan.ids[0] === plan.ids[0] : false;
+        return state.selectedPlan ? state.selectedPlan.id === plan.id : false;
       }
     );
   }
