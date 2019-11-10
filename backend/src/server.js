@@ -1,5 +1,5 @@
-const http = require('http');
 const debug = require('debug')('mail-api');
+const http = require('http');
 const app = require('./app'); // express app
 
 // Normalize a port into a number, string, or false.
