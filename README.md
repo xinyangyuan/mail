@@ -2,7 +2,7 @@
 
 [![Actions Status](https://github.com/xinyangyuan/mail/workflows/Build%20and%20Deploy/badge.svg)](https://github.com/xinyangyuan/mail/actions)
 [![Shockmail Website](https://img.shields.io/website?down_color=lightgrey&down_message=offline&label=Shockmail%20Website&up_color=17d151&up_message=online&url=http%3A%2F%2Fshockmail.today)](http://www.shockmail.today)
-[![Shockmail Demo App](https://img.shields.io/website?down_color=lightgrey&down_message=offline&label=Shockmail%20Demo%20App&up_color=17d151&up_message=online&url=http%3A%2F%2Fmail-env.9kc4f5k7dp.ap-northeast-1.elasticbeanstalk.com%2Fsignin)](http://www.shockmail.today)
+[![Shockmail Demo App](https://img.shields.io/website?down_color=lightgrey&down_message=offline&label=Shockmail%20Demo%20App&up_color=17d151&up_message=online&url=http%3A%2F%2Fmail-env.9kc4f5k7dp.ap-northeast-1.elasticbeanstalk.com%2Fsignin)](http://mail-env.9kc4f5k7dp.ap-northeast-1.elasticbeanstalk.com)
 
 This project is build with node-js, express, and mongdb (backend), and angular framework (frontend).
 

@@ -1,4 +1,3 @@
-process.env.NODE_ENV || require('dotenv').config(); // load environmental variable from .env if no NODE_ENV specified
 const http = require('http');
 const debug = require('debug')('mail-api');
 const app = require('./app'); // express app
