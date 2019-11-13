@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 // Must be 256 bits (32 characters)
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
-const IV_LENGTH = 16; // For AES, this is always 16
+const IV_LENGTH = 16; // For AES, this is always 16? inialization vector
 
 /*
   Function: encrpt text TODO: update to async code
