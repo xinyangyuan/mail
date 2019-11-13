@@ -1,19 +1,24 @@
-version: '3'
+version: "3"
 services:
+  # Nginx
   nginx:
     image: xinyangyuan/mail-nginx
     restart: always
     build:
       context: ./nginx
     ports:
-      - '80:80'
+      - "80:80"
+  # Frontend
   frontend:
     image: xinyangyuan/mail-frontend
     restart: always
     build:
       context: ./frontend
+  # Backend
   backend:
     image: xinyangyuan/mail-backend
     restart: always
     build:
       context: ./backend
+    env_file:
+      - ./backend/.prod.env

@@ -8,9 +8,11 @@ const Invoice = require('../models/invoice');
 */
 
 exports.createMailUsageRecord = (mail, subscription) => {
+  // anchorDay, periodStartDate
+  const { periodStartDate, anchorDay } = subscription.toObject();
+
   // current billing period
-  const now = new Date();
-  const [year, month, day] = [now.getFullYear(), now.getMonth(), subscription.anchorDay];
+  const [year, month, day] = [periodStartDate.getFullYear(), periodStartDate.getMonth(), anchorDay];
   const startDate = new Date(year, month, day);
   const endDate = new Date(year, month + 1, day);
 
@@ -43,9 +45,11 @@ exports.createMailUsageRecord = (mail, subscription) => {
 */
 
 exports.createScanUsageRecord = (mail, subscription) => {
+  // anchorDay, periodStartDate
+  const { periodStartDate, anchorDay } = subscription.toObject();
+
   // current billing period
-  const now = new Date();
-  const [year, month, day] = [now.getFullYear(), now.getMonth(), subscription.anchorDay];
+  const [year, month, day] = [periodStartDate.getFullYear(), periodStartDate.getMonth(), anchorDay];
   const startDate = new Date(year, month, day);
   const endDate = new Date(year, month + 1, day);
 
@@ -86,9 +90,6 @@ exports.getStripeUpcomingInvoices = async stripeSubscriptionIds => {
   // return
   return await Promise.all(promises);
 };
-
-//sub_G4DTx6QNY3KccL
-// sub_G4DMyJx6k7jean
 
 /*
   Service: check mail service overage : Promise<boolean>

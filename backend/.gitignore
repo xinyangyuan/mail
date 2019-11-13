@@ -18,8 +18,8 @@ yarn-error.log
 testem.log
 /typings
 
-# db seeder
-/seeder
+# db seeder data
+seeder/data/*
 
 # env variables
 *.env
