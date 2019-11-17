@@ -17,20 +17,20 @@ Visit internal testing demo app: <a href="http://mail-env.9kc4f5k7dp.ap-northeas
 
 ### Development
 
-#### - Start client app and server api
+#### - start client app and server api
 
 ```bash
 $ npm run start:client # port 4200
 $ npm run start:server # port 3000
 ```
 
-#### - Stripe webhook events
+#### - stripe webhook events
 
 ```bash
 $ stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
-#### - Serve via docker
+#### - serve via docker
 
 ```bash
 $ docker-compose up --build
@@ -38,13 +38,13 @@ $ docker-compose up --build
 
 ### Production
 
-#### - Build production images
+#### - build production images
 
 ```bash
 $ docker-compose -f docker-compose.prod.yml build
 ```
 
-#### - Serve docker production container network
+#### - serve docker production container network
 
 ```bash
 $ docker-compose -f docker-compose.prod.yml up --build # port 80

@@ -1,17 +1,23 @@
 <!-- Mail List Page -->
-<div fxLayout="row" fxLayout.lt-md="column" fxLayoutWrap calss="mail-list-page">
+<div
+  fxLayout="row"
+  fxLayout.lt-md="column"
+  fxLayoutAlign="space-around stretch"
+  style="height: 100%;"
+>
   <!--Side Navigation -->
   <div
     fxFlex="none"
     fxLayout="column"
     fxLayoutAlign="start center"
-    [ngStyle.gt-md]="{ 'padding-left': '2rem' }"
+    [ngStyle.gt-sm]="{ 'padding-left': '2rem' }"
   >
     <!-- top padding [for desktop screen] -->
     <div fxHide.lt-md style="height: 3rem;"></div>
 
     <!-- navigation menu -->
     <app-mail-navigation *ngIf="!(isSelectMode$ | async)"></app-mail-navigation>
+
     <!-- action menu -->
     <app-mail-group-action *ngIf="isSelectMode$ | async"></app-mail-group-action>
 
@@ -20,12 +26,9 @@
   </div>
 
   <!-- Mail List  -->
-  <div
-    fxFlex
-    fxLayout="column"
-    [ngStyle.gt-md]="{ height: 'calc(100vh - 70px)' }"
-    [ngStyle.lt-md]="{ height: 'calc(100vh - 140px)' }"
-  >
-    <app-mail-list style="overflow: auto;"></app-mail-list>
+  <div fxFlex style="overflow: auto;">
+    <app-mail-list></app-mail-list>
   </div>
 </div>
+
+<!-- https://github.com/angular/flex-layout/wiki/Responsive-API -->

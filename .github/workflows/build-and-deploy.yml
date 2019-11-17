@@ -67,7 +67,7 @@ jobs:
 
       - name: Deploy to EB (Develop Branch)
         if: github.ref == 'refs/heads/develop'
-        run: ~/.local/bin/eb deploy Mail-env-develop -l $GITHUB_SHA
+        run: ~/.local/bin/eb deploy Mail-env -l $GITHUB_SHA
 
       - name: Deploy to EB (Master on Release)
         if: github.event_name == 'release'

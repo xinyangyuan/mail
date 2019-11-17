@@ -1,6 +1,6 @@
-# Mail
+# Mail Frontend
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.2.1.
+This frontend service of mail application was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.2.1.
 
 ## Development server
 

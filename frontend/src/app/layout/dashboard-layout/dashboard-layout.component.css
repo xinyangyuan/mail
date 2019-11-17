@@ -1,9 +1,10 @@
 .dashboard {
   height: 100%;
-  /* background-color: rgb(226, 232, 239); */
   background-color: #e3f2fd;
+  /* background-color: rgb(226, 232, 239); */
 }
 
 .dashboard-layout-main {
+  height: 100%;
   overflow: hidden;
 }

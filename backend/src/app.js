@@ -80,12 +80,13 @@ if (process.env.NODE_ENV === 'development') {
   Rate limit
 */
 
-app.use(
-  rateLimit({
-    windowMs: 10 * 60 * 1000, // 10 mins
-    max: 200 // 200 requests
-  })
-);
+process.env.NODE_ENV !== 'development' &&
+  app.use(
+    rateLimit({
+      windowMs: 10 * 60 * 1000, // 10 mins
+      max: 200 // 200 requests
+    })
+  );
 
 /*
   Parse data stream to data object
@@ -128,9 +129,38 @@ app.use('/api/subscriptions', subscriptionRoutes);
 */
 
 /*
- error handler
+  unknow endpoint
+*/
+
+app.all('*', (req, res) => {
+  res.status(404).json({ ok: false, message: `Not Found` });
+});
+
+/*
+  error handler
 */
 
 app.use(errorHandler);
 
 module.exports = app;
+
+// process.on('uncaughtException', err => {
+//   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+//   console.log(err.name, err.message);
+//   process.exit(1);
+// });
+
+// process.on('unhandledRejection', err => {
+//   console.log('UNHANDLED REJECTION! 💥 Shutting down...');
+//   console.log(err.name, err.message);
+//   server.close(() => {
+//     process.exit(1);
+//   });
+// });
+
+// process.on('SIGTERM', () => {
+//   console.log('👋 SIGTERM RECEIVED. Shutting down gracefully');
+//   server.close(() => {
+//     console.log('💥 Process terminated!');
+//   });
+// });
