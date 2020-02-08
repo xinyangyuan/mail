@@ -22,7 +22,7 @@ export class PaymentRequestComponent implements AfterViewInit {
   >;
 
   // Stripe card elemnet:
-  @ViewChild('cardElement', { static: false }) cardElement;
+  @ViewChild('cardElement') cardElement;
   card: stripe.elements.Element;
   cardErrors: string;
 

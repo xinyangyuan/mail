@@ -17,7 +17,7 @@ export class NewSubscriptionSelectAddressComponent implements OnInit {
   address: Address;
   mailbox: string;
   formStatus: string;
-  @ViewChild('addressForm', { static: false }) addressForm;
+  @ViewChild('addressForm') addressForm;
   @Select(SubscriptionQuery.selectedMailbox) selectedMailbox$: Observable<{
     address: Address;
     mailboxNo: number;
