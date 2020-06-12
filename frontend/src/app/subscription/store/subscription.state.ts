@@ -1,9 +1,10 @@
-import { State, Action, StateContext } from '@ngxs/store';
+import { Injectable } from "@angular/core";
+import { State, Action, StateContext } from "@ngxs/store";
 
-import { Subscription } from '../models/subscription.model';
-import * as SubscriptionActions from './subscription.action';
-import { SubscriptionService } from '../subscription.service';
-import { PaymentService } from 'src/app/payment/payment.service';
+import { Subscription } from "../models/subscription.model";
+import * as SubscriptionActions from "./subscription.action";
+import { SubscriptionService } from "../subscription.service";
+import { PaymentService } from "src/app/payment/payment.service";
 
 /*
    Plan State
@@ -18,14 +19,15 @@ export interface SubscriptionStateModel {
 */
 
 const initialState: SubscriptionStateModel = {
-  subscription: null
+  subscription: null,
 };
 
 /*
    Action Map:
 */
 
-@State<SubscriptionStateModel>({ name: 'subscription', defaults: initialState })
+@State<SubscriptionStateModel>({ name: "subscription", defaults: initialState })
+@Injectable()
 export class SubscriptionState {
   // Constructor:
   constructor(
@@ -44,7 +46,9 @@ export class SubscriptionState {
   ) {
     // rest api call
     const { source, plan, mailbox } = action.payload;
-    const { paymentIntent } = await this.subscriptionService
+    const {
+      paymentIntent,
+    } = await this.subscriptionService
       ._createSubscription(plan, source, mailbox)
       .toPromise();
 

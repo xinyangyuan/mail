@@ -1,63 +1,70 @@
-import { State, Selector, createSelector, StateContext, Action } from '@ngxs/store';
+import {
+  State,
+  Selector,
+  createSelector,
+  StateContext,
+  Action,
+} from "@ngxs/store";
+import { Injectable } from "@angular/core";
 
-import { Plan } from '../plan.model';
-import * as PlanActions from './plan.action';
+import { Plan } from "../plan.model";
+import * as PlanActions from "./plan.action";
 
 const plans: Plan[] = [
   {
-    id: '1',
-    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
-    name: 'Simple',
+    id: "1",
+    ids: ["5d6cf1887c2713b78d602980", "5d6cf1b67c2713b78d602982"],
+    name: "Simple",
     price: 999,
     mailCredit: 20,
     scanCredit: 10,
-    type: 'monthly'
+    type: "monthly",
   },
   {
-    id: '2',
-    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
-    name: 'Pro',
+    id: "2",
+    ids: ["5d6cf1887c2713b78d602980", "5d6cf1b67c2713b78d602982"],
+    name: "Pro",
     price: 1999,
     mailCredit: -1,
     scanCredit: 30,
-    type: 'monthly'
+    type: "monthly",
   },
   {
-    id: '3',
-    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
-    name: 'Master',
+    id: "3",
+    ids: ["5d6cf1887c2713b78d602980", "5d6cf1b67c2713b78d602982"],
+    name: "Master",
     price: 2999,
     mailCredit: -1,
     scanCredit: 100,
-    type: 'monthly'
+    type: "monthly",
   },
   {
-    id: '4',
-    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
-    name: 'Simple',
+    id: "4",
+    ids: ["5d6cf1887c2713b78d602980", "5d6cf1b67c2713b78d602982"],
+    name: "Simple",
     price: 9999,
     mailCredit: 20,
     scanCredit: 10,
-    type: 'annual'
+    type: "annual",
   },
   {
-    id: '5',
-    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
-    name: 'Pro',
+    id: "5",
+    ids: ["5d6cf1887c2713b78d602980", "5d6cf1b67c2713b78d602982"],
+    name: "Pro",
     price: 19999,
     mailCredit: -1,
     scanCredit: 30,
-    type: 'annual'
+    type: "annual",
   },
   {
-    id: '6',
-    ids: ['5d6cf1887c2713b78d602980', '5d6cf1b67c2713b78d602982'],
-    name: 'Master',
+    id: "6",
+    ids: ["5d6cf1887c2713b78d602980", "5d6cf1b67c2713b78d602982"],
+    name: "Master",
     price: 29999,
     mailCredit: -1,
     scanCredit: 100,
-    type: 'annual'
-  }
+    type: "annual",
+  },
 ];
 
 /*
@@ -77,14 +84,15 @@ export interface PlanStateModel {
 const initialState: PlanStateModel = {
   plan: null,
   plans: [],
-  selectedPlan: null
+  selectedPlan: null,
 };
 
 /*
    Action Map:
 */
 
-@State<PlanStateModel>({ name: 'plan', defaults: initialState })
+@State<PlanStateModel>({ name: "plan", defaults: initialState })
+@Injectable()
 export class PlanState {
   // Constructor
   constructor() {}
@@ -99,17 +107,14 @@ export class PlanState {
   }
 
   // Selector dynamic
-  static plansOf(type?: 'monthly' | 'annual') {
-    return createSelector(
-      [PlanState],
-      (state: PlanStateModel) => {
-        if (['monthly', 'annual'].includes(type)) {
-          return state.plans.filter(plan => plan.type === type);
-        } else {
-          return state.plans;
-        }
+  static plansOf(type?: "monthly" | "annual") {
+    return createSelector([PlanState], (state: PlanStateModel) => {
+      if (["monthly", "annual"].includes(type)) {
+        return state.plans.filter((plan) => plan.type === type);
+      } else {
+        return state.plans;
       }
-    );
+    });
   }
 
   @Selector()
@@ -124,12 +129,9 @@ export class PlanState {
 
   // Selector dynamic
   static isSelected(plan: Plan) {
-    return createSelector(
-      [PlanState],
-      (state: PlanStateModel) => {
-        return state.selectedPlan ? state.selectedPlan.id === plan.id : false;
-      }
-    );
+    return createSelector([PlanState], (state: PlanStateModel) => {
+      return state.selectedPlan ? state.selectedPlan.id === plan.id : false;
+    });
   }
 
   /*
@@ -147,7 +149,10 @@ export class PlanState {
   */
 
   @Action(PlanActions.SelectPlan)
-  selectMail(ctx: StateContext<PlanStateModel>, action: PlanActions.SelectPlan) {
+  selectMail(
+    ctx: StateContext<PlanStateModel>,
+    action: PlanActions.SelectPlan
+  ) {
     // return new state
     ctx.patchState({ selectedPlan: action.payload });
   }

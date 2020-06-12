@@ -1,19 +1,19 @@
-const mongoose = require('mongoose');
-const asyncHandler = require('../utils/async-handler');
+const mongoose = require("mongoose");
+const asyncHandler = require("../utils/async-handler");
 
-const ErrorResponse = require('../utils/error-response');
-const Mail = require('../models/mail');
+const ErrorResponse = require("../utils/error-response");
+const Mail = require("../models/mail");
 
-const generateFilename = require('../utils/generate-filename');
-const crypto = require('../utils/encrypt');
+const generateFilename = require("../utils/generate-filename");
+const crypto = require("../utils/encrypt");
 
-const s3Service = require('../services/s3');
-const mailService = require('../services/mail');
-const emailService = require('../services/email');
-const userService = require('../services/user');
-const addressService = require('../services/address');
-const subscriptionService = require('../services/subscription');
-const invoiceService = require('../services/invoice');
+const s3Service = require("../services/s3");
+const mailService = require("../services/mail");
+const emailService = require("../services/email");
+const userService = require("../services/user");
+const addressService = require("../services/address");
+const subscriptionService = require("../services/subscription");
+const invoiceService = require("../services/invoice");
 
 /* 
   @desc     Get mails - associated with the sign-in account
@@ -28,7 +28,7 @@ exports.getMails = asyncHandler(async (req, res, next) => {
 
   // filter, projection, sort, skip, limit
   const { filter, sort, skip, limit } = req.queryData;
-  if (userRole !== 'ADMIN') {
+  if (userRole !== "ADMIN") {
     delete filter.senderId;
     delete filter.receiverId;
   }
@@ -65,10 +65,8 @@ exports.getMail = asyncHandler(async (req, res, next) => {
   const filter = { _id: req.params.id };
 
   // $1: mail
-  const mail = await Mail.findOne(filter)
-    .byUser(userId, userRole)
-    .lean();
-  if (!mail) return next(new ErrorResponse('Cannot find the mail', 400));
+  const mail = await Mail.findOne(filter).byUser(userId, userRole).lean();
+  if (!mail) return next(new ErrorResponse("Cannot find the mail", 400));
 
   // success response
   res.status(200).json({ ok: true, data: { mail } });
@@ -91,16 +89,21 @@ exports.updateMails = asyncHandler(async (req, res, next) => {
   const update = mailService.generateMailUpdate(req.body);
 
   // validation
-  if (!filter._id) return next(new ErrorResponse('Invalid request', 400));
+  if (!filter._id) return next(new ErrorResponse("Invalid request", 400));
 
   // $1: update mails
-  result = await Mail.updateMany(filter, update, options).byUser(userId, userRole);
+  result = await Mail.updateMany(filter, update, options).byUser(
+    userId,
+    userRole
+  );
   if (!result || result.n === 0) {
-    next(new ErrorResponse('No mail is updated', 400));
+    next(new ErrorResponse("No mail is updated", 400));
   }
 
   // success response
-  res.status(200).json({ ok: true, result: { n: result.n, nModified: result.nModified } });
+  res
+    .status(200)
+    .json({ ok: true, result: { n: result.n, nModified: result.nModified } });
 });
 
 /* 
@@ -120,13 +123,18 @@ exports.updateMail = asyncHandler(async (req, res, next) => {
   const update = mailService.generateMailUpdate(req.body);
 
   // $1: update mail
-  const result = await Mail.updateOne(filter, update, options).byUser(userId, userRole);
+  const result = await Mail.updateOne(filter, update, options).byUser(
+    userId,
+    userRole
+  );
   if (!result || result.n === 0) {
-    return next(new ErrorResponse('No mail is updated', 400));
+    return next(new ErrorResponse("No mail is updated", 400));
   }
 
   // success response
-  res.status(200).json({ ok: true, result: { n: result.n, nModified: result.nModified } });
+  res
+    .status(200)
+    .json({ ok: true, result: { n: result.n, nModified: result.nModified } });
 });
 
 /* 
@@ -144,16 +152,21 @@ exports.deleteMails = asyncHandler(async (req, res, next) => {
   const { _id: filter } = req.queryData.filter;
 
   // validation
-  if (!filter._id) return next(new ErrorResponse('Invalid request', 400));
+  if (!filter._id) return next(new ErrorResponse("Invalid request", 400));
 
   // $1: delete mails
   const result = await Mail.deleteMany(filter).byUser(userId, userRole);
   if (!result || result.deletedCount === 0) {
-    return next(new ErrorResponse('No mail is deleted', 400));
+    return next(new ErrorResponse("No mail is deleted", 400));
   }
 
   // success response
-  res.status(200).json({ ok: true, result: { n: result.n, deletedCount: result.deletedCount } });
+  res
+    .status(200)
+    .json({
+      ok: true,
+      result: { n: result.n, deletedCount: result.deletedCount },
+    });
 });
 
 /* 
@@ -177,7 +190,12 @@ exports.deleteMail = asyncHandler(async (req, res, next) => {
   }
 
   // success response
-  res.status(200).json({ ok: true, result: { n: result.n, deletedCount: result.deletedCount } });
+  res
+    .status(200)
+    .json({
+      ok: true,
+      result: { n: result.n, deletedCount: result.deletedCount },
+    });
 });
 
 /* 
@@ -197,12 +215,12 @@ exports.getEnvelop = async (req, res) => {
 
     // $1: find mail
     const mail = await Mail.findOne(filter)
-      .select('+envelopKey')
+      .select("+envelopKey")
       .byUser(userId, userRole);
     if (!mail) {
-      return next(new ErrorResponse('Mail not found', 404));
+      return next(new ErrorResponse("Mail not found", 404));
     } else if (!mail.envelopKey) {
-      return next(new ErrorResponse('Mail envelop not found', 404));
+      return next(new ErrorResponse("Mail envelop not found", 404));
     }
 
     // s3 file read stream
@@ -211,8 +229,8 @@ exports.getEnvelop = async (req, res) => {
     var stream = s3Service.s3.getObject(params).createReadStream();
 
     // event listeners
-    stream.on('error', () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
-    req.on('close', () => stream.end()); // ensure cancelled request also closes stream
+    stream.on("error", () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
+    req.on("close", () => stream.end()); // ensure cancelled request also closes stream
 
     // response header
     // const ext = key.split('.').slice(-1)[0];
@@ -232,7 +250,7 @@ exports.getEnvelop = async (req, res) => {
   @access   Private
 */
 
-exports.getContentPDF = async (req, res) => {
+exports.getContentPDF = async (req, res, next) => {
   try {
     // query by user status
     const userId = req.userData.userId;
@@ -240,16 +258,16 @@ exports.getContentPDF = async (req, res) => {
 
     // filter, update
     const filter = { _id: req.params.id };
-    const update = { $set: { 'flags.read': true } };
+    const update = { $set: { "flags.read": true } };
 
     // $1: find mail
     const mail = await Mail.findOneAndUpdate(filter, update)
-      .select('+contentPDFKey')
+      .select("+contentPDFKey")
       .byUser(userId, userRole);
     if (!mail) {
-      return next(new ErrorResponse('Mail not found', 404));
+      return next(new ErrorResponse("Mail not found", 404));
     } else if (!mail.contentPDFKey) {
-      return next(new ErrorResponse('Mail content pdf not found', 404));
+      return next(new ErrorResponse("Mail content pdf not found", 404));
     }
 
     // s3 file read stream
@@ -258,8 +276,8 @@ exports.getContentPDF = async (req, res) => {
     var stream = s3Service.s3.getObject(params).createReadStream();
 
     // event listeners
-    stream.on('error', () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
-    req.on('close', () => stream.end()); // ensure cancelled request also closes stream
+    stream.on("error", () => stream.end()); // mannually closes the stream TODO: stream.unpipe(res)
+    req.on("close", () => stream.end()); // ensure cancelled request also closes stream
 
     // response header
     // res.setHeader('Content-Type', 'application/pdf');
@@ -284,7 +302,10 @@ exports.createMail = asyncHandler(async (req, res, next) => {
   // check uploaded envelop
   if (req.fileTypeError) {
     return next(
-      new ErrorResponse('Invalid envelop image filetype (allowed type: jpg, jpeg, png)', 400)
+      new ErrorResponse(
+        "Invalid envelop image filetype (allowed type: jpg, jpeg, png)",
+        400
+      )
     );
   }
 
@@ -294,8 +315,13 @@ exports.createMail = asyncHandler(async (req, res, next) => {
 
   // validation service calls
   const receiverPromise = userService.findUserById(receiverId);
-  const addressPromise = addressService.findAddressBySenderReceiverIds(senderId, receiverId);
-  const subscriptionsPromise = subscriptionService.findActiveSubscriptionsByUserId(receiverId);
+  const addressPromise = addressService.findAddressBySenderReceiverIds(
+    senderId,
+    receiverId
+  );
+  const subscriptionsPromise = subscriptionService.findActiveSubscriptionsByUserId(
+    receiverId
+  );
 
   // $1: resolve validation promises
   const promises = [receiverPromise, addressPromise, subscriptionsPromise];
@@ -303,15 +329,18 @@ exports.createMail = asyncHandler(async (req, res, next) => {
 
   // receiver-sender validation
   if (!address) {
-    return next(new ErrorResponse('Invalid request', 401));
+    return next(new ErrorResponse("Invalid request", 401));
   }
 
   // active subscription validation at the address
   const subscription = subscriptions.find(
-    subscription => subscription.addressId.toString() === address._id.toString()
+    (subscription) =>
+      subscription.addressId.toString() === address._id.toString()
   );
   if (!subscription) {
-    return next(new ErrorResponse('Receiver does not have active subscription', 400));
+    return next(
+      new ErrorResponse("Receiver does not have active subscription", 400)
+    );
   }
 
   // generate mail id
@@ -330,7 +359,7 @@ exports.createMail = asyncHandler(async (req, res, next) => {
     content: req.body.content,
     senderId,
     receiverId,
-    envelopKey: crypto.encrypt(filename)
+    envelopKey: crypto.encrypt(filename),
   }).save();
 
   // $4: create usage record
@@ -353,7 +382,9 @@ exports.createMail = asyncHandler(async (req, res, next) => {
 exports.modifyMail = asyncHandler(async (req, res, next) => {
   // check uploaded envelop
   if (req.fileTypeError)
-    return res.status(401).json('Invalid envelop image filetype (allowed type: jpg, jpeg, png)');
+    return res
+      .status(401)
+      .json("Invalid envelop image filetype (allowed type: jpg, jpeg, png)");
 
   // validation
   const [id, senderId] = [req.params.id, req.userData.userId];
@@ -361,28 +392,36 @@ exports.modifyMail = asyncHandler(async (req, res, next) => {
 
   // valid id
   if (!mail) {
-    return next(new ErrorResponse('Unknow resource', 404));
+    return next(new ErrorResponse("Unknow resource", 404));
   }
 
   // validate belongs to sender
   if (mail.senderId.toString() !== senderId) {
-    return next(new ErrorResponse('Invalid request', 400));
+    return next(new ErrorResponse("Invalid request", 400));
   }
 
   // validate status
   if (mail.flags.terminated) {
     return next(
-      new ErrorResponse(`Mail is already in ${mail.status}, and cannot be modified`, 400)
+      new ErrorResponse(
+        `Mail is already in ${mail.status}, and cannot be modified`,
+        400
+      )
     );
-  } else if (mail.status !== 'SCANNING' && req.files.contentPDF) {
+  } else if (mail.status !== "SCANNING" && req.files.contentPDF) {
     return next(
-      new ErrorResponse(`Mail is in ${mail.status} state, content pdf cannot be uploaded`, 400)
+      new ErrorResponse(
+        `Mail is in ${mail.status} state, content pdf cannot be uploaded`,
+        400
+      )
     );
   }
 
   // $1: upload files to s3
   const envelopFile = req.files.envelop ? req.files.envelop[0] : undefined;
-  const contentFile = req.files.contentPDF ? req.files.contentPDF[0] : undefined;
+  const contentFile = req.files.contentPDF
+    ? req.files.contentPDF[0]
+    : undefined;
 
   if (envelopFile) {
     const filename = generateFilename(envelopFile, mail);
@@ -415,7 +454,10 @@ exports.modifyMail = asyncHandler(async (req, res, next) => {
   if (contentFile) {
     // receiver and subscription
     const receiverPromise = userService.findUserById(mail.receiverId);
-    const addressPromise = addressService.findAddressBySenderReceiverIds(senderId, mail.receiverId);
+    const addressPromise = addressService.findAddressBySenderReceiverIds(
+      senderId,
+      mail.receiverId
+    );
     const subscriptionsPromise = subscriptionService.findActiveSubscriptionsByUserId(
       mail.receiverId
     );
@@ -424,7 +466,8 @@ exports.modifyMail = asyncHandler(async (req, res, next) => {
     // resolve all promises
     const [receiver, address, subscriptions] = await Promise.all(promises);
     const subscription = subscriptions.find(
-      subscription => subscription.addressId.toString() === address._id.toString()
+      (subscription) =>
+        subscription.addressId.toString() === address._id.toString()
     );
 
     // create scan usage record & email scanned notification
@@ -433,5 +476,7 @@ exports.modifyMail = asyncHandler(async (req, res, next) => {
   }
 
   // success response
-  res.status(200).json({ ok: true, result: { n: result.n, nModified: result.nModified } });
+  res
+    .status(200)
+    .json({ ok: true, result: { n: result.n, nModified: result.nModified } });
 });

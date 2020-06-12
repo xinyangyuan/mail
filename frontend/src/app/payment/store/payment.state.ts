@@ -1,7 +1,8 @@
-import { State, Selector, Action, StateContext } from '@ngxs/store';
+import { Injectable } from "@angular/core";
+import { State, Selector, Action, StateContext } from "@ngxs/store";
 
-import * as PaymentActions from './payment.action';
-import { PaymentService } from '../payment.service';
+import * as PaymentActions from "./payment.action";
+import { PaymentService } from "../payment.service";
 
 /*
    Payment State
@@ -9,7 +10,7 @@ import { PaymentService } from '../payment.service';
 
 export interface PaymentStateModel {
   source: stripe.Source;
-  paymentStatus: 'pending' | 'requires_action' | 'success' | 'error';
+  paymentStatus: "pending" | "requires_action" | "success" | "error";
   paymentIntentResponse: stripe.PaymentIntentResponse;
 }
 
@@ -20,14 +21,15 @@ export interface PaymentStateModel {
 const initialState: PaymentStateModel = {
   source: null,
   paymentStatus: null,
-  paymentIntentResponse: null
+  paymentIntentResponse: null,
 };
 
 /*
    Action Map:
 */
 
-@State<PaymentStateModel>({ name: 'payment', defaults: initialState })
+@State<PaymentStateModel>({ name: "payment", defaults: initialState })
+@Injectable()
 export class PaymentState {
   // Constructor:
   constructor(private paymentService: PaymentService) {}
@@ -56,9 +58,16 @@ export class PaymentState {
   */
 
   @Action(PaymentActions.OpenPayment)
-  async openPayment(ctx: StateContext<PaymentStateModel>, action: PaymentActions.OpenPayment) {
+  async openPayment(
+    ctx: StateContext<PaymentStateModel>,
+    action: PaymentActions.OpenPayment
+  ) {
     // return new state
-    ctx.setState({ source: null, paymentIntentResponse: null, paymentStatus: 'pending' });
+    ctx.setState({
+      source: null,
+      paymentIntentResponse: null,
+      paymentStatus: "pending",
+    });
     // side effect:
     if (action.showLoading) {
       this.paymentService.openDialog();
@@ -85,7 +94,7 @@ export class PaymentState {
   @Action(PaymentActions.PaymentRequiresAction)
   paymentRequiresAction(ctx: StateContext<PaymentStateModel>) {
     // return new state
-    ctx.patchState({ paymentStatus: 'requires_action' });
+    ctx.patchState({ paymentStatus: "requires_action" });
   }
 
   /*
@@ -93,11 +102,14 @@ export class PaymentState {
   */
 
   @Action(PaymentActions.PaymentSucceeded)
-  paymentSucceeded(ctx: StateContext<PaymentStateModel>, action: PaymentActions.PaymentSucceeded) {
+  paymentSucceeded(
+    ctx: StateContext<PaymentStateModel>,
+    action: PaymentActions.PaymentSucceeded
+  ) {
     // return new state
     ctx.patchState({
-      paymentStatus: 'success',
-      paymentIntentResponse: action.payload
+      paymentStatus: "success",
+      paymentIntentResponse: action.payload,
     });
   }
 
@@ -106,11 +118,14 @@ export class PaymentState {
   */
 
   @Action(PaymentActions.PaymentFailed)
-  paymentFailed(ctx: StateContext<PaymentStateModel>, action: PaymentActions.PaymentFailed) {
+  paymentFailed(
+    ctx: StateContext<PaymentStateModel>,
+    action: PaymentActions.PaymentFailed
+  ) {
     // return new state
     ctx.patchState({
-      paymentStatus: 'error',
-      paymentIntentResponse: action.payload
+      paymentStatus: "error",
+      paymentIntentResponse: action.payload,
     });
   }
 }

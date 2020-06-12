@@ -1,7 +1,8 @@
-import { State, Action, StateContext } from '@ngxs/store';
+import { Injectable } from "@angular/core";
+import { State, Action, StateContext } from "@ngxs/store";
 
-import * as PasswordlessActions from './passwordless.action';
-import { PasswordlessService } from '../passwordless.service';
+import * as PasswordlessActions from "./passwordless.action";
+import { PasswordlessService } from "../passwordless.service";
 
 export interface PasswordlessSateModel {
   isLoading: boolean;
@@ -12,9 +13,10 @@ export interface PasswordlessSateModel {
 */
 
 @State<PasswordlessSateModel>({
-  name: 'passwordless',
-  defaults: { isLoading: false }
+  name: "passwordless",
+  defaults: { isLoading: false },
 })
+@Injectable()
 export class PasswordlessSate {
   /*
     Constructor:

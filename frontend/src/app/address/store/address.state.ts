@@ -1,9 +1,11 @@
-import { Address } from '../models/address.model';
-import { Receiver } from '../models/receivers.model';
-import { State, Selector, Action, StateContext } from '@ngxs/store';
+import { Injectable } from "@angular/core";
+import { State, Selector, Action, StateContext } from "@ngxs/store";
 
-import * as AddressActions from './address.action';
-import { AddressService } from '../address.service';
+import { Address } from "../models/address.model";
+import { Receiver } from "../models/receivers.model";
+
+import * as AddressActions from "./address.action";
+import { AddressService } from "../address.service";
 
 /*
    Address State
@@ -29,14 +31,15 @@ const initialState: AddressStateModel = {
   addresses: [],
   selectedMailbox: null,
   receivers: [],
-  vacantMailboxNos: []
+  vacantMailboxNos: [],
 };
 
 /*
    Action Map:
 */
 
-@State<AddressStateModel>({ name: 'address', defaults: initialState })
+@State<AddressStateModel>({ name: "address", defaults: initialState })
+@Injectable()
 export class AddressState {
   // Constructor:
   constructor(private addressService: AddressService) {}
@@ -88,9 +91,14 @@ export class AddressState {
   */
 
   @Action(AddressActions.GetAddress, { cancelUncompleted: true })
-  async getAddress(ctx: StateContext<AddressStateModel>, action: AddressActions.GetAddress) {
+  async getAddress(
+    ctx: StateContext<AddressStateModel>,
+    action: AddressActions.GetAddress
+  ) {
     // async service call
-    const result = await this.addressService._getAddressById(action.payload).toPromise();
+    const result = await this.addressService
+      ._getAddressById(action.payload)
+      .toPromise();
 
     // return new state
     ctx.patchState({ address: result.address });
@@ -101,9 +109,14 @@ export class AddressState {
   */
 
   @Action(AddressActions.GetReceivers, { cancelUncompleted: true })
-  async getReceivers(ctx: StateContext<AddressStateModel>, action: AddressActions.GetReceivers) {
+  async getReceivers(
+    ctx: StateContext<AddressStateModel>,
+    action: AddressActions.GetReceivers
+  ) {
     // async service call
-    const result = await this.addressService._getReceivers(action.payload).toPromise();
+    const result = await this.addressService
+      ._getReceivers(action.payload)
+      .toPromise();
 
     // return new state
     ctx.patchState({ receivers: result.receivers });
@@ -119,7 +132,9 @@ export class AddressState {
     action: AddressActions.GetVacantMailboxNos
   ) {
     // async service call
-    const result = await this.addressService._getVacantMailboxNos(action.payload).toPromise();
+    const result = await this.addressService
+      ._getVacantMailboxNos(action.payload)
+      .toPromise();
 
     // return new state
     ctx.patchState({ vacantMailboxNos: result.vacantMailboxNos });
@@ -130,11 +145,14 @@ export class AddressState {
   */
 
   @Action(AddressActions.SelectMailbox)
-  selectAddress(ctx: StateContext<AddressStateModel>, action: AddressActions.SelectMailbox) {
+  selectAddress(
+    ctx: StateContext<AddressStateModel>,
+    action: AddressActions.SelectMailbox
+  ) {
     const { address, mailboxNo } = action.payload;
     // return new state
     ctx.patchState({
-      selectedMailbox: { address, mailboxNo }
+      selectedMailbox: { address, mailboxNo },
     });
   }
 

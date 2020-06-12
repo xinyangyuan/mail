@@ -7,7 +7,7 @@ import { Select, Store } from '@ngxs/store';
 import * as MailActions from '../../store/mail.action';
 import { MailState } from '../../store/mail.state';
 import { Mail } from '../../models/mail.model';
-import { PageEvent } from '@angular/material';
+import { PageEvent } from '@angular/material/paginator';
 import { MailQuery } from '../../store/mail.query';
 
 @Component({

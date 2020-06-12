@@ -1,3 +1,4 @@
+import { Injectable } from "@angular/core";
 import {
   State,
   Action,
@@ -5,17 +6,17 @@ import {
   Actions,
   Selector,
   ofActionDispatched,
-  createSelector
-} from '@ngxs/store';
-import { Observable, forkJoin, merge } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
-import { Data } from '@angular/router';
-import { SafeUrl, DomSanitizer } from '@angular/platform-browser';
+  createSelector,
+} from "@ngxs/store";
+import { Observable, forkJoin, merge } from "rxjs";
+import { takeUntil, tap } from "rxjs/operators";
+import { Data } from "@angular/router";
+import { SafeUrl, DomSanitizer } from "@angular/platform-browser";
 
-import { Mail } from '../models/mail.model';
-import { MailStatus } from '../models/mail-status.model';
-import * as MailActions from './mail.action';
-import { MailService } from '../mail.service';
+import { Mail } from "../models/mail.model";
+import { MailStatus } from "../models/mail-status.model";
+import * as MailActions from "./mail.action";
+import { MailService } from "../mail.service";
 
 /*
    Mail State
@@ -62,15 +63,16 @@ const initialState: MailStateModel = {
   imageTaskPool: [],
   currentImageTasks: [],
   imageURLs: {},
-  pdfURL: '',
-  urlData: null
+  pdfURL: "",
+  urlData: null,
 };
 
 /*
    Action Map:
 */
 
-@State<MailStateModel>({ name: 'mail', defaults: initialState })
+@State<MailStateModel>({ name: "mail", defaults: initialState })
+@Injectable()
 export class MailState {
   // Constructor:
   constructor(
@@ -140,12 +142,11 @@ export class MailState {
 
   // Selector dynamic
   static isSelected(mail: Mail) {
-    return createSelector(
-      [MailState],
-      (state: MailStateModel) => {
-        return state.selectedMails.map(selectedMail => selectedMail._id).includes(mail._id);
-      }
-    );
+    return createSelector([MailState], (state: MailStateModel) => {
+      return state.selectedMails
+        .map((selectedMail) => selectedMail._id)
+        .includes(mail._id);
+    });
   }
 
   @Selector()
@@ -158,7 +159,10 @@ export class MailState {
   */
 
   @Action(MailActions.GetMails)
-  async getMails(ctx: StateContext<MailStateModel>, action: MailActions.GetMails) {
+  async getMails(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.GetMails
+  ) {
     // get current state and url data info
     const state = ctx.getState();
 
@@ -167,17 +171,19 @@ export class MailState {
     const limit = state.mailsPerPage;
 
     // async service call
-    const result = await this.mailService._getMailList(skip, limit, action.payload).toPromise();
+    const result = await this.mailService
+      ._getMailList(skip, limit, action.payload)
+      .toPromise();
 
     // return new state
     ctx.patchState({
       mailList: result.mails,
       imageTaskPool: result.mails
-        .map(mail => mail._id)
-        .filter(mailId => !Object.keys(state.imageURLs).includes(mailId)),
+        .map((mail) => mail._id)
+        .filter((mailId) => !Object.keys(state.imageURLs).includes(mailId)),
       mailCount: result.count,
       isLoading: false,
-      urlData: action.payload
+      urlData: action.payload,
     });
 
     // dispatch action
@@ -198,7 +204,10 @@ export class MailState {
   */
 
   @Action(MailActions.ModifyMail)
-  modifyMail(ctx: StateContext<MailStateModel>, action: MailActions.ModifyMail) {
+  modifyMail(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.ModifyMail
+  ) {
     // get current state
     const state = ctx.getState();
 
@@ -210,16 +219,23 @@ export class MailState {
     const contentPDF = action.payload.update.controls.contentPDF.value;
 
     return this.mailService
-      ._modifyMail(action.payload.mail, title, description, content, envelop, contentPDF)
+      ._modifyMail(
+        action.payload.mail,
+        title,
+        description,
+        content,
+        envelop,
+        contentPDF
+      )
       .pipe(
         tap(
-          result => {
+          (result) => {
             ctx.patchState({
               editedMail: null,
-              imageURLs: { ...state.imageURLs, id: null }
+              imageURLs: { ...state.imageURLs, id: null },
             });
           },
-          error => {
+          (error) => {
             ctx.patchState({ editedMail: null });
           }
         )
@@ -242,7 +258,7 @@ export class MailState {
 
       // return new state
       ctx.patchState({
-        currentImageTasks // overwrite state
+        currentImageTasks, // overwrite state
       });
 
       // dispatch action
@@ -264,19 +280,23 @@ export class MailState {
     for (const image of state.currentImageTasks) {
       imageTasks.push(this.mailService._getEnvelop(image));
     }
-    const currentImageTasks$: Observable<{ id: string; file: Blob }[]> = forkJoin(imageTasks);
+    const currentImageTasks$: Observable<
+      { id: string; file: Blob }[]
+    > = forkJoin(imageTasks);
 
     // async service call
     return currentImageTasks$.pipe(
-      tap(result => {
+      tap((result) => {
         // store images to urls
         const { imageURLs, ids } = this.storeImages(result);
 
         // return new state
         ctx.patchState({
           imageURLs: { ...state.imageURLs, ...imageURLs },
-          imageTaskPool: state.imageTaskPool.filter(id => !ids.includes(id)),
-          currentImageTasks: state.currentImageTasks.filter(id => !ids.includes(id))
+          imageTaskPool: state.imageTaskPool.filter((id) => !ids.includes(id)),
+          currentImageTasks: state.currentImageTasks.filter(
+            (id) => !ids.includes(id)
+          ),
         });
 
         // dispatch action
@@ -309,20 +329,23 @@ export class MailState {
   */
 
   @Action(MailActions.GetEnvelopImage, { cancelUncompleted: true })
-  getEnvelopImage(ctx: StateContext<MailStateModel>, action: MailActions.GetEnvelopImage) {
+  getEnvelopImage(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.GetEnvelopImage
+  ) {
     // get current state
     const state = ctx.getState();
 
     // async service call
     return this.mailService._getEnvelop(action.payload._id).pipe(
-      tap(result => {
+      tap((result) => {
         // store images to urls
         const { imageURLs, ids } = this.storeImages([result]);
 
         // return new state
         ctx.patchState({
           imageURLs: { ...state.imageURLs, ...imageURLs },
-          imageTaskPool: state.imageTaskPool.filter(id => !ids.includes(id))
+          imageTaskPool: state.imageTaskPool.filter((id) => !ids.includes(id)),
         });
 
         // dispatch action
@@ -336,19 +359,22 @@ export class MailState {
   */
 
   @Action(MailActions.GetContentPdf, { cancelUncompleted: true })
-  getContentPdf(ctx: StateContext<MailStateModel>, action: MailActions.GetContentPdf) {
+  getContentPdf(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.GetContentPdf
+  ) {
     // get current state
     const state = ctx.getState();
 
     // async service call
     return this.mailService._getContentPDF(action.payload).pipe(
-      tap(result => {
+      tap((result) => {
         // store images to urls
         const pdfURL = window.URL.createObjectURL(result);
 
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (mail._id === action.payload._id) {
             mail.flags.read = true;
           }
@@ -357,7 +383,7 @@ export class MailState {
         // return new state
         ctx.patchState({
           mailList,
-          pdfURL
+          pdfURL,
         });
       })
     );
@@ -382,8 +408,10 @@ export class MailState {
       {},
       ...(function _flatten(object) {
         return [].concat(
-          ...Object.keys(object).map(k =>
-            typeof object[k] === 'object' ? _flatten(object[k]) : { [k]: object[k] }
+          ...Object.keys(object).map((k) =>
+            typeof object[k] === "object"
+              ? _flatten(object[k])
+              : { [k]: object[k] }
           )
         );
       })(action.payload.update)
@@ -391,7 +419,7 @@ export class MailState {
 
     // find whether update conflict with page filter
     let conflict = false;
-    const overlaps: string[] = Object.keys(update).filter(key =>
+    const overlaps: string[] = Object.keys(update).filter((key) =>
       Object.keys(urlData).includes(key)
     );
     for (const overlap of overlaps) {
@@ -403,7 +431,10 @@ export class MailState {
     // number of new mails to fetch
     let numberOfMails = 0;
     if (conflict && state.mailList.length < state.mailCount) {
-      numberOfMails = action instanceof MailActions.UpdateMails ? action.payload.mails.length : 1;
+      numberOfMails =
+        action instanceof MailActions.UpdateMails
+          ? action.payload.mails.length
+          : 1;
     }
     // async service call
     const skip = state.mailList.length - numberOfMails;
@@ -411,13 +442,15 @@ export class MailState {
 
     if (numberOfMails) {
       return this.mailService._getMailList(skip, limit, urlData).pipe(
-        tap(result => {
+        tap((result) => {
           // return new state
           ctx.patchState({
             mailList: [...state.mailList, ...result.mails],
             imageTaskPool: result.mails
-              .map(mail => mail._id)
-              .filter(mailId => !Object.keys(state.imageURLs).includes(mailId))
+              .map((mail) => mail._id)
+              .filter(
+                (mailId) => !Object.keys(state.imageURLs).includes(mailId)
+              ),
           });
           // dispatch action
           ctx.dispatch(new MailActions.GenerateImageTasks());
@@ -431,14 +464,17 @@ export class MailState {
   */
 
   @Action(MailActions.ToggleMailStarFlag)
-  toggleMailStarFlag(ctx: StateContext<MailStateModel>, action: MailActions.ToggleMailStarFlag) {
+  toggleMailStarFlag(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.ToggleMailStarFlag
+  ) {
     // get current state
     const state = ctx.getState();
     const update = { flags: { star: !action.payload.flags.star } };
 
     // updated maillist
     const mailList = JSON.parse(JSON.stringify(state.mailList));
-    mailList.forEach(mail => {
+    mailList.forEach((mail) => {
       if (mail._id === action.payload._id) {
         mail.flags.star = !action.payload.flags.star;
       }
@@ -450,8 +486,8 @@ export class MailState {
     // async service call
     return this.mailService._updateMail(action.payload, update).pipe(
       tap(
-        result => {},
-        error => {
+        (result) => {},
+        (error) => {
           // fallback to previous state
           ctx.patchState({ mailList: state.mailList });
         }
@@ -464,7 +500,10 @@ export class MailState {
   */
 
   @Action(MailActions.StarredMails)
-  starredMails(ctx: StateContext<MailStateModel>, action: MailActions.StarredMails) {
+  starredMails(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.StarredMails
+  ) {
     // get current state
     const state = ctx.getState();
     const update = { flags: { star: true } };
@@ -474,9 +513,9 @@ export class MailState {
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
-        const updatedMailIds = action.payload.map(mail => mail._id);
+        const updatedMailIds = action.payload.map((mail) => mail._id);
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (updatedMailIds.includes(mail._id)) {
             mail.flags.star = true;
           }
@@ -493,7 +532,10 @@ export class MailState {
   */
 
   @Action(MailActions.UnstarredMails)
-  unstarredMails(ctx: StateContext<MailStateModel>, action: MailActions.UnstarredMails) {
+  unstarredMails(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.UnstarredMails
+  ) {
     // get current state
     const state = ctx.getState();
     const update = { flags: { star: false } };
@@ -503,9 +545,9 @@ export class MailState {
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
-        const updatedMailIds = action.payload.map(mail => mail._id);
+        const updatedMailIds = action.payload.map((mail) => mail._id);
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (updatedMailIds.includes(mail._id)) {
             mail.flags.star = false;
           }
@@ -522,7 +564,10 @@ export class MailState {
   */
 
   @Action(MailActions.ToggleMailReadFlag)
-  toggleMailReadFlag(ctx: StateContext<MailStateModel>, action: MailActions.ToggleMailReadFlag) {
+  toggleMailReadFlag(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.ToggleMailReadFlag
+  ) {
     // get current state
     const state = ctx.getState();
     const update = { flags: { star: !action.payload.flags.read } };
@@ -533,7 +578,7 @@ export class MailState {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (mail._id === action.payload._id) {
             mail.flags.star = !action.payload.flags.read;
           }
@@ -560,9 +605,9 @@ export class MailState {
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
-        const updatedMailIds = action.payload.map(mail => mail._id);
+        const updatedMailIds = action.payload.map((mail) => mail._id);
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (updatedMailIds.includes(mail._id)) {
             mail.flags.read = true;
           }
@@ -579,7 +624,10 @@ export class MailState {
   */
 
   @Action(MailActions.UnreadMails)
-  unreadMails(ctx: StateContext<MailStateModel>, action: MailActions.UnreadMails) {
+  unreadMails(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.UnreadMails
+  ) {
     // get current state
     const state = ctx.getState();
     const update = { flags: { read: false } };
@@ -589,9 +637,9 @@ export class MailState {
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
-        const updatedMailIds = action.payload.map(mail => mail._id);
+        const updatedMailIds = action.payload.map((mail) => mail._id);
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (updatedMailIds.includes(mail._id)) {
             mail.flags.read = false;
           }
@@ -619,7 +667,7 @@ export class MailState {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (mail._id === action.payload._id) {
             mail.status = MailStatus.SCANNING;
           }
@@ -646,9 +694,9 @@ export class MailState {
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
-        const updatedMailIds = action.payload.map(mail => mail._id);
+        const updatedMailIds = action.payload.map((mail) => mail._id);
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (updatedMailIds.includes(mail._id)) {
             mail.status = MailStatus.SCANNING;
           }
@@ -665,7 +713,10 @@ export class MailState {
   */
 
   @Action(MailActions.UnscanMail)
-  unscanMail(ctx: StateContext<MailStateModel>, action: MailActions.UnscanMail) {
+  unscanMail(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.UnscanMail
+  ) {
     // get current state
     const state = ctx.getState();
     const update = { status: MailStatus.SCAN_REJECTED };
@@ -676,7 +727,7 @@ export class MailState {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (mail._id === action.payload._id) {
             mail.status = MailStatus.SCAN_REJECTED;
           }
@@ -693,7 +744,10 @@ export class MailState {
   */
 
   @Action(MailActions.UnscanMails)
-  unscanMails(ctx: StateContext<MailStateModel>, action: MailActions.UnscanMails) {
+  unscanMails(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.UnscanMails
+  ) {
     // get current state
     const state = ctx.getState();
     const update = { status: MailStatus.SCAN_REJECTED };
@@ -703,9 +757,9 @@ export class MailState {
       tap(() => {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
-        const updatedMailIds = action.payload.map(mail => mail._id);
+        const updatedMailIds = action.payload.map((mail) => mail._id);
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (updatedMailIds.includes(mail._id)) {
             mail.status = MailStatus.SCAN_REJECTED;
           }
@@ -733,7 +787,7 @@ export class MailState {
         // update mailList (deepcopy mailList)
         const mailList = JSON.parse(JSON.stringify(state.mailList));
 
-        mailList.forEach(mail => {
+        mailList.forEach((mail) => {
           if (mail._id === action.payload._id) {
             mail.flags.issue = true;
           }
@@ -750,14 +804,19 @@ export class MailState {
   */
 
   @Action(MailActions.DeleteMail)
-  deleteMail(ctx: StateContext<MailStateModel>, action: MailActions.DeleteMail) {
+  deleteMail(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.DeleteMail
+  ) {
     const state = ctx.getState();
     return this.mailService._deleteMail(action.payload).pipe(
       tap(() => {
         // return new state
         ctx.patchState({
-          mailList: state.mailList.filter(mail => mail._id !== action.payload._id),
-          mailCount: state.mailCount - 1
+          mailList: state.mailList.filter(
+            (mail) => mail._id !== action.payload._id
+          ),
+          mailCount: state.mailCount - 1,
         });
       })
     );
@@ -794,13 +853,16 @@ export class MailState {
   */
 
   @Action(MailActions.SelectMail)
-  selectMail(ctx: StateContext<MailStateModel>, action: MailActions.SelectMail) {
+  selectMail(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.SelectMail
+  ) {
     // get current state
     const state = ctx.getState();
 
     // return new state
     ctx.patchState({
-      selectedMails: [...state.selectedMails, action.payload]
+      selectedMails: [...state.selectedMails, action.payload],
     });
   }
 
@@ -820,7 +882,7 @@ export class MailState {
 
     // return new state
     ctx.patchState({
-      selectedMails: mailsOnCurrentPage
+      selectedMails: mailsOnCurrentPage,
     });
   }
 
@@ -829,13 +891,18 @@ export class MailState {
   */
 
   @Action(MailActions.UnselectMail)
-  unselectMail(ctx: StateContext<MailStateModel>, action: MailActions.UnselectMail) {
+  unselectMail(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.UnselectMail
+  ) {
     // get current state
     const state = ctx.getState();
 
     // return new state
     ctx.patchState({
-      selectedMails: state.selectedMails.filter(mail => mail._id !== action.payload._id)
+      selectedMails: state.selectedMails.filter(
+        (mail) => mail._id !== action.payload._id
+      ),
     });
   }
 
@@ -858,7 +925,7 @@ export class MailState {
     MailActions.UnscanMails,
     MailActions.GetEnvelopImage,
     MailActions.GetContentPdf,
-    MailActions.ChangePage
+    MailActions.ChangePage,
   ])
   unselectAllMails(ctx: StateContext<MailStateModel>) {
     // return new state
@@ -870,14 +937,17 @@ export class MailState {
   */
 
   @Action(MailActions.ChangePage)
-  async changePage(ctx: StateContext<MailStateModel>, action: MailActions.ChangePage) {
+  async changePage(
+    ctx: StateContext<MailStateModel>,
+    action: MailActions.ChangePage
+  ) {
     // change UI state and get current state
     ctx.patchState({ isLoading: true });
     const state = ctx.getState();
 
     // adjusted mailList
     const mailList: Mail[] = state.mailList.filter(
-      mail =>
+      (mail) =>
         Object.entries(state.urlData).length === 0 ||
         mail.flags.star === state.urlData.star ||
         mail.flags.read === state.urlData.read ||
@@ -891,12 +961,14 @@ export class MailState {
 
     // visted page or not && all mails fetched or not
     if (
-      action.payload.currentPage * action.payload.mailsPerPage > mailList.length &&
+      action.payload.currentPage * action.payload.mailsPerPage >
+        mailList.length &&
       mailList.length < mailCount
     ) {
       // prepare api call
       const skip: number = mailList.length;
-      const limit: number = action.payload.mailsPerPage * action.payload.currentPage - skip;
+      const limit: number =
+        action.payload.mailsPerPage * action.payload.currentPage - skip;
 
       // async service call
       const result = await this.mailService
@@ -909,13 +981,13 @@ export class MailState {
         mailCount: result.count,
         imageTaskPool: [
           ...result.mails
-            .map(mail => mail._id)
-            .filter(mailId => !Object.keys(state.imageURLs).includes(mailId)),
-          ...state.imageTaskPool
+            .map((mail) => mail._id)
+            .filter((mailId) => !Object.keys(state.imageURLs).includes(mailId)),
+          ...state.imageTaskPool,
         ], // fetch new page images first
         currentPage: action.payload.currentPage,
         mailsPerPage: action.payload.mailsPerPage,
-        isLoading: false
+        isLoading: false,
       });
 
       // dispatch action
@@ -927,7 +999,7 @@ export class MailState {
         mailCount,
         currentPage: action.payload.currentPage,
         mailsPerPage: action.payload.mailsPerPage,
-        isLoading: false
+        isLoading: false,
       });
     }
   }
@@ -942,7 +1014,7 @@ export class MailState {
     ctx.setState({
       ...initialState,
       editedMail: state.editedMail, // keep current editing mail
-      imageURLs: state.imageURLs // keep images
+      imageURLs: state.imageURLs, // keep images
     });
   }
 
@@ -953,7 +1025,7 @@ export class MailState {
   @Action(MailActions.ResetStore)
   resetStore(ctx: StateContext<MailStateModel>) {
     ctx.setState({
-      ...initialState
+      ...initialState,
     });
   }
 

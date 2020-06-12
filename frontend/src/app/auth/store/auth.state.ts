@@ -1,9 +1,10 @@
-import { State, Selector, Action, StateContext } from '@ngxs/store';
-import { tap } from 'rxjs/operators';
-import * as jwtDecode from 'jwt-decode';
+import { Injectable } from "@angular/core";
+import { State, Selector, Action, StateContext } from "@ngxs/store";
+import { tap } from "rxjs/operators";
+import * as jwtDecode from "jwt-decode";
 
-import * as AuthActions from './auth.action';
-import { AuthService } from '../auth.service';
+import * as AuthActions from "./auth.action";
+import { AuthService } from "../auth.service";
 
 /*
    Auth State
@@ -20,14 +21,15 @@ export interface AuthStateModel {
 
 const initialState: AuthStateModel = {
   token: null,
-  authError: null
+  authError: null,
 };
 
 /*
    Action Map:
 */
 
-@State<AuthStateModel>({ name: 'auth', defaults: initialState })
+@State<AuthStateModel>({ name: "auth", defaults: initialState })
+@Injectable()
 export class AuthState {
   // Constructor:
   constructor(private authService: AuthService) {}
@@ -48,7 +50,7 @@ export class AuthState {
 
   @Selector()
   static isAuthenticated(state: AuthStateModel) {
-    return typeof state.token === 'string' && state.token.length;
+    return typeof state.token === "string" && state.token.length;
   }
 
   /*
@@ -57,20 +59,22 @@ export class AuthState {
 
   @Action(AuthActions.SignIn)
   signIn(ctx: StateContext<AuthStateModel>, action: AuthActions.SignIn) {
-    return this.authService._signIn(action.payload.email, action.payload.password).pipe(
-      tap(
-        result => {
-          ctx.patchState({
-            token: result.token
-          });
-        },
-        error => {
-          ctx.patchState({
-            authError: error.error.message
-          });
-        }
-      )
-    );
+    return this.authService
+      ._signIn(action.payload.email, action.payload.password)
+      .pipe(
+        tap(
+          (result) => {
+            ctx.patchState({
+              token: result.token,
+            });
+          },
+          (error) => {
+            ctx.patchState({
+              authError: error.error.message,
+            });
+          }
+        )
+      );
   }
 
   /*
@@ -80,7 +84,14 @@ export class AuthState {
   @Action(AuthActions.SignUp)
   signUp(ctx: StateContext<AuthStateModel>, action: AuthActions.SignUp) {
     const { firstName, lastName, email, password, role, code } = action.payload;
-    return this.authService._signUp(firstName, lastName, email, password, role, code);
+    return this.authService._signUp(
+      firstName,
+      lastName,
+      email,
+      password,
+      role,
+      code
+    );
   }
 
   /*
@@ -91,14 +102,14 @@ export class AuthState {
   signOut(ctx: StateContext<AuthStateModel>) {
     return this.authService._signOut().pipe(
       tap(
-        result => {
+        (result) => {
           ctx.patchState({
-            token: null
+            token: null,
           });
         },
-        error => {
+        (error) => {
           ctx.patchState({
-            authError: error.error.message
+            authError: error.error.message,
           });
         }
       )
@@ -124,9 +135,9 @@ export class AuthState {
   @Action(AuthActions.RefreshToken)
   refreshToken(ctx: StateContext<AuthStateModel>) {
     return this.authService._refreshToken().pipe(
-      tap(result => {
+      tap((result) => {
         ctx.patchState({
-          token: result.token
+          token: result.token,
         });
       })
     );
@@ -145,11 +156,15 @@ export class AuthState {
     const { password, emailToken } = action.payload;
 
     // call api to complete email address verification
-    await this.authService._verifyEmailConfirmation(password, emailToken).toPromise();
+    await this.authService
+      ._verifyEmailConfirmation(password, emailToken)
+      .toPromise();
 
     // call api to log-in user [NEED ERROR HANDLING]
     const { userId } = jwtDecode(emailToken);
-    const { token } = await this.authService._signInById(userId, password).toPromise();
+    const { token } = await this.authService
+      ._signInById(userId, password)
+      .toPromise();
 
     // update auth store
     ctx.patchState({ token });
@@ -165,9 +180,9 @@ export class AuthState {
     action: AuthActions.ResendEmailConfirmation
   ) {
     return this.authService._sendEmailConfirmation(action.payload).pipe(
-      tap(result => {
+      tap((result) => {
         ctx.patchState({
-          authError: null
+          authError: null,
         });
       })
     );
@@ -178,7 +193,10 @@ export class AuthState {
   */
 
   @Action(AuthActions.ResetPassword)
-  resetPassword(ctx: StateContext<AuthStateModel>, action: AuthActions.ResetPassword) {
+  resetPassword(
+    ctx: StateContext<AuthStateModel>,
+    action: AuthActions.ResetPassword
+  ) {
     const email = action.payload;
     return this.authService._resetPassword(email);
   }

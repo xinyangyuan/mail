@@ -1,12 +1,12 @@
-import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material';
-import { Actions, ofActionDispatched } from '@ngxs/store';
+import { Injectable } from "@angular/core";
+import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { Actions, ofActionDispatched } from "@ngxs/store";
 
-import * as PaymentActions from './payment.action';
-import { PaymentModalComponent } from '../components/payment-modal/payment-modal.component';
+import * as PaymentActions from "./payment.action";
+import { PaymentModalComponent } from "../components/payment-modal/payment-modal.component";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class PaymentEffect {
   // Attributes:
@@ -17,10 +17,11 @@ export class PaymentEffect {
       Open Payment:
     */
 
-    this.actions$.pipe(ofActionDispatched(PaymentActions.OpenPayment)).subscribe(action => {
-      console.log(action);
-      console.log('hello');
-    });
+    this.actions$
+      .pipe(ofActionDispatched(PaymentActions.OpenPayment))
+      .subscribe((action) => {
+        console.log(action);
+      });
 
     // this.actions$
     //   .pipe(ofActionSuccessful(RouteNavigate))

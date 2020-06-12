@@ -1,10 +1,11 @@
-import { State, Selector, StateContext, Action } from '@ngxs/store';
+import { Injectable } from "@angular/core";
+import { State, Selector, StateContext, Action } from "@ngxs/store";
 
-import { User } from 'src/app/auth/models/user.model';
-import { Receiver } from 'src/app/address/models/receivers.model';
-import { AddressService } from 'src/app/address/address.service';
-import { AuthService } from 'src/app/auth/auth.service';
-import * as AccountActions from './account.acion';
+import { User } from "src/app/auth/models/user.model";
+import { Receiver } from "src/app/address/models/receivers.model";
+import { AddressService } from "src/app/address/address.service";
+import { AuthService } from "src/app/auth/auth.service";
+import * as AccountActions from "./account.acion";
 
 /*
    Account State
@@ -23,17 +24,21 @@ export interface AccountStateModel {
 const initialState: AccountStateModel = {
   user: null,
   addressId: null,
-  receivers: null
+  receivers: null,
 };
 
 /*
    Action Map:
 */
 
-@State<AccountStateModel>({ name: 'account', defaults: initialState })
+@State<AccountStateModel>({ name: "account", defaults: initialState })
+@Injectable()
 export class AccountState {
   // Constructor:
-  constructor(private addressService: AddressService, private authService: AuthService) {}
+  constructor(
+    private addressService: AddressService,
+    private authService: AuthService
+  ) {}
 
   /*
    Selectors:
@@ -74,12 +79,18 @@ export class AccountState {
     const { user } = await this.authService._getMyInfo().toPromise();
 
     // $2: get addressId & update state
-    if (user.role === 'SENDER') {
-      const { address } = await this.addressService._getAddressBySenderId(user._id).toPromise();
-      const { receivers } = await this.addressService._getReceivers(address).toPromise();
+    if (user.role === "SENDER") {
+      const { address } = await this.addressService
+        ._getAddressBySenderId(user._id)
+        .toPromise();
+      const { receivers } = await this.addressService
+        ._getReceivers(address)
+        .toPromise();
       ctx.patchState({ user, receivers, addressId: address._id });
     } else {
-      const { address } = await this.addressService._getAddressByReceiverId(user._id).toPromise();
+      const { address } = await this.addressService
+        ._getAddressByReceiverId(user._id)
+        .toPromise();
       ctx.patchState({ user, addressId: address._id });
     }
   }
